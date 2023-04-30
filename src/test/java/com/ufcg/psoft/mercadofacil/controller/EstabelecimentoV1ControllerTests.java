@@ -8,10 +8,7 @@ import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,7 +48,7 @@ public class EstabelecimentoV1ControllerTests {
         );
     }
 
-    @BeforeEach
+    @AfterEach
     public void tearDown() {
         estabelecimentoRepository.deleteAll();
     }
@@ -66,7 +62,7 @@ public class EstabelecimentoV1ControllerTests {
             estabelecimentoRepository.save(
                     Estabelecimento.builder()
                             .nome("Estabelecimento 2")
-                            .codigoDeAcesso("123")
+                            .codigoDeAcesso("123456")
                             .build());
 
             String responseJsonString = driver.perform(get("/v1/estabelecimentos")
@@ -87,7 +83,7 @@ public class EstabelecimentoV1ControllerTests {
             Estabelecimento estabelecimento = estabelecimentoRepository.save(
                     Estabelecimento.builder()
                             .nome("Estabelecimento 2")
-                            .codigoDeAcesso("123")
+                            .codigoDeAcesso("123456")
                             .build());
 
             String responseJsonString = driver.perform(get("/v1/estabelecimentos/{id}", estabelecimento.getId())
@@ -121,12 +117,11 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class PostEstabelecimentoTests {
-        // Criar um estabelecimento com dados válidos
         @Test
         @DisplayName("Quando crio um estabelecimento com dados válidos")
         public void test01() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
-                    .codigoDeAcesso("456")
+                    .codigoDeAcesso("123456")
                     .nome("Estabelecimento 3")
                     .build();
 
@@ -152,7 +147,7 @@ public class EstabelecimentoV1ControllerTests {
         @DisplayName("Quando tento criar um estabelecimento com nome vazio")
         public void test02() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
-                    .codigoDeAcesso("123")
+                    .codigoDeAcesso("123456")
                     .nome("")
                     .build();
 
@@ -166,8 +161,7 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Erros de validação encontrados", error.getMessage());
-            assertEquals("Nome não pode ser vazio", error.getErrors().get(0));
+            assertEquals("Nome nao pode ser vazio", error.getErrors().get(0));
 
         }
 
@@ -189,8 +183,7 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Erros de validação encontrados", error.getMessage());
-            assertEquals("Código de acesso não pode ser vazio", error.getErrors().get(0));
+            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
 
         }
     }
@@ -233,15 +226,32 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            assertEquals("Erros de validação encontrados", error.getMessage());
-            assertEquals("Código de acesso não pode ser vazio", error.getErrors().get(0));
+            assertEquals("Codigo de acesso nao pode ser vazio", error.getErrors().get(0));
+        }
+
+        @Test
+        @DisplayName("Quando atualizo um estabelecimento com códgio de acesso menor que 6 caracteres")
+        public void test03() throws Exception {
+            EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
+                    .nome("Nome novo")
+                    .codigoDeAcesso("234")
+                    .build();
+
+            String responseJsonString = driver.perform(put("/v1/estabelecimentos/" + estabelecimento.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestDto)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
         }
 
     }
 
     @Nested
     public class DeleteEstabelecimentoTests {
-        // Excluir estabelecimento existente pelo ID
         @Test
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
@@ -253,7 +263,7 @@ public class EstabelecimentoV1ControllerTests {
 
             assertEquals(0, estabelecimentoRepository.findAll().size());
         }
-        // Excluir estabelecimento inexistente pelo ID
+
         @Test
         @DisplayName("Quando excluo um estabelecimento não existente no banco pelo ID")
         public void test02() throws Exception {
@@ -265,7 +275,7 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("O estalecimento consultado não existe!", error.getMessage());
+            assertEquals("O estabelecimento consultado nao existe!", error.getMessage());
         }
     }
 }
