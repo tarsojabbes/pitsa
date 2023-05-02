@@ -6,5 +6,5 @@ import java.util.List;
 
 @FunctionalInterface
 public interface EstabelecimentoListarService {
-    public List<Estabelecimento> listar(Long id);
+    List<Estabelecimento> listar(Long id);
 }

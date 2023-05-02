@@ -9,14 +9,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EstabelecimentoCriarPadraoService  implements EstabelecimentoCriarService {
+
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
     @Autowired
     ModelMapper modelMapper;
+
     @Override
     public Estabelecimento criar(EstabelecimentoPostPutRequestDTO estabelecimentoPostPutRequestDTO) {
         Estabelecimento estabelecimento = modelMapper.map(estabelecimentoPostPutRequestDTO, Estabelecimento.class);
         return estabelecimentoRepository.save(estabelecimento);
     }
+
 }

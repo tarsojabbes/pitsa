@@ -11,9 +11,9 @@ import java.util.List;
 
 @Service
 public class EstabelecimentoListarPadraoService implements EstabelecimentoListarService {
+
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
-
 
     @Override
     public List<Estabelecimento> listar(Long id) {
@@ -22,6 +22,8 @@ public class EstabelecimentoListarPadraoService implements EstabelecimentoListar
             List<Estabelecimento> list = new ArrayList<Estabelecimento>();
             list.add(estabelecimento);
             return list;
-        } return estabelecimentoRepository.findAll();
+        }
+        return estabelecimentoRepository.findAll();
     }
+
 }

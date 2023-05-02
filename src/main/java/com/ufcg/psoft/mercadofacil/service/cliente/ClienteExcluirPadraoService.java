@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ClienteExcluirPadraoService implements ClienteExcluirService{
+
     @Autowired
     ClienteRepository clienteRepository;
+
     @Override
     public void excluir(Long id, String codigoDeAcesso) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
@@ -21,4 +23,5 @@ public class ClienteExcluirPadraoService implements ClienteExcluirService{
 
         clienteRepository.delete(cliente);
     }
+
 }

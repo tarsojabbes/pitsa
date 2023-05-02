@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClienteListarPadraoService implements ClienteListarService {
+
     @Autowired
     ClienteRepository clienteRepository;
 
@@ -33,6 +34,6 @@ public class ClienteListarPadraoService implements ClienteListarService {
         List<ClienteGetResponseDTO> clientes = new ArrayList<ClienteGetResponseDTO>();
         clientes.add(clienteGetResponseDTO);
         return clientes;
-
     }
+
 }

@@ -108,7 +108,7 @@ public class ClienteServiceTests {
             ClienteNaoAutorizadoException exception = assertThrows(ClienteNaoAutorizadoException.class,
                     () -> clienteAlterarService.alterar(cliente.getId(), codigoDeAcessoInvalido, clienteAlterado));
 
-            assertEquals("O cliente não possui permissão para alterar dados de outro cliente", exception.getMessage());
+            assertEquals("O cliente nao possui permissao para alterar dados de outro cliente", exception.getMessage());
         }
     }
 

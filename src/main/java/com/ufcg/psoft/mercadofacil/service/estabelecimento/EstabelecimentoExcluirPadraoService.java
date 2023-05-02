@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EstabelecimentoExcluirPadraoService implements EstabelecimentoExcluirService{
+public class EstabelecimentoExcluirPadraoService implements EstabelecimentoExcluirService {
+
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
@@ -16,4 +17,5 @@ public class EstabelecimentoExcluirPadraoService implements EstabelecimentoExclu
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id).orElseThrow(EstabelecimentoNaoExisteException::new);
         estabelecimentoRepository.delete(estabelecimento);
     }
+
 }

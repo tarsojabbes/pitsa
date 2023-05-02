@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClienteAlterarPadraoService implements ClienteAlterarService{
+public class ClienteAlterarPadraoService implements ClienteAlterarService {
+
     @Autowired
     ClienteRepository clienteRepository;
 
@@ -27,6 +28,6 @@ public class ClienteAlterarPadraoService implements ClienteAlterarService{
 
         modelMapper.map(clientePostPutRequestDTO, clienteEncontrado);
         return clienteRepository.save(clienteEncontrado);
-
     }
+
 }

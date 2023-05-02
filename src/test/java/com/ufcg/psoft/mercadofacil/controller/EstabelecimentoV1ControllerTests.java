@@ -15,15 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -183,7 +179,8 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
 
         }
     }
@@ -226,11 +223,12 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            assertEquals("Codigo de acesso nao pode ser vazio", error.getErrors().get(0));
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
 
         @Test
-        @DisplayName("Quando atualizo um estabelecimento com códgio de acesso menor que 6 caracteres")
+        @DisplayName("Quando atualizo um estabelecimento com código de acesso menor que 6 caracteres")
         public void test03() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
                     .nome("Nome novo")
@@ -245,7 +243,9 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
+
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertFalse(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
 
     }
