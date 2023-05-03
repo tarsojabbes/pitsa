@@ -62,15 +62,15 @@ public class EstabelecimentoV1ControllerTests {
                             .build());
 
             String responseJsonString = driver.perform(get("/v1/estabelecimentos")
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {});
+            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {
+            });
 
             assertEquals(2, resultado.size());
-
         }
 
         @Test
@@ -107,7 +107,6 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn();
 
             assertTrue(result.getResolvedException() instanceof MercadoFacilException);
-
         }
     }
 
@@ -157,8 +156,8 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Nome nao pode ser vazio", error.getErrors().get(0));
-
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Nome nao pode ser vazio"));
         }
 
         @Test
@@ -179,9 +178,9 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
+            assertEquals("Erros de validacao encontrados", error.getMessage());
             assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
             assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
-
         }
     }
 
@@ -223,6 +222,7 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+            assertEquals("Erros de validacao encontrados", error.getMessage());
             assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
             assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
@@ -244,8 +244,31 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
+            assertEquals("Erros de validacao encontrados", error.getMessage());
             assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
             assertFalse(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
+        }
+
+        @Test
+        @DisplayName("Quando atualizo um estabelecimento com código de acesso nulo")
+        public void test04() throws Exception {
+            EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
+                    .nome("Nome novo")
+                    .codigoDeAcesso(null)
+                    .build();
+
+            String responseJsonString = driver.perform(put("/v1/estabelecimentos/" + estabelecimento.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestDto)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertFalse(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
 
     }
@@ -255,7 +278,7 @@ public class EstabelecimentoV1ControllerTests {
         @Test
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
-            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
+            driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
                     .andDo(print())

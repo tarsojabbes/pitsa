@@ -50,8 +50,8 @@ public class EntregadorServiceTests {
                 .codigoDeAcesso("123456")
                 .nome("Steve Jobs")
                 .corDoVeiculo("preto")
-                .placaDoVeiculo("ABC1234") //todo ver se coloco validação pra placa
-                .tipoDoVeiculo(MOTO) //todo colocar teste que valide o tipo de veiculo
+                .placaDoVeiculo("ABC1234")
+                .tipoDoVeiculo(MOTO)
                 .build());
     }
 
@@ -59,7 +59,6 @@ public class EntregadorServiceTests {
     public void tearDown() {
         entregadorRepository.deleteAll();
     }
-
 
     @Nested
     public class EntregadorAlterarServiceTests {

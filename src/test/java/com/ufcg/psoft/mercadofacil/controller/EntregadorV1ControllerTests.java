@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.List;
 
 import static com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo.CARRO;
@@ -64,7 +63,7 @@ public class EntregadorV1ControllerTests {
         @DisplayName("Quando busco todos os entregadores salvos")
         public void test01() throws Exception {
             EntregadorGetResponseDTO entregador1 = modelMapper.map(entregador, EntregadorGetResponseDTO.class);
-            EntregadorGetResponseDTO entregador2 = modelMapper.map(entregadorRepository.save(Entregador.builder()
+            EntregadorGetResponseDTO entregador2 = modelMapper.map(entregadorRepository.save(Entregador.builder() // todo perguntar se posso usar modelmapper aqui
                             .codigoDeAcesso("123456")
                             .nome("Bill Gates")
                             .corDoVeiculo("vermelho")
@@ -79,8 +78,7 @@ public class EntregadorV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<EntregadorGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
-            });
+            List<EntregadorGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
 
             assertEquals(2, resultado.size());
             assertTrue(resultado.contains(entregador1));
@@ -140,9 +138,9 @@ public class EntregadorV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            Entregador entregador1 = objectMapper.readValue(responseJsonString, Entregador.class); //todo substituir modelmapper por objectmapper
+            Entregador entregador1 = objectMapper.readValue(responseJsonString, Entregador.class);
 
-            Entregador entregadorSalvo = entregadorRepository.findById(entregador1.getId()).orElse(null); //todo ver melhor esse teste
+            Entregador entregadorSalvo = entregadorRepository.findById(entregador1.getId()).orElse(null);
 
             assertNotNull(entregadorSalvo);
             assertEquals(entregadorPostPutRequestDTO.getNome(), entregadorSalvo.getNome());
@@ -150,7 +148,6 @@ public class EntregadorV1ControllerTests {
             assertEquals(entregadorPostPutRequestDTO.getPlacaDoVeiculo(), entregadorSalvo.getPlacaDoVeiculo());
             assertEquals(entregadorPostPutRequestDTO.getTipoDoVeiculo(), entregadorSalvo.getTipoDoVeiculo());
             assertEquals(entregadorPostPutRequestDTO.getCodigoDeAcesso(), entregadorSalvo.getCodigoDeAcesso());
-
         }
 
         @Test
@@ -175,7 +172,8 @@ public class EntregadorV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Nome do entregador nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Nome do entregador nao pode ser vazio"));
         }
 
         @Test
@@ -200,7 +198,8 @@ public class EntregadorV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Cor do veiculo nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Cor do veiculo nao pode ser vazio"));
         }
 
         @Test
@@ -225,7 +224,8 @@ public class EntregadorV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Placa do veiculo nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Placa do veiculo nao pode ser vazio"));
         }
 
         @Test
@@ -250,7 +250,8 @@ public class EntregadorV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Tipo de veiculo nao pode ser nulo", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Tipo de veiculo nao pode ser nulo"));
         }
 
         @Test
@@ -274,7 +275,8 @@ public class EntregadorV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-// todo colocar aqui e nos outros o getMessage erros de validacao encontrados
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
             assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
             assertTrue(error.getErrors().contains("Codigo de acesso do entregador nao pode ser vazio"));
         }
@@ -293,16 +295,14 @@ public class EntregadorV1ControllerTests {
                     .tipoDoVeiculo(CARRO)
                     .build();
 
-            String responseJsonString = driver.perform(put("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
+            driver.perform(put("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(entregadorPostPutRequestDTO)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            Entregador entregador1 = objectMapper.readValue(responseJsonString, Entregador.class);
-
-            Entregador entregadorSalvo = entregadorRepository.findById(entregador.getId()).orElse(null); //todo ver melhor esse teste
+            Entregador entregadorSalvo = entregadorRepository.findById(entregador.getId()).orElse(null);
 
             assertNotNull(entregadorSalvo);
             assertEquals(entregadorPostPutRequestDTO.getNome(), entregadorSalvo.getNome());
@@ -310,7 +310,6 @@ public class EntregadorV1ControllerTests {
             assertEquals(entregadorPostPutRequestDTO.getPlacaDoVeiculo(), entregadorSalvo.getPlacaDoVeiculo());
             assertEquals(entregadorPostPutRequestDTO.getTipoDoVeiculo(), entregadorSalvo.getTipoDoVeiculo());
             assertEquals(entregadorPostPutRequestDTO.getCodigoDeAcesso(), entregadorSalvo.getCodigoDeAcesso());
-
         }
 
         @Test
@@ -333,7 +332,8 @@ public class EntregadorV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Steve Jobs", entregadorRepository.findById(entregador.getId()).orElse(null).getNome()); //todo pegar todas as mensagens de erro aqui e onde tiver
+            assertEquals("Steve Jobs", entregadorRepository.findById(entregador.getId()).orElse(null).getNome());
+            assertEquals("Erros de validacao encontrados", error.getMessage());
             assertTrue(error.getErrors().contains("Nome do entregador nao pode ser vazio"));
             assertTrue(error.getErrors().contains("Tipo de veiculo nao pode ser nulo"));
         }
@@ -382,6 +382,56 @@ public class EntregadorV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             assertEquals("O entregador nao possui permissao para alterar dados de outro entregador", error.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando atualizo um entregador com código de acesso menor que 6 caracteres")
+        public void test05() throws Exception {
+            EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
+                    .codigoDeAcesso("12345")
+                    .nome("Steve Jobs")
+                    .corDoVeiculo("verde")
+                    .placaDoVeiculo("GHI1234")
+                    .tipoDoVeiculo(null)
+                    .build();
+
+            String responseJsonString = driver.perform(put("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(entregadorPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertFalse(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
+        }
+
+        @Test
+        @DisplayName("Quando atualizo um entregador com código de acesso nulo")
+        public void test06() throws Exception {
+            EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
+                    .codigoDeAcesso(null)
+                    .nome("Steve Jobs")
+                    .corDoVeiculo("verde")
+                    .placaDoVeiculo("GHI1234")
+                    .tipoDoVeiculo(MOTO)
+                    .build();
+
+            String responseJsonString = driver.perform(put("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(entregadorPostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertFalse(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso do entregador nao pode ser vazio"));
         }
     }
 
@@ -433,7 +483,6 @@ public class EntregadorV1ControllerTests {
         }
     }
 
-    //todo adicionar teste de estabelecimento excluindo entregador, ver como faz
-    //todo adicinar teste codigo de acesso menor/maior 6 caracteres (aqui, no estabelecimento completar e no cliente colocar)
+    // todo adicionar teste de estabelecimento excluindo entregador, ver como faz
 
 }

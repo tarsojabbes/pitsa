@@ -35,8 +35,4 @@ public class Entregador {
     @JsonProperty("codigoDeAcesso")
     private String codigoDeAcesso;
 
-//    @JsonProperty("estabelecimentosVinculados") todo verificar erros de testes, problema com o mappedBy que não tá em estabelecimento
-//    @OneToMany(mappedBy = "entregador", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-//    private List<Estabelecimento> estabelecimentosVinculados;
-
 }
