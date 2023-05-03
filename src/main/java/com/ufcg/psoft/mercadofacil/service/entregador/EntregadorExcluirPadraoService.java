@@ -16,7 +16,6 @@ public class EntregadorExcluirPadraoService implements EntregadorExcluirService 
     @Override
     public void excluir(Long id, String codigoDeAcesso) {
         Entregador entregador = entregadorRepository.findById(id).orElseThrow(EntregadorNaoExisteException::new);
-        // todo ver como permitir ao estabelecimento que remova um entregador, tb ver se a parte de o estabelecimento aprovar/recusar entregador é da us3 ou us4
 
         if (!entregador.getCodigoDeAcesso().equals(codigoDeAcesso)) {
             throw new EntregadorNaoAutorizadoException();

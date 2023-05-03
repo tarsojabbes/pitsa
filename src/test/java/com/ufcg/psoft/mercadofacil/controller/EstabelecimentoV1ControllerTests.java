@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -53,6 +54,7 @@ public class EstabelecimentoV1ControllerTests {
     public class GetEstabelecimentoTests {
 
         @Test
+        @Transactional
         @DisplayName("Quando busco todos os estabelecimentos salvos")
         public void test01() throws Exception {
             estabelecimentoRepository.save(
@@ -74,6 +76,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um estabelecimento existente pelo ID")
         public void test02() throws Exception {
             Estabelecimento estabelecimento = estabelecimentoRepository.save(
@@ -96,6 +99,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um estabelecimento inexistente pelo ID")
         public void test03() throws Exception {
             Long idInexistente = 4L;
@@ -113,6 +117,7 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     public class PostEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando crio um estabelecimento com dados válidos")
         public void test01() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -139,6 +144,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um estabelecimento com nome vazio")
         public void test02() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -161,6 +167,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um estabelecimento com código de acesso vazio")
         public void test03() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -187,6 +194,7 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     public class PutEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados válidos")
         public void test01() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -207,6 +215,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados inválidos")
         public void test02() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -228,6 +237,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com código de acesso menor que 6 caracteres")
         public void test03() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -250,6 +260,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com código de acesso nulo")
         public void test04() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -276,6 +287,7 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     public class DeleteEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
             driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
@@ -288,6 +300,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando excluo um estabelecimento não existente no banco pelo ID")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId() + 1)

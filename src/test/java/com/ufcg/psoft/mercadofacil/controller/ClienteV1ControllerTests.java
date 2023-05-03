@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -53,6 +54,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class GetClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando busco todos os clientes salvos")
         public void test01() throws Exception {
             clienteRepository.save(Cliente.builder()
@@ -73,6 +75,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um cliente existente pelo ID")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(get("/v1/clientes" + "/" + cliente.getId())
@@ -88,6 +91,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um cliente inexistente pelo ID")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(get("/v1/clientes" + "/" + cliente.getId() + 99)
@@ -104,6 +108,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class PostClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando crio um cliente com dados válidos")
         public void test01() throws Exception {
             clienteRepository.deleteAll();
@@ -132,6 +137,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com nome inválido")
         public void test02() throws Exception {
             clienteRepository.deleteAll();
@@ -156,6 +162,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com endereço inválido")
         public void test03() throws Exception {
             clienteRepository.deleteAll();
@@ -180,6 +187,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com código de acesso inválido")
         public void test04() throws Exception {
             clienteRepository.deleteAll();
@@ -205,6 +213,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com código de acesso nulo")
         public void test05() throws Exception {
             clienteRepository.deleteAll();
@@ -233,6 +242,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class PutClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando atualizo algum dado válido do cliente")
         public void test01() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -257,6 +267,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar algum dado inválido do cliente")
         public void test02() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -279,6 +290,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado de um cliente que não existe")
         public void test03() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -300,6 +312,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado passando credenciais erradas")
         public void test04() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -324,6 +337,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class DeleteClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando excluo um cliente existente no banco com credenciais corretas")
         public void test01() throws Exception {
             driver.perform(delete("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
@@ -337,6 +351,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um cliente que não existe no banco")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/clientes" + "/" + (cliente.getId() + 99) + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
@@ -353,6 +368,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um cliente existente com credenciais erradas")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=codigoIncorreto")

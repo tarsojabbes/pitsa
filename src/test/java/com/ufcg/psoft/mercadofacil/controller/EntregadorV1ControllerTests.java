@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.dto.EntregadorPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,10 +61,11 @@ public class EntregadorV1ControllerTests {
     @Nested
     public class GetEntregadorTests {
         @Test
+        @Transactional
         @DisplayName("Quando busco todos os entregadores salvos")
         public void test01() throws Exception {
             EntregadorGetResponseDTO entregador1 = modelMapper.map(entregador, EntregadorGetResponseDTO.class);
-            EntregadorGetResponseDTO entregador2 = modelMapper.map(entregadorRepository.save(Entregador.builder() // todo perguntar se posso usar modelmapper aqui
+            EntregadorGetResponseDTO entregador2 = modelMapper.map(entregadorRepository.save(Entregador.builder()
                             .codigoDeAcesso("123456")
                             .nome("Bill Gates")
                             .corDoVeiculo("vermelho")
@@ -86,6 +88,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um entregador existente pelo ID")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(get("/v1/entregadores" + "/" + entregador.getId())
@@ -103,6 +106,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um entregador inexistente pelo ID")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(get("/v1/entregadores" + "/" + entregador.getId() + 99)
@@ -119,6 +123,7 @@ public class EntregadorV1ControllerTests {
     @Nested
     public class PostEntregadorTests {
         @Test
+        @Transactional
         @DisplayName("Quando crio um entregador com dados válidos")
         public void test01() throws Exception {
             entregadorRepository.deleteAll();
@@ -151,6 +156,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um entregador com nome inválido")
         public void test02() throws Exception {
             entregadorRepository.deleteAll();
@@ -177,6 +183,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um entregador com cor do veículo inválido")
         public void test03() throws Exception {
             entregadorRepository.deleteAll();
@@ -203,6 +210,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um entregador com placa do veículo inválido")
         public void test04() throws Exception {
             entregadorRepository.deleteAll();
@@ -229,6 +237,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um entregador com tipo do veículo inválido")
         public void test05() throws Exception {
             entregadorRepository.deleteAll();
@@ -255,6 +264,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um entregador com código de acesso inválido")
         public void test06() throws Exception {
             entregadorRepository.deleteAll();
@@ -285,6 +295,7 @@ public class EntregadorV1ControllerTests {
     @Nested
     public class PutEntregadorTests {
         @Test
+        @Transactional
         @DisplayName("Quando atualizo algum dado válido do entregador")
         public void test01() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -313,6 +324,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar algum dado inválido do entregador")
         public void test02() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -339,6 +351,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado de um entregador que não existe")
         public void test03() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -362,6 +375,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado passando credenciais erradas")
         public void test04() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -385,6 +399,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um entregador com código de acesso menor que 6 caracteres")
         public void test05() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -410,6 +425,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um entregador com código de acesso nulo")
         public void test06() throws Exception {
             EntregadorPostPutRequestDTO entregadorPostPutRequestDTO = EntregadorPostPutRequestDTO.builder()
@@ -438,6 +454,7 @@ public class EntregadorV1ControllerTests {
     @Nested
     public class DeleteEntregadorTests {
         @Test
+        @Transactional
         @DisplayName("Quando excluo um entregador existente no banco com credenciais corretas")
         public void test01() throws Exception {
             driver.perform(delete("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
@@ -451,6 +468,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um entregador que não existe no banco")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/entregadores" + "/" + (entregador.getId() + 99) + "?codigoDeAcesso=" + entregador.getCodigoDeAcesso())
@@ -467,6 +485,7 @@ public class EntregadorV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um entregador existente com credenciais erradas")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/entregadores" + "/" + entregador.getId() + "?codigoDeAcesso=codigoIncorreto")
