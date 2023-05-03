@@ -502,6 +502,4 @@ public class EntregadorV1ControllerTests {
         }
     }
 
-    // todo adicionar teste de estabelecimento excluindo entregador, ver como faz
-
 }

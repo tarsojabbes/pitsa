@@ -74,8 +74,8 @@ public class EntregadorV1Controller {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluirEntregador(
             @PathVariable Long id,
-            @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso
-    ) {// todo ver como permitir que o estabelecimento faça isso tbm
+            @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso
+    ) {
         entregadorExcluirService.excluir(id, codigoDeAcesso);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
