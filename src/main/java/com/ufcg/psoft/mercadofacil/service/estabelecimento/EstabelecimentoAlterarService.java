@@ -5,5 +5,5 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 
 @FunctionalInterface
 public interface EstabelecimentoAlterarService {
-    public Estabelecimento alterar(Long id, EstabelecimentoPostPutRequestDTO estabelecimentoPostPutRequestDTO);
+    Estabelecimento alterar(Long id, EstabelecimentoPostPutRequestDTO estabelecimentoPostPutRequestDTO);
 }

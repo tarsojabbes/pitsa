@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,15 +16,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,6 +54,7 @@ public class EstabelecimentoV1ControllerTests {
     public class GetEstabelecimentoTests {
 
         @Test
+        @Transactional
         @DisplayName("Quando busco todos os estabelecimentos salvos")
         public void test01() throws Exception {
             estabelecimentoRepository.save(
@@ -66,18 +64,19 @@ public class EstabelecimentoV1ControllerTests {
                             .build());
 
             String responseJsonString = driver.perform(get("/v1/estabelecimentos")
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {});
+            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {
+            });
 
             assertEquals(2, resultado.size());
-
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um estabelecimento existente pelo ID")
         public void test02() throws Exception {
             Estabelecimento estabelecimento = estabelecimentoRepository.save(
@@ -100,6 +99,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um estabelecimento inexistente pelo ID")
         public void test03() throws Exception {
             Long idInexistente = 4L;
@@ -111,13 +111,13 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn();
 
             assertTrue(result.getResolvedException() instanceof MercadoFacilException);
-
         }
     }
 
     @Nested
     public class PostEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando crio um estabelecimento com dados válidos")
         public void test01() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -144,6 +144,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um estabelecimento com nome vazio")
         public void test02() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -161,11 +162,12 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Nome nao pode ser vazio", error.getErrors().get(0));
-
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Nome nao pode ser vazio"));
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um estabelecimento com código de acesso vazio")
         public void test03() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -183,14 +185,16 @@ public class EstabelecimentoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
-
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
     }
 
     @Nested
     public class PutEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados válidos")
         public void test01() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -211,6 +215,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados inválidos")
         public void test02() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
@@ -226,11 +231,14 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            assertEquals("Codigo de acesso nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
 
         @Test
-        @DisplayName("Quando atualizo um estabelecimento com códgio de acesso menor que 6 caracteres")
+        @Transactional
+        @DisplayName("Quando atualizo um estabelecimento com código de acesso menor que 6 caracteres")
         public void test03() throws Exception {
             EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
                     .nome("Nome novo")
@@ -245,7 +253,33 @@ public class EstabelecimentoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertFalse(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando atualizo um estabelecimento com código de acesso nulo")
+        public void test04() throws Exception {
+            EstabelecimentoPostPutRequestDTO requestDto = EstabelecimentoPostPutRequestDTO.builder()
+                    .nome("Nome novo")
+                    .codigoDeAcesso(null)
+                    .build();
+
+            String responseJsonString = driver.perform(put("/v1/estabelecimentos/" + estabelecimento.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestDto)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertFalse(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
         }
 
     }
@@ -253,9 +287,10 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     public class DeleteEstabelecimentoTests {
         @Test
+        @Transactional
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
-            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
+            driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
                     .andDo(print())
@@ -265,6 +300,7 @@ public class EstabelecimentoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando excluo um estabelecimento não existente no banco pelo ID")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId() + 1)

@@ -1,7 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.estabelecimento;
 
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EstabelecimentoAlterarPadraoService implements EstabelecimentoAlterarService {
+
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
@@ -23,4 +23,5 @@ public class EstabelecimentoAlterarPadraoService implements EstabelecimentoAlter
        modelMapper.map(estabelecimentoPostPutRequestDTO, estabelecimento);
        return estabelecimentoRepository.save(estabelecimento);
     }
+
 }

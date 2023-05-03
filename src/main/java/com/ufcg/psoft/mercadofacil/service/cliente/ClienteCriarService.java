@@ -5,5 +5,5 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 
 @FunctionalInterface
 public interface ClienteCriarService {
-    public Cliente criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
+    Cliente criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
 }

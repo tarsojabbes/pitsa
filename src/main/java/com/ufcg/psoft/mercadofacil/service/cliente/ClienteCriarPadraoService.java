@@ -15,9 +15,11 @@ public class ClienteCriarPadraoService implements ClienteCriarService {
 
     @Autowired
     ModelMapper modelMapper;
+
     @Override
     public Cliente criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
         return clienteRepository.save(cliente);
     }
+
 }

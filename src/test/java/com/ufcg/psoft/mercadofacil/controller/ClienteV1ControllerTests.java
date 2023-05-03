@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,10 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,6 +54,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class GetClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando busco todos os clientes salvos")
         public void test01() throws Exception {
             clienteRepository.save(Cliente.builder()
@@ -76,6 +75,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um cliente existente pelo ID")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(get("/v1/clientes" + "/" + cliente.getId())
@@ -91,6 +91,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando busco um cliente inexistente pelo ID")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(get("/v1/clientes" + "/" + cliente.getId() + 99)
@@ -107,6 +108,7 @@ public class ClienteV1ControllerTests {
     @Nested
     public class PostClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando crio um cliente com dados válidos")
         public void test01() throws Exception {
             clienteRepository.deleteAll();
@@ -132,10 +134,10 @@ public class ClienteV1ControllerTests {
             assertEquals(clientePostPutRequestDTO.getNome(), clienteSalvo.getNome());
             assertEquals(clientePostPutRequestDTO.getEndereco(), clienteSalvo.getEndereco());
             assertEquals(clientePostPutRequestDTO.getCodigoDeAcesso(), clienteSalvo.getCodigoDeAcesso());
-
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com nome inválido")
         public void test02() throws Exception {
             clienteRepository.deleteAll();
@@ -155,10 +157,12 @@ public class ClienteV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Nome do cliente nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Nome do cliente nao pode ser vazio"));
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com endereço inválido")
         public void test03() throws Exception {
             clienteRepository.deleteAll();
@@ -178,10 +182,12 @@ public class ClienteV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Endereco do cliente nao pode ser vazio", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Endereco do cliente nao pode ser vazio"));
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento criar um cliente com código de acesso inválido")
         public void test04() throws Exception {
             clienteRepository.deleteAll();
@@ -201,13 +207,42 @@ public class ClienteV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
-            assertEquals("Codigo de acesso deve ter tamanho minimo de 6 digitos", error.getErrors().get(0));
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertTrue(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertFalse(error.getErrors().contains("Codigo de acesso nao pode ser vazio"));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento criar um cliente com código de acesso nulo")
+        public void test05() throws Exception {
+            clienteRepository.deleteAll();
+
+            ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
+                    .nome("Cliente C")
+                    .endereco("Rua C, 345")
+                    .codigoDeAcesso(null)
+                    .build();
+
+            String responseJsonString = driver.perform(post("/v1/clientes")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Erros de validacao encontrados", error.getMessage());
+            assertFalse(error.getErrors().contains("Codigo de acesso deve ter tamanho minimo de 6 digitos"));
+            assertTrue(error.getErrors().contains("Codigo de acesso do cliente nao pode ser vazio"));
         }
     }
 
     @Nested
     public class PutClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando atualizo algum dado válido do cliente")
         public void test01() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -216,14 +251,12 @@ public class ClienteV1ControllerTests {
                     .codigoDeAcesso("123456")
                     .build();
 
-            String responseJsonString = driver.perform(put("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+            driver.perform(put("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
-
-            Cliente cliente1 = objectMapper.readValue(responseJsonString, Cliente.class);
 
             Cliente clienteSalvo = clienteRepository.findById(cliente.getId()).orElse(null);
 
@@ -231,10 +264,10 @@ public class ClienteV1ControllerTests {
             assertEquals(clientePostPutRequestDTO.getNome(), clienteSalvo.getNome());
             assertEquals(clientePostPutRequestDTO.getEndereco(), clienteSalvo.getEndereco());
             assertEquals(clientePostPutRequestDTO.getCodigoDeAcesso(), clienteSalvo.getCodigoDeAcesso());
-
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar algum dado inválido do cliente")
         public void test02() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -257,6 +290,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado de um cliente que não existe")
         public void test03() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -278,6 +312,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento atualizar um dado passando credenciais erradas")
         public void test04() throws Exception {
             ClientePostPutRequestDTO clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
@@ -302,9 +337,10 @@ public class ClienteV1ControllerTests {
     @Nested
     public class DeleteClienteTests {
         @Test
+        @Transactional
         @DisplayName("Quando excluo um cliente existente no banco com credenciais corretas")
         public void test01() throws Exception {
-            String responseJsonString = driver.perform(delete("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+            driver.perform(delete("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
                     .andDo(print())
@@ -315,6 +351,7 @@ public class ClienteV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um cliente que não existe no banco")
         public void test02() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/clientes" + "/" + (cliente.getId() + 99) + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
@@ -328,11 +365,10 @@ public class ClienteV1ControllerTests {
             assertEquals("O cliente consultado nao existe!", error.getMessage());
             assertEquals(1, clienteRepository.findAll().size());
             assertTrue(clienteRepository.findAll().contains(cliente));
-
-
         }
 
         @Test
+        @Transactional
         @DisplayName("Quando tento excluir um cliente existente com credenciais erradas")
         public void test03() throws Exception {
             String responseJsonString = driver.perform(delete("/v1/clientes" + "/" + cliente.getId() + "?codigoDeAcesso=codigoIncorreto")
