@@ -1,7 +1,9 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoCriarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoListarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoExcluirService;
@@ -32,6 +34,9 @@ public class EstabelecimentoV1Controller {
 
     @Autowired
     EstabelecimentoExcluirService estabelecimentoExcluirService;
+
+    @Autowired
+    AssociacaoService associacaoService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Estabelecimento> buscarEstabelecimento(@PathVariable Long id) {
@@ -64,5 +69,22 @@ public class EstabelecimentoV1Controller {
     ) {
         estabelecimentoExcluirService.excluir(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
+    }
+
+    @PostMapping("/associar_entregador")
+    public ResponseEntity<Void> associarEntregador(@PathVariable Long entregadorId,
+                                                   @PathVariable Long estabelecimentoId,
+                                                   @PathVariable String codigoAcessoEstabelecimento,
+                                                   @RequestBody boolean status
+    ) {
+        // Lógica para associar um entregador a um estabelecimento
+        Associacao associacao = associacaoService.buscarAssociacao(entregadorId, estabelecimentoId, codigoAcessoEstabelecimento);
+        if (status){
+            associacaoService.aceitarAssociacao(associacao.getId());
+        } else{
+            associacaoService.recusarAssociacao(associacao.getId());
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
