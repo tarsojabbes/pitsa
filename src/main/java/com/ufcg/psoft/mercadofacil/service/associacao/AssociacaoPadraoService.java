@@ -6,8 +6,6 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.service.entregador.EntregadorValidarCodigoDeAcessoService;
-import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoValidarCodigoAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,23 +24,18 @@ public class AssociacaoPadraoService implements AssociacaoService{
     @Autowired
     private EstabelecimentoRepository estabelecimentoRepository;
 
-    @Autowired
-    private EntregadorValidarCodigoDeAcessoService entregadorValidarService;
-
-    @Autowired
-    private EstabelecimentoValidarCodigoAcessoService estabelecimentoValidarCodigoAcessoService;
-
-
     @Override
-    public void associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEstabelecimento) {
+    public void associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador) {
         Estabelecimento estabelecimento = estabelecimentoRepository.getById(estabelecimentoId);
         Entregador entregador = entregadorRepository.getById(entregadorId);
 
-        if (entregadorValidarService.validarCodigoDeAcesso(entregador, codigoAcessoEstabelecimento)){
-            Associacao associacao = new Associacao();
-            associacao.setEntregador(entregador);
-            associacao.setEstabelecimento(estabelecimento);
-            associacao.setStatusAssociacao(false);
+        if (entregador.getCodigoDeAcesso().equals(codigoAcessoEntregador)){
+            Associacao associacao = Associacao.builder()
+                    .entregador(entregador)
+                    .estabelecimento(estabelecimento)
+                    .statusAssociacao(false)
+                    .build();
+
             associacaoRepository.save(associacao);
         }
     }
@@ -66,14 +59,8 @@ public class AssociacaoPadraoService implements AssociacaoService{
     public Associacao buscarAssociacao(Long entregadorId, Long estabelecimentoId, String codigoAcessoEstabelecimento) {
         Estabelecimento estabelecimento = estabelecimentoRepository.getById(estabelecimentoId);
 
-        if (estabelecimentoValidarCodigoAcessoService.validarCodigoDeAcesso(estabelecimento, codigoAcessoEstabelecimento)){
-
-            List<Associacao> associacoes = estabelecimento.getAssociacoes();
-            for (Associacao associacao : associacoes) {
-                if (associacao.getEntregador().getId().equals(entregadorId)){
-                    return associacao;
-                }
-            }
+        if (estabelecimento.getCodigoDeAcesso().equals(codigoAcessoEstabelecimento)){
+            return associacaoRepository.findByEntregadorIdAndEstabelecimentoId(entregadorId, estabelecimentoId);
         }
 
         return null;
