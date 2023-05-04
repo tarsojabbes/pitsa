@@ -39,6 +39,7 @@ public class Entregador {
     private String codigoDeAcesso;
 
 
+    // Acho que deveria ser um Set, não uma lista.
     @OneToMany(mappedBy = "entregador")
     private List<Associacao> associacoes = new ArrayList<>();
 }

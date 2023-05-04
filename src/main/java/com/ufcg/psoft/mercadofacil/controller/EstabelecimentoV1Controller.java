@@ -71,6 +71,16 @@ public class EstabelecimentoV1Controller {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
     }
 
+
+    // ---- Miguel:
+    // Acho que deveria dividir essa requisição em 3:
+    // Um post, para criar a associação, mas isso no controller de Entregador (pois cria a associaçção).
+    //      Receberia o id do Entregador e o id do Estabelecimento
+    // Um patch (talvez) para aceitar o entregador ( pois altera uma associação)
+    //      Talvez chamar de aceitar associação
+    //      Receberia apenas o id da associação
+    // um delete para recusar o entragor (pois excluí a associação)
+    //      Receberia apenas o id da associação
     @PostMapping("/associar_entregador")
     public ResponseEntity<Void> associarEntregador(@PathVariable Long entregadorId,
                                                    @PathVariable Long estabelecimentoId,
