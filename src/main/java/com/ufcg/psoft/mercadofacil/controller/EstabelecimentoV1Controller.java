@@ -81,20 +81,43 @@ public class EstabelecimentoV1Controller {
     //      Receberia apenas o id da associação
     // um delete para recusar o entragor (pois excluí a associação)
     //      Receberia apenas o id da associação
-    @PostMapping("/associar_entregador")
-    public ResponseEntity<Void> associarEntregador(@PathVariable Long entregadorId,
-                                                   @PathVariable Long estabelecimentoId,
-                                                   @PathVariable String codigoAcessoEstabelecimento,
-                                                   @RequestBody boolean status
-    ) {
-        // Lógica para associar um entregador a um estabelecimento
-        Associacao associacao = associacaoService.buscarAssociacao(entregadorId, estabelecimentoId, codigoAcessoEstabelecimento);
-        if (status){
-            associacaoService.aceitarAssociacao(associacao.getId());
-        } else{
-            associacaoService.recusarAssociacao(associacao.getId());
-        }
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    @PostMapping("/associar_entregador")
+//    public ResponseEntity<Void> associarEntregador(@PathVariable Long entregadorId,
+//                                                   @PathVariable Long estabelecimentoId,
+//                                                   @PathVariable String codigoAcessoEstabelecimento,
+//                                                   @RequestBody boolean status
+//    ) {
+//        // Lógica para associar um entregador a um estabelecimento
+//        Associacao associacao = associacaoService.buscarAssociacao(entregadorId, estabelecimentoId, codigoAcessoEstabelecimento);
+//        if (status){
+//            associacaoService.aceitarAssociacao(associacao.getId());
+//        } else{
+//            associacaoService.recusarAssociacao(associacao.getId());
+//        }
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
+
+
+    // ---- Devemos receber o codigo de acesso do estabelecimento através do body ou do path?
+    @PatchMapping("/aceitar_entregador/{associacaoId}")
+    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
+                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
+        // ----> Verificar se o código de acesso está correto <----
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(associacaoService.aceitarAssociacao(associacaoId));
     }
+
+    @DeleteMapping("/rejeitar_entregador/{associacaoId}")
+    public ResponseEntity<?> rejeitarEntregador(@PathVariable Long associacaoId,
+                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
+        // ----> Verificar se o código de acesso está correto <----
+        associacaoService.recusarAssociacao(associacaoId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("");
+    }
+
 }
