@@ -246,7 +246,7 @@ public class SaborServiceTests {
         public void testListaTodosSabores() {
 
             List<Sabor> saborList = saborListarService.listar(null);
-            assertEquals(2, saborList.size());
+            assertEquals(1, saborList.size());
 
             Sabor novoSabor = saborRepository.save(Sabor.builder()
                 .nomeSabor("Margherita")
@@ -276,7 +276,7 @@ public class SaborServiceTests {
             List<Sabor> saborList = saborListarService.listar(novoSabor.getId());
 
             assertEquals("Margherita", saborList.get(0).getNomeSabor());
-            assertEquals("Salgada", saborList.get(0).getTipoSabor());
+            assertEquals("Salgado", saborList.get(0).getTipoSabor());
             assertEquals(45.00, saborList.get(0).getPrecoMedio());
             assertEquals(55.00, saborList.get(0).getPrecoGrande());
         }

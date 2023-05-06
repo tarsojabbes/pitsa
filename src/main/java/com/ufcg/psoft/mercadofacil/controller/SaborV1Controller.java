@@ -22,7 +22,6 @@ import java.util.List;
         value = "/v1/sabores",
         produces = MediaType.APPLICATION_JSON_VALUE
 )
-
 public class SaborV1Controller {
 
     @Autowired

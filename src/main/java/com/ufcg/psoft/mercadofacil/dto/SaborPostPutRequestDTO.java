@@ -19,25 +19,25 @@ import lombok.NoArgsConstructor;
 public class SaborPostPutRequestDTO {
     
     @JsonProperty("nomeSabor")
-    @NotBlank(message = "Nome do sabor não pode estar em branco.")
-    @NotNull(message = "Nome do sabor não pode ser null.")
-    @NotEmpty(message = "Nome do sabor não pode ser vazio.")
+    @NotBlank(message = "Nome do sabor nao pode estar em branco.")
+    @NotNull(message = "Nome do sabor nao pode ser null.")
+    @NotEmpty(message = "Nome do sabor nao pode ser vazio.")
     private String nomeSabor;
 
     @JsonProperty("tipoSabor")
-    @NotBlank(message = "Tipo de sabor não pode estar em branco.")
-    @NotNull(message = "Tipo de sabor não pode ser null.")
-    @NotEmpty(message = "Tipo de sabor não pode ser vazio.")
+    @NotBlank(message = "Tipo de sabor nao pode estar em branco.")
+    @NotNull(message = "Tipo de sabor nao pode ser null.")
+    @NotEmpty(message = "Tipo de sabor nao pode ser vazio.")
     private String tipoSabor;
 
     @JsonProperty("precoMedio")
-    @NotNull(message = "Preço não pode ser null.")
-    @Positive(message = "Preço deve ser maior que zero.")
+    @NotNull(message = "Preco nao pode ser null.")
+    @Positive(message = "Preco deve ser maior que zero.")
     private Double precoMedio;
 
     @JsonProperty("precoGrande")
-    @NotNull(message = "Preço não pode ser null.")
-    @Positive(message = "Preço deve ser maior que zero.")
+    @NotNull(message = "Preco nao pode ser null.")
+    @Positive(message = "Preco deve ser maior que zero.")
     private Double precoGrande;
     
 }

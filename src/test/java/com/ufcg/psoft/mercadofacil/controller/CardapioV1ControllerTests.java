@@ -10,22 +10,22 @@ import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("Testes do controlador de Sabors")
+@DisplayName("Testes do controlador de Sabores")
 public class CardapioV1ControllerTests {
 
     @Autowired
@@ -59,15 +59,15 @@ public class CardapioV1ControllerTests {
     @DisplayName("Testa o cardápio completo")
     public void testCardapioCompleto() throws Exception {
 
-        saborRepository.save(
+        Sabor novoSabor = saborRepository.save(
                 Sabor.builder()
                     .nomeSabor("Margherita")
                     .tipoSabor("Salgado")
                     .precoMedio(45.00)
                     .precoGrande(55.00)
-                    .build());
+                .build());
 
-        String responseJsonString = driver.perform(get("/v1/cardapioCompleto")
+        String responseJsonString = driver.perform(get("/v1/cardapio"+"/completo")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -76,6 +76,8 @@ public class CardapioV1ControllerTests {
         List<Sabor> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Sabor>>() {});
 
         assertEquals(2, resultado.size());
+        assertEquals(sabor, resultado.get(0));
+        assertEquals(novoSabor, resultado.get(1));
     }
 
     @Test
@@ -88,7 +90,7 @@ public class CardapioV1ControllerTests {
                 .tipoSabor("Salgado")
                 .precoMedio(45.00)
                 .precoGrande(55.00)
-                .build());
+            .build());
 
         saborRepository.save(
             Sabor.builder()
@@ -98,7 +100,7 @@ public class CardapioV1ControllerTests {
                 .precoGrande(60.00)
                 .build());
 
-        String responseJsonString = driver.perform(get("/v1/cardapioSalgado")
+        String responseJsonString = driver.perform(get("/v1/cardapio" + "/salgados")
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andDo(print())
@@ -108,7 +110,7 @@ public class CardapioV1ControllerTests {
 
         assertEquals(2, resultado.size());
     }
-
+    
     @Test
     @DisplayName("Produz o cardápio de pizzas doces")
     public void testCardapioDoces() throws Exception{
@@ -129,7 +131,7 @@ public class CardapioV1ControllerTests {
                 .precoGrande(60.00)
                 .build());
 
-            String responseJsonString = driver.perform(get("/v1/cardapioDoces")
+            String responseJsonString = driver.perform(get("/v1/cardapio"+"/doces")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andDo(print())

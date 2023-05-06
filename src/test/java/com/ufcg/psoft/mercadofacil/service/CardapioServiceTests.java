@@ -80,10 +80,10 @@ public class CardapioServiceTests {
     @DisplayName("Requisição de cardápio de sabores salgados")
     public void testCardapioSalgados(){
 
-        List<Sabor> cardapio = cardapioService.cardapioSaboresSalgados();
+        List<Sabor> cardapioSalgado = cardapioService.cardapioSaboresSalgados();
 
-        assertEquals(1, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
+        assertEquals(1, cardapioSalgado.size());
+        assertEquals(sabor, cardapioSalgado.get(0));
 
         Sabor margherita = Sabor.builder()
             .nomeSabor("Margherita")
@@ -93,11 +93,11 @@ public class CardapioServiceTests {
             .build();
 
         saborRepository.save(margherita);
-        cardapio = cardapioService.cardapioSaboresSalgados();
+        cardapioSalgado = cardapioService.cardapioSaboresSalgados();
 
-        assertEquals(2, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
+        assertEquals(2, cardapioSalgado.size());
+        assertEquals(sabor, cardapioSalgado.get(0));
+        assertEquals(margherita, cardapioSalgado.get(1));
 
         Sabor cartola = Sabor.builder()
             .nomeSabor("Cartola")
@@ -107,11 +107,11 @@ public class CardapioServiceTests {
             .build();
 
         saborRepository.save(cartola);
-        cardapio = cardapioService.cardapioSaboresSalgados();
+        cardapioSalgado = cardapioService.cardapioSaboresSalgados();
 
-        assertEquals(2, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
+        assertEquals(2, cardapioSalgado.size());
+        assertEquals(sabor, cardapioSalgado.get(0));
+        assertEquals(margherita, cardapioSalgado.get(1));
         assertEquals(3,saborRepository.findAll().size());
 
     }
@@ -120,9 +120,9 @@ public class CardapioServiceTests {
     @DisplayName("Requisição de cardápio de sabores doces")
     public void testCardapioDoces(){
 
-        List<Sabor> cardapio = cardapioService.cardapioSaboresDoces();
+        List<Sabor> cardapioDoce = cardapioService.cardapioSaboresDoces();
 
-        assertEquals(0, cardapio.size());
+        assertEquals(0, cardapioDoce.size());
 
         Sabor margherita = Sabor.builder()
             .nomeSabor("Margherita")
@@ -132,11 +132,9 @@ public class CardapioServiceTests {
             .build();
 
         saborRepository.save(margherita);
-        cardapio = cardapioService.cardapioSaboresDoces();
+        cardapioDoce = cardapioService.cardapioSaboresDoces();
 
-        assertEquals(0, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
+        assertEquals(0, cardapioDoce.size());
 
         Sabor cartola = Sabor.builder()
             .nomeSabor("Cartola")
@@ -146,10 +144,10 @@ public class CardapioServiceTests {
             .build();
 
         saborRepository.save(cartola);
-        cardapio = cardapioService.cardapioSaboresDoces();
+        cardapioDoce = cardapioService.cardapioSaboresDoces();
 
-        assertEquals(1, cardapio.size());
-        assertEquals(cartola, cardapio.get(2));
+        assertEquals(1, cardapioDoce.size());
+        assertEquals(cartola, cardapioDoce.get(0));
         assertEquals(3,saborRepository.findAll().size());
 
     }
