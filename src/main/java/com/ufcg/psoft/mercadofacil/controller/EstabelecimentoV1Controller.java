@@ -100,15 +100,15 @@ public class EstabelecimentoV1Controller {
 //    }
 
 
-    // ---- Devemos receber o codigo de acesso do estabelecimento através do body ou do path?
-    @PatchMapping("/aceitar_entregador/{associacaoId}")
-    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
-                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
-        // ----> Verificar se o código de acesso está correto <----
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(associacaoService.aceitarAssociacao(associacaoId));
-    }
+//     ---- Devemos receber o codigo de acesso do estabelecimento através do body ou do path?
+//    @PatchMapping("/aceitar_entregador/{associacaoId}")
+//    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
+//                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
+//
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(associacaoService.aceitarAssociacao(associacaoId));
+//    }
 
     @DeleteMapping("/rejeitar_entregador/{associacaoId}")
     public ResponseEntity<?> rejeitarEntregador(@PathVariable Long associacaoId,

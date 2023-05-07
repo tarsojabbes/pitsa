@@ -1,5 +1,7 @@
 package com.ufcg.psoft.mercadofacil.service.associacao;
 
+import com.ufcg.psoft.mercadofacil.exception.EntregadorNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
@@ -25,10 +27,9 @@ public class AssociacaoPadraoService implements AssociacaoService{
     private EstabelecimentoRepository estabelecimentoRepository;
 
     @Override
-    public void associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.getById(estabelecimentoId);
-        Entregador entregador = entregadorRepository.getById(entregadorId);
-
+    public Associacao associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador) {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId).orElseThrow(EstabelecimentoNaoExisteException::new);
+        Entregador entregador = entregadorRepository.findById(entregadorId).orElseThrow(EntregadorNaoExisteException::new);
         if (entregador.getCodigoDeAcesso().equals(codigoAcessoEntregador)){
             Associacao associacao = Associacao.builder()
                     .entregador(entregador)
@@ -36,8 +37,9 @@ public class AssociacaoPadraoService implements AssociacaoService{
                     .statusAssociacao(false)
                     .build();
 
-            associacaoRepository.save(associacao);
+            return associacaoRepository.save(associacao);
         }
+        return null;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class AssociacaoPadraoService implements AssociacaoService{
 
     @Override
     public Associacao buscarAssociacao(Long entregadorId, Long estabelecimentoId, String codigoAcessoEstabelecimento) {
-        Estabelecimento estabelecimento = estabelecimentoRepository.getById(estabelecimentoId);
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId).orElseThrow(EstabelecimentoNaoExisteException::new);
 
         if (estabelecimento.getCodigoDeAcesso().equals(codigoAcessoEstabelecimento)){
             return associacaoRepository.findByEntregadorIdAndEstabelecimentoId(entregadorId, estabelecimentoId);

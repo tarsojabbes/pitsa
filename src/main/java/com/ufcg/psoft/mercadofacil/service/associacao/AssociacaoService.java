@@ -6,7 +6,7 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 
 
 public interface AssociacaoService {
-    public void associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEstabelecimento);
+    public Associacao associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador);
 
     public void aceitarAssociacao(Long id);
 
