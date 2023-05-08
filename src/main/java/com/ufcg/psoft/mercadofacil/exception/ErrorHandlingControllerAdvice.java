@@ -29,7 +29,7 @@ public class ErrorHandlingControllerAdvice {
     @ResponseBody
     public CustomErrorType onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         CustomErrorType customErrorType = defaultCustomErrorTypeConstruct(
-                "Erros de validação encontrados"
+                "Erros de validacao encontrados"
         );
         for(FieldError fieldError: e.getBindingResult().getFieldErrors()) {
             customErrorType.getErrors().add(fieldError.getDefaultMessage());
@@ -42,7 +42,7 @@ public class ErrorHandlingControllerAdvice {
     @ResponseBody
     public CustomErrorType onConstraintViolation(ConstraintViolationException e) {
         CustomErrorType customErrorType = defaultCustomErrorTypeConstruct(
-                "Erros de validação encontrados"
+                "Erros de validacao encontrados"
         );
         for(ConstraintViolation<?> violation: e.getConstraintViolations()) {
             customErrorType.getErrors().add(violation.getMessage());
