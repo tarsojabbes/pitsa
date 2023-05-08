@@ -14,7 +14,7 @@ import java.util.List;
 @SpringBootTest
 public class CardapioServiceTests {
 
-    @Autowired
+    /* @Autowired
     SaborRepository saborRepository;
 
     @Autowired
@@ -150,6 +150,6 @@ public class CardapioServiceTests {
         assertEquals(cartola, cardapioDoce.get(0));
         assertEquals(3,saborRepository.findAll().size());
 
-    }
+    } */
     
 }

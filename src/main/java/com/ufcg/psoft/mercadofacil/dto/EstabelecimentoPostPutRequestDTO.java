@@ -22,4 +22,5 @@ public class EstabelecimentoPostPutRequestDTO {
     @JsonProperty("nome")
     @NotBlank(message = "Nome nao pode ser vazio")
     private String nome;
+
 }

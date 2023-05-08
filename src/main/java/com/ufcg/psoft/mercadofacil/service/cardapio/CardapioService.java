@@ -3,8 +3,8 @@ package com.ufcg.psoft.mercadofacil.service.cardapio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ufcg.psoft.mercadofacil.controller.SaborV1Controller;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborListarService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,21 +13,19 @@ import java.util.List;
 public class CardapioService {
     
     @Autowired
-    SaborV1Controller saborV1Controller;
+    SaborListarService saborListarService;
 
-    public List<Sabor> cardapioCompleto(){
-
-        return getSabores();
-
+    public List<Sabor> cardapioCompleto(Long idEstabelecimento){
+        return saborListarService.listar(null, idEstabelecimento);
     }
 
-    public List<Sabor> cardapioSaboresSalgados(){
+    public List<Sabor> cardapioSaboresSalgados(Long idEstabelecimento){
 
-        List<Sabor> cardapioCompleto = cardapioCompleto();
+        List<Sabor> cardapioCompleto = cardapioCompleto(idEstabelecimento);
         List<Sabor> saboresSalgados = new ArrayList<>();
 
         for (Sabor s:cardapioCompleto){
-            if (s.getTipoSabor().toLowerCase().contains("salgad")){
+            if (s.getTipoSabor().toLowerCase().contains("salgado")){
                 saboresSalgados.add(s);
             }
         }
@@ -35,9 +33,9 @@ public class CardapioService {
         return saboresSalgados;
     }
 
-    public List<Sabor> cardapioSaboresDoces(){
+    public List<Sabor> cardapioSaboresDoces(Long idEstabelecimento){
         
-        List<Sabor> cardapioCompleto = cardapioCompleto();
+        List<Sabor> cardapioCompleto = cardapioCompleto(idEstabelecimento);
         List<Sabor> saboresDoces = new ArrayList<>();
 
         for (Sabor s:cardapioCompleto){
@@ -48,12 +46,6 @@ public class CardapioService {
 
         return saboresDoces;
 
-    }
-
-    private List<Sabor> getSabores(){
-
-        return saborV1Controller.buscarTodosSabores().getBody();
-        
     }
 
 }

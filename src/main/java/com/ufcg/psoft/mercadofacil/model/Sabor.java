@@ -1,5 +1,6 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -14,14 +15,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Sabores de pizza")
-
+@Table(name = "sabor")
 public class Sabor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    
+
     @JsonProperty("nomeSabor")
     private String nomeSabor;
 
@@ -33,5 +33,9 @@ public class Sabor {
 
     @JsonProperty("precoGrande")
     private Double precoGrande;
+
+    @ManyToOne()
+    @JoinColumn(name = "id_estabelecimento", nullable = false)
+    private Estabelecimento estabelecimento;
 
 }

@@ -39,35 +39,44 @@ public class SaborV1Controller {
     @GetMapping("/{id}")
     public ResponseEntity<Sabor> buscarSabor(@PathVariable Long id) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(saborListarService.listar(id).get(0));
+        return ResponseEntity.status(HttpStatus.OK).body(saborListarService.listar(id, null).get(0));
         
     }
 
     @GetMapping("")
     public ResponseEntity<List<Sabor>> buscarTodosSabores() {
 
-        return ResponseEntity.status(HttpStatus.OK).body(saborListarService.listar(null));
+        return ResponseEntity.status(HttpStatus.OK).body(saborListarService.listar(null, null));
 
     }
 
-    @PostMapping()
-    public ResponseEntity<Sabor> criarSabor(@RequestBody @Valid SaborPostPutRequestDTO saborPostPutRequestDTO) {
+    @GetMapping("/estabelecimento/{estabelecimentoId}")
+    public ResponseEntity<List<Sabor>> buscarSaborPorEstabelecimentoID(@PathVariable Long estabelecimentoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(saborListarService.listar(null, estabelecimentoId));
+    }
 
-        return ResponseEntity.status(HttpStatus.OK).body(saborCriarService.criar(saborPostPutRequestDTO));
+    @PostMapping()
+    public ResponseEntity<Sabor> criarSabor(@RequestBody @Valid SaborPostPutRequestDTO saborPostPutRequestDTO,
+                @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(saborCriarService.criar(codigoDeAcesso, saborPostPutRequestDTO));
 
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Sabor> atualizarSabor(@PathVariable Long id, @RequestBody @Valid SaborPostPutRequestDTO saborPostPutRequestDTO) {
+    public ResponseEntity<Sabor> atualizarSabor(@PathVariable Long id, 
+    @RequestBody @Valid SaborPostPutRequestDTO saborPostPutRequestDTO,
+                @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(saborAlterarService.alterar(id, saborPostPutRequestDTO));
+        return ResponseEntity.status(HttpStatus.OK).body(saborAlterarService.alterar(id, codigoDeAcesso, saborPostPutRequestDTO));
 
     }
 
     @DeleteMapping("/{id}")
-    public void excluirSabor(@PathVariable Long id) {
+    public void excluirSabor(@PathVariable Long id,
+    @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
 
-        saborExcluirService.excluir(id);
+        saborExcluirService.excluir(id, codigoDeAcesso);
 
     }
 }

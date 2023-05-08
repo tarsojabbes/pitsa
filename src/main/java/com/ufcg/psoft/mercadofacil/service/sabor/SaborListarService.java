@@ -7,6 +7,6 @@ import java.util.List;
 @FunctionalInterface
 public interface SaborListarService {
 
-    public List<Sabor> listar(Long id);
+    public List<Sabor> listar(Long id, Long idEstabelecimento);
     
 }

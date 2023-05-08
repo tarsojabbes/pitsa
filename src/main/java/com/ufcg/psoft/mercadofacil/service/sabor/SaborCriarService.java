@@ -6,6 +6,6 @@ import com.ufcg.psoft.mercadofacil.model.Sabor;
 @FunctionalInterface
 public interface SaborCriarService {
 
-    public Sabor criar(SaborPostPutRequestDTO saborPostPutRequestDTO);
+    public Sabor criar(String codigoDeAcesso, SaborPostPutRequestDTO saborPostPutRequestDTO);
     
 }

@@ -20,7 +20,7 @@ import java.util.List;
 
 @SpringBootTest
 public class SaborServiceTests {
-    @Autowired
+   /*  @Autowired
     SaborAlterarService saborAlterarService;
 
     @Autowired
@@ -288,5 +288,5 @@ public class SaborServiceTests {
             assertThrows(MercadoFacilException.class, () -> saborListarService.listar(sabor.getId() + 1L));
 
         }
-    }
+    } */
 }

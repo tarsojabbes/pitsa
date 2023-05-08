@@ -7,6 +7,6 @@ import com.ufcg.psoft.mercadofacil.model.Sabor;
 @FunctionalInterface
 public interface SaborAlterarService {
 
-    public Sabor alterar(Long id, SaborPostPutRequestDTO saborPostPutRequestDTO);
+    public Sabor alterar(Long id, String codigoDeAcesso, SaborPostPutRequestDTO saborPostPutRequestDTO);
     
 }
