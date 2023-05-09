@@ -517,11 +517,11 @@ public class EntregadorV1ControllerTests {
     }
 
     @Nested
+    @Transactional
     @DisplayName("testes de requisição de associações de entregadores")
     class RequisicaoAssociacoes {
 
         @Test
-        @Transactional
         @DisplayName("Quando tentamos criar associacao com estabelecimento válida")
         void criarAssociacaoValida()  throws Exception {
             String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
@@ -544,6 +544,51 @@ public class EntregadorV1ControllerTests {
             assertEquals(response.getEstabelecimento().getCodigoDeAcesso(), estabelecimento.getCodigoDeAcesso());
             assertEquals(response.getEstabelecimento().getNome(), estabelecimento.getNome());
 
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com estabelecimento inexistente")
+        void criarAssociacaoComEstabelecimentoInexistente()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + (estabelecimento.getId() + 30) + "/" + entregador.getId() + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O estabelecimento consultado nao existe!");
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com entregador inexistente")
+        void criarAssociacaoComEntregadorInexistente()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + estabelecimento.getId() + "/" + (entregador.getId() + 30) + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O entregador consultado nao existe!");
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com código de entregador inválido")
+        void criarAssociacaoComCodigoEntregadorInvalido()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + estabelecimento.getId() + "/" + entregador.getId() + "?codigoAcessoEntregador=codigoInvalido")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O entregador nao possui permissao para alterar dados de outro entregador");
         }
 
     }

@@ -65,7 +65,11 @@ public class AssociacaoPadraoService implements AssociacaoService{
         }
 
     }
-
+    
+    
+    // Função para ser usada no futuro.
+    // Caso seja perdido o código de acesso de associacao
+    // Por isso não está sendo testada no Estabelecimento Testes
     @Override
     public Associacao buscarAssociacao(Long entregadorId, Long estabelecimentoId, String codigoAcessoEstabelecimento) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId).orElseThrow(EstabelecimentoNaoExisteException::new);

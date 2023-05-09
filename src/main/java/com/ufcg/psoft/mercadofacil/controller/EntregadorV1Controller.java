@@ -86,7 +86,7 @@ public class EntregadorV1Controller {
                 .body("");
     }
 
-    @PostMapping("/solicitar-associacao/{entregadorId}/{idEstabelecimento}")
+    @PostMapping("/solicitar-associacao/{idEstabelecimento}/{entregadorId}")
     public ResponseEntity<?> solicitarAssociacao(@RequestParam String codigoAcessoEntregador,
                                                     @PathVariable Long idEstabelecimento,
                                                     @PathVariable Long entregadorId) {
