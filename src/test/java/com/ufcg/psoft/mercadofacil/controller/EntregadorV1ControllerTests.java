@@ -6,8 +6,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.EntregadorGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.EntregadorPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.modelmapper.ModelMapper;
@@ -36,11 +39,16 @@ public class EntregadorV1ControllerTests {
     EntregadorRepository entregadorRepository;
 
     @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Entregador entregador;
+
+    Estabelecimento estabelecimento;
 
     @BeforeEach
     public void setUp() {
@@ -51,11 +59,17 @@ public class EntregadorV1ControllerTests {
                 .placaDoVeiculo("ABC1234")
                 .tipoDoVeiculo(MOTO)
                 .build());
+
+        estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+        );
+
     }
 
     @AfterEach
     public void tearDown() {
         entregadorRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
     }
 
     @Nested
@@ -502,4 +516,80 @@ public class EntregadorV1ControllerTests {
         }
     }
 
+    @Nested
+    @Transactional
+    @DisplayName("testes de requisição de associações de entregadores")
+    class RequisicaoAssociacoes {
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com estabelecimento válida")
+        void criarAssociacaoValida()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + estabelecimento.getId() + "/" + entregador.getId() + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isCreated())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Associacao response = objectMapper.readValue(responseJsonString, Associacao.class);
+
+            // Comparando entregadores.
+            assertEquals(response.getEntregador().getNome(), entregador.getNome());
+            assertEquals(response.getEntregador().getPlacaDoVeiculo(), entregador.getPlacaDoVeiculo());
+            assertEquals(response.getEntregador().getTipoDoVeiculo(), entregador.getTipoDoVeiculo());
+            assertEquals(response.getEntregador().getCorDoVeiculo(), entregador.getCorDoVeiculo());
+            assertEquals(response.getEntregador().getCodigoDeAcesso(), entregador.getCodigoDeAcesso());
+
+            // Comparando estabelecimento
+            assertEquals(response.getEstabelecimento().getCodigoDeAcesso(), estabelecimento.getCodigoDeAcesso());
+            assertEquals(response.getEstabelecimento().getNome(), estabelecimento.getNome());
+
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com estabelecimento inexistente")
+        void criarAssociacaoComEstabelecimentoInexistente()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + (estabelecimento.getId() + 30) + "/" + entregador.getId() + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O estabelecimento consultado nao existe!");
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com entregador inexistente")
+        void criarAssociacaoComEntregadorInexistente()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + estabelecimento.getId() + "/" + (entregador.getId() + 30) + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O entregador consultado nao existe!");
+        }
+
+        @Test
+        @DisplayName("Quando tentamos criar associacao com código de entregador inválido")
+        void criarAssociacaoComCodigoEntregadorInvalido()  throws Exception {
+            String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
+                            + estabelecimento.getId() + "/" + entregador.getId() + "?codigoAcessoEntregador=codigoInvalido")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O entregador nao possui permissao para alterar dados de outro entregador");
+        }
+
+    }
 }

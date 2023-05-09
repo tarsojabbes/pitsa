@@ -3,6 +3,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 import com.ufcg.psoft.mercadofacil.dto.EntregadorGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.EntregadorPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.entregador.EntregadorAlterarService;
 import com.ufcg.psoft.mercadofacil.service.entregador.EntregadorCriarService;
 import com.ufcg.psoft.mercadofacil.service.entregador.EntregadorExcluirService;
@@ -34,6 +35,9 @@ public class EntregadorV1Controller {
 
     @Autowired
     EntregadorExcluirService entregadorExcluirService;
+
+    @Autowired
+    AssociacaoService associacaoService;
 
 
     @GetMapping("/{id}")
@@ -81,5 +85,18 @@ public class EntregadorV1Controller {
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
     }
+
+    @PostMapping("/solicitar-associacao/{idEstabelecimento}/{entregadorId}")
+    public ResponseEntity<?> solicitarAssociacao(@RequestParam String codigoAcessoEntregador,
+                                                    @PathVariable Long idEstabelecimento,
+                                                    @PathVariable Long entregadorId) {
+        // Lógica para solicitar associação a um estabelecimento
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(associacaoService.associarEntregadorEstabelecimento(entregadorId, idEstabelecimento, codigoAcessoEntregador));
+    }
+
+
 
 }

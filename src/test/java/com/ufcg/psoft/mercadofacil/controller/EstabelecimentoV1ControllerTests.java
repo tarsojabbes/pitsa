@@ -6,8 +6,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
+import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo;
+import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
+import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +38,16 @@ public class EstabelecimentoV1ControllerTests {
     MockMvc driver;
 
     @Autowired
+    AssociacaoRepository associacaoRepository;
+
+    @Autowired
+    EntregadorRepository entregadorRepository;
+
+    @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
+    AssociacaoService associacaoService;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -43,11 +58,13 @@ public class EstabelecimentoV1ControllerTests {
         estabelecimento = estabelecimentoRepository.save(
                 Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
         );
+
     }
 
     @AfterEach
     public void tearDown() {
         estabelecimentoRepository.deleteAll();
+//        associacaoRepository.deleteAll();
     }
 
     @Nested
@@ -313,5 +330,120 @@ public class EstabelecimentoV1ControllerTests {
 
             assertEquals("O estabelecimento consultado nao existe!", error.getMessage());
         }
+    }
+
+    @Nested
+    @DisplayName("Testes relacionados à aceitação ou rejeição de entregadores")
+    class aceitarRejeitarEntregadores {
+
+
+
+        Entregador entregador;
+
+        Associacao associacao;
+
+        @BeforeEach
+        void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+            entregador = entregadorRepository.save(Entregador.builder()
+                    .codigoDeAcesso("123456")
+                    .nome("Miguel")
+                    .placaDoVeiculo("EEW A BUG")
+                    .corDoVeiculo("Preto")
+                    .tipoDoVeiculo(TipoDoVeiculo.CARRO)
+                    .build()
+            );
+
+            associacao = associacaoService.associarEntregadorEstabelecimento(entregador.getId(),
+                                                                                estabelecimento.getId(),
+                                                                                entregador.getCodigoDeAcesso());
+        }
+
+        @Test
+        @Transactional
+        void assertTrue() {
+            Assertions.assertTrue(true);
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste quando aceitamos associação válida")
+        void testAceitaAssociacao() throws Exception {
+            String responseJsonString = driver.perform(patch("/v1/estabelecimentos/aceitar_entregador/"
+                            + associacao.getId() + "?codigoDeAcesso=" + estabelecimento.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Associacao response = objectMapper.readValue(responseJsonString, Associacao.class);
+
+            // Comparando entregadores.
+            assertEquals(response.getEntregador().getNome(), associacao.getEntregador().getNome());
+            assertEquals(response.getEntregador().getPlacaDoVeiculo(), associacao.getEntregador().getPlacaDoVeiculo());
+            assertEquals(response.getEntregador().getTipoDoVeiculo(), associacao.getEntregador().getTipoDoVeiculo());
+            assertEquals(response.getEntregador().getCorDoVeiculo(), associacao.getEntregador().getCorDoVeiculo());
+            assertEquals(response.getEntregador().getCodigoDeAcesso(), associacao.getEntregador().getCodigoDeAcesso());
+
+            // Comparando estabelecimento
+            assertEquals(response.getEstabelecimento().getCodigoDeAcesso(), associacao.getEstabelecimento().getCodigoDeAcesso());
+            assertEquals(response.getEstabelecimento().getNome(), associacao.getEstabelecimento().getNome());
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste quando recusamos associação válida")
+        void testRejeitaAssociacao() throws Exception {
+            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/rejeitar_entregador/"
+                            + associacao.getId() + "?codigoDeAcesso=" + estabelecimento.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNoContent())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertEquals(responseJsonString, "");
+            Assertions.assertFalse(associacaoRepository.findById(associacao.getId()).isPresent());
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste quando aceitamos associação de outro estabelecimento")
+        void testAceitaAssociacaoDeOutroEstabelecimento() throws Exception {
+            String responseJsonString = driver.perform(patch("/v1/estabelecimentos/aceitar_entregador/"
+                            + associacao.getId() + "?codigoDeAcesso=" + estabelecimento.getCodigoDeAcesso() + 30)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste quando rejeitamos associação de outro estabelecimento")
+        void testRejeitaAssociacaoDeOutroEstabelecimento() throws Exception {
+            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/rejeitar_entregador/"
+                            + associacao.getId() + "?codigoDeAcesso=" + estabelecimento.getCodigoDeAcesso() + 30)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
+
+        }
+
     }
 }
