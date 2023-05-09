@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="clientes")
-public class Cliente {
+@Table(name = "entregadores")
+public class Entregador {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -21,10 +22,17 @@ public class Cliente {
     @JsonProperty("nome")
     private String nome;
 
-    @JsonProperty("endereco")
-    private String endereco;
+    @JsonProperty("placaDoVeiculo")
+    private String placaDoVeiculo;
+
+    @JsonProperty("tipoDoVeiculo")
+    @Enumerated(EnumType.STRING)
+    private TipoDoVeiculo tipoDoVeiculo;
+
+    @JsonProperty("corDoVeiculo")
+    private String corDoVeiculo;
 
     @JsonProperty("codigoDeAcesso")
     private String codigoDeAcesso;
-}
 
+}
