@@ -1,7 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.associacao;
 
-import com.ufcg.psoft.mercadofacil.exception.EntregadorNaoExisteException;
-import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
@@ -39,22 +38,32 @@ public class AssociacaoPadraoService implements AssociacaoService{
 
             return associacaoRepository.save(associacao);
         }
-        return null;
+
+        throw new EntregadorNaoAutorizadoException();
     }
 
     @Override
-    public void aceitarAssociacao(Long id) {
-        Optional<Associacao> optionalAssociacao = associacaoRepository.findById(id);
-        if (optionalAssociacao.isPresent()) {
-            Associacao associacao = optionalAssociacao.get();
+    public Associacao aceitarAssociacao(Long id, String codigoDeAcessoEstabelecimento) {
+        Associacao associacao = associacaoRepository.findById(id).orElseThrow(AssociacaoNaoExisteException::new);
+        Estabelecimento estabelecimento = associacao.getEstabelecimento();
+        if (estabelecimento.getCodigoDeAcesso().equals(codigoDeAcessoEstabelecimento)){
             associacao.setStatusAssociacao(true);
-            associacaoRepository.save(associacao);
+            return associacaoRepository.save(associacao);
         }
+
+        throw new EstabelecimentoNaoAutorizadoException();
     }
 
     @Override
-    public void recusarAssociacao(Long id) {
-        associacaoRepository.deleteById(id);
+    public void recusarAssociacao(Long id, String codigoDeAcessoEstabelecimento) {
+        Associacao associacao = associacaoRepository.findById(id).orElseThrow(AssociacaoNaoExisteException::new);
+        Estabelecimento estabelecimento = associacao.getEstabelecimento();
+        if (estabelecimento.getCodigoDeAcesso().equals(codigoDeAcessoEstabelecimento)) {
+            associacaoRepository.deleteById(id);
+        } else {
+            throw new EstabelecimentoNaoAutorizadoException();
+        }
+
     }
 
     @Override

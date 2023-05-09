@@ -86,13 +86,15 @@ public class EntregadorV1Controller {
                 .body("");
     }
 
-    @PostMapping("/solicitar-associacao/")
-    public ResponseEntity<Void> solicitarAssociacao(@RequestParam String codigoAcessoEntregador,
-                                                    @RequestParam Long estabelecimentoId,
-                                                    @RequestParam Long entregadorId) {
+    @PostMapping("/solicitar-associacao/{entregadorId}/{idEstabelecimento}")
+    public ResponseEntity<?> solicitarAssociacao(@RequestParam String codigoAcessoEntregador,
+                                                    @PathVariable Long idEstabelecimento,
+                                                    @PathVariable Long entregadorId) {
         // Lógica para solicitar associação a um estabelecimento
-        associacaoService.associarEntregadorEstabelecimento(entregadorId, estabelecimentoId, codigoAcessoEntregador);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(associacaoService.associarEntregadorEstabelecimento(entregadorId, idEstabelecimento, codigoAcessoEntregador));
     }
 
 

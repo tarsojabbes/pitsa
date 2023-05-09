@@ -123,7 +123,7 @@ public class AssociacaoServiceTests {
         Long estabelecimentoId = estabelecimento.getId();
         Associacao associacao  = associacaoService.associarEntregadorEstabelecimento(entregadorId, estabelecimentoId, "123456");
 
-        associacaoService.aceitarAssociacao(associacao.getId());
+        associacaoService.aceitarAssociacao(associacao.getId(), estabelecimento.getCodigoDeAcesso());
         // A associação continua no banco de dados
         Optional<Associacao> optionalAssociacao = associacaoRepository.findById(associacao.getId());
         assertTrue(optionalAssociacao.isPresent());
@@ -136,7 +136,7 @@ public class AssociacaoServiceTests {
         Long estabelecimentoId = estabelecimento.getId();
         Associacao associacao  = associacaoService.associarEntregadorEstabelecimento(entregadorId, estabelecimentoId, "123456");
 
-        associacaoService.recusarAssociacao(associacao.getId());
+        associacaoService.recusarAssociacao(associacao.getId(), estabelecimento.getCodigoDeAcesso());
         // A associação não continua no banco de dados
         Optional<Associacao> optionalAssociacao = associacaoRepository.findById(associacao.getId());
         assertFalse(optionalAssociacao.isPresent());

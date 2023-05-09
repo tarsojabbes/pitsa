@@ -71,53 +71,24 @@ public class EstabelecimentoV1Controller {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
     }
 
+    @PatchMapping("/aceitar_entregador/{associacaoId}")
+    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
+                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
 
-    // ---- Miguel:
-    // Acho que deveria dividir essa requisição em 3:
-    // Um post, para criar a associação, mas isso no controller de Entregador (pois cria a associaçção).
-    //      Receberia o id do Entregador e o id do Estabelecimento
-    // Um patch (talvez) para aceitar o entregador ( pois altera uma associação)
-    //      Talvez chamar de aceitar associação
-    //      Receberia apenas o id da associação
-    // um delete para recusar o entragor (pois excluí a associação)
-    //      Receberia apenas o id da associação
-
-//    @PostMapping("/associar_entregador")
-//    public ResponseEntity<Void> associarEntregador(@PathVariable Long entregadorId,
-//                                                   @PathVariable Long estabelecimentoId,
-//                                                   @PathVariable String codigoAcessoEstabelecimento,
-//                                                   @RequestBody boolean status
-//    ) {
-//        // Lógica para associar um entregador a um estabelecimento
-//        Associacao associacao = associacaoService.buscarAssociacao(entregadorId, estabelecimentoId, codigoAcessoEstabelecimento);
-//        if (status){
-//            associacaoService.aceitarAssociacao(associacao.getId());
-//        } else{
-//            associacaoService.recusarAssociacao(associacao.getId());
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
-
-
-//     ---- Devemos receber o codigo de acesso do estabelecimento através do body ou do path?
-//    @PatchMapping("/aceitar_entregador/{associacaoId}")
-//    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
-//                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
-//
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(associacaoService.aceitarAssociacao(associacaoId));
-//    }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(associacaoService.aceitarAssociacao(associacaoId, codigoDeAcesso));
+    }
 
     @DeleteMapping("/rejeitar_entregador/{associacaoId}")
     public ResponseEntity<?> rejeitarEntregador(@PathVariable Long associacaoId,
                                                 @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
         // ----> Verificar se o código de acesso está correto <----
-        associacaoService.recusarAssociacao(associacaoId);
+        associacaoService.recusarAssociacao(associacaoId, codigoDeAcesso);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("");
     }
+
 
 }
