@@ -1,6 +1,5 @@
 package com.ufcg.psoft.mercadofacil.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;

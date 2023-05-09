@@ -75,8 +75,6 @@ public class SaborV1Controller {
     @DeleteMapping("/{id}")
     public void excluirSabor(@PathVariable Long id,
     @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
-
         saborExcluirService.excluir(id, codigoDeAcesso);
-
     }
 }

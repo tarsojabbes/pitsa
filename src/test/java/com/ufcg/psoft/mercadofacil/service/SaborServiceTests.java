@@ -3,6 +3,8 @@ package com.ufcg.psoft.mercadofacil.service;
 import com.ufcg.psoft.mercadofacil.dto.SaborPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.sabor.SaborAlterarService;
 import com.ufcg.psoft.mercadofacil.service.sabor.SaborCriarService;
@@ -20,7 +22,10 @@ import java.util.List;
 
 @SpringBootTest
 public class SaborServiceTests {
-   /*  @Autowired
+
+
+   @Autowired
+
     SaborAlterarService saborAlterarService;
 
     @Autowired
@@ -35,25 +40,42 @@ public class SaborServiceTests {
     @Autowired
     SaborRepository saborRepository;
 
-    @Nested
+
+    @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
+
     public class SaborAlterarServiceTests {
 
         Sabor sabor;
 
+        Estabelecimento estabelecimento;
+
         @BeforeEach
         public void setup() {
+
+            estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder()
+                    .nome("Jipao")
+                    .codigoDeAcesso("12345")
+                .build());
+
+
             sabor = saborRepository.save(
                 Sabor.builder()
                     .nomeSabor("Calabresa")
                     .tipoSabor("Salgado")
                     .precoMedio(50.00)
                     .precoGrande(60.00)
-                        .build());
+                     .estabelecimento(estabelecimento)
+                .build());
+
         }
 
         @AfterEach
         public void tearDown() {
             saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
+
         }
 
         @Test
@@ -63,8 +85,7 @@ public class SaborServiceTests {
             SaborPostPutRequestDTO saborPostPutRequestDTO = SaborPostPutRequestDTO.builder()
                     .nomeSabor("Calabresa Acebolada")
                     .build();
-
-            Sabor saborAtualizado = saborAlterarService.alterar(sabor.getId(), saborPostPutRequestDTO);
+            Sabor saborAtualizado = saborAlterarService.alterar(sabor.getId(), estabelecimento.getCodigoDeAcesso(), saborPostPutRequestDTO);
 
             assertEquals("Calabresa Acebolada", saborAtualizado.getNomeSabor());
         }
@@ -77,7 +98,8 @@ public class SaborServiceTests {
                     .nomeSabor("Atum")
                     .build();
 
-            assertThrows(MercadoFacilException.class, () ->  saborAlterarService.alterar(sabor.getId() + 1, saborPostPutRequestDTO));
+  assertThrows(MercadoFacilException.class, () ->  saborAlterarService.alterar(sabor.getId() + 1, estabelecimento.getCodigoDeAcesso(), saborPostPutRequestDTO));
+
         }
     }
 
@@ -85,21 +107,32 @@ public class SaborServiceTests {
     public class SaborCriarServiceTests {
 
         Sabor sabor;
+        Estabelecimento estabelecimento;
 
         @BeforeEach
         public void setup() {
+
+            estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder()
+                    .nome("Jipao")
+                    .codigoDeAcesso("12345")
+                .build());
+
             sabor = saborRepository.save(
                 Sabor.builder()
                     .nomeSabor("Calabresa")
                     .tipoSabor("Salgado")
                     .precoMedio(50.00)
                     .precoGrande(60.00)
-                        .build());
+                    .estabelecimento(estabelecimento)
+                .build());
+
         }
 
         @AfterEach
         public void tearDown() {
             saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
         }
 
         @Test
@@ -113,9 +146,10 @@ public class SaborServiceTests {
                 .tipoSabor("Salgado")
                 .precoMedio(55.00)
                 .precoGrande(65.00)
-            .build();
+                .estabelecimento(estabelecimento)
+                .build();
 
-            Sabor saborCriado = saborCriarService.criar(novoSabor);
+            Sabor saborCriado = saborCriarService.criar(estabelecimento.getCodigoDeAcesso(), novoSabor);
 
             assertEquals(1, saborRepository.findAll().size());
             assertEquals(novoSabor.getNomeSabor(),saborCriado.getNomeSabor());
@@ -133,9 +167,10 @@ public class SaborServiceTests {
                 .tipoSabor("Salgado")
                 .precoMedio(55.00)
                 .precoGrande(65.00)
+                .estabelecimento(estabelecimento)
             .build();
 
-            Sabor novoSabor = saborCriarService.criar(novoSaborBuild);
+            Sabor novoSabor = saborRepository.save(saborCriarService.criar(estabelecimento.getCodigoDeAcesso(), novoSaborBuild));
 
             List<Sabor> lista = saborRepository.findAll();
 
@@ -160,37 +195,49 @@ public class SaborServiceTests {
 
         Sabor sabor;
 
+        Estabelecimento estabelecimento;
+
         @BeforeEach
         public void setup() {
+
+            estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder()
+                    .nome("Jipao")
+                    .codigoDeAcesso("12345")
+                .build());
+
             sabor = saborRepository.save(
                 Sabor.builder()
                     .nomeSabor("Calabresa")
                     .tipoSabor("Salgado")
                     .precoMedio(50.00)
                     .precoGrande(60.00)
-                        .build());
+                    .estabelecimento(estabelecimento)
+                .build());
         }
 
         @AfterEach
         public void tearDown() {
             saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
         }
 
         @Test
         @DisplayName("Repositório/BD contem mais de um sabor salvo, e um é excluído")
         public void testSaborExcluidoDeRepositorioComMultiplosSaboresSalvos() {
 
-            Sabor saborSalvo = saborRepository.save(Sabor
-                .builder()
+
+            Sabor saborSalvo = saborRepository.save(Sabor.builder()
                     .nomeSabor("Margherita")
                     .tipoSabor("Salgado")
                     .precoMedio(45.00)
                     .precoGrande(55.00)
+                    .estabelecimento(estabelecimento)
                 .build());
 
             assertEquals(2, saborRepository.findAll().size());
 
-            saborExcluirService.excluir(saborSalvo.getId());
+            saborExcluirService.excluir(saborSalvo.getId(), estabelecimento.getCodigoDeAcesso());
 
             assertEquals(1, saborRepository.findAll().size());
             assertEquals(sabor, saborRepository.findAll().get(0));
@@ -203,8 +250,8 @@ public class SaborServiceTests {
         @Test
         @DisplayName("O único sabor salvo no BD é excluído")
         public void testExclusaoDoUnicoSaborSalvo() {
-            
-            saborExcluirService.excluir(sabor.getId());
+
+            saborExcluirService.excluir(sabor.getId(), estabelecimento.getCodigoDeAcesso());
 
             assertEquals(0, saborRepository.findAll().size());
         }
@@ -214,7 +261,9 @@ public class SaborServiceTests {
         public void testTentaExcluirSaborInexistente() {
 
             assertEquals(1, saborRepository.findAll().size());
-            assertThrows(MercadoFacilException.class, () -> saborExcluirService.excluir(sabor.getId() + 1L));
+
+            assertThrows(MercadoFacilException.class, () -> saborExcluirService.excluir(sabor.getId() + 1L, estabelecimento.getCodigoDeAcesso()));
+
             assertEquals(1, saborRepository.findAll().size());
 
         }
@@ -225,27 +274,39 @@ public class SaborServiceTests {
 
         Sabor sabor;
 
+        Estabelecimento estabelecimento;
+
         @BeforeEach
         public void setup() {
+
+            estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder()
+                    .nome("Jipao")
+                    .codigoDeAcesso("12345")
+                .build());
+
             sabor = saborRepository.save(
                 Sabor.builder()
                     .nomeSabor("Calabresa")
                     .tipoSabor("Salgado")
                     .precoMedio(50.00)
                     .precoGrande(60.00)
-                        .build());
+                    .estabelecimento(estabelecimento)
+                .build());
+
         }
 
         @AfterEach
         public void tearDown() {
             saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
         }
 
         @Test
         @DisplayName("Listagem de todos os sabores registrados no BD")
         public void testListaTodosSabores() {
 
-            List<Sabor> saborList = saborListarService.listar(null);
+            List<Sabor> saborList = saborListarService.listar(null, estabelecimento.getId());
             assertEquals(1, saborList.size());
 
             Sabor novoSabor = saborRepository.save(Sabor.builder()
@@ -253,9 +314,10 @@ public class SaborServiceTests {
                 .tipoSabor("Salgado")
                 .precoMedio(45.00)
                 .precoGrande(55.00)
+                .estabelecimento(estabelecimento)
             .build());
 
-            saborList = saborListarService.listar(null);
+            saborList = saborListarService.listar(null, estabelecimento.getId());
 
             assertEquals(2, saborList.size());
             assertEquals(sabor, saborList.get(0));
@@ -266,14 +328,17 @@ public class SaborServiceTests {
         @DisplayName("Lista sabor existente por ID")
         public void testListaSaborExistentePorID() {
 
-            Sabor novoSabor = saborRepository.save(Sabor.builder()
-            .nomeSabor("Margherita")
-            .tipoSabor("Salgado")
-            .precoMedio(45.00)
-            .precoGrande(55.00)
-        .build());
 
-            List<Sabor> saborList = saborListarService.listar(novoSabor.getId());
+
+            Sabor novoSabor = saborRepository.save(Sabor.builder()
+                .nomeSabor("Margherita")
+                .tipoSabor("Salgado")
+                .precoMedio(45.00)
+                .precoGrande(55.00)
+                .estabelecimento(estabelecimento)
+            .build());
+
+            List<Sabor> saborList = saborListarService.listar(novoSabor.getId(), null);
 
             assertEquals("Margherita", saborList.get(0).getNomeSabor());
             assertEquals("Salgado", saborList.get(0).getTipoSabor());
@@ -285,8 +350,9 @@ public class SaborServiceTests {
         @DisplayName("Tenta listar um sabor inexistente por ID")
         public void testListaInexistentePorID() {
 
-            assertThrows(MercadoFacilException.class, () -> saborListarService.listar(sabor.getId() + 1L));
+
+            assertThrows(MercadoFacilException.class, () -> saborListarService.listar(null, sabor.getId() + 1L));
 
         }
-    } */
+    }
 }

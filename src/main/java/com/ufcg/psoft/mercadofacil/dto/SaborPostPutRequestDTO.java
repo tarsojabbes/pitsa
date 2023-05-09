@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -47,5 +46,8 @@ public class SaborPostPutRequestDTO {
     @NotNull(message = "Preco nao pode ser null.")
     @Positive(message = "Preco deve ser maior que zero.")
     private Double precoGrande;
-    
+
+    @JsonProperty("estabelecimento")
+    private Estabelecimento estabelecimento;
+
 }
