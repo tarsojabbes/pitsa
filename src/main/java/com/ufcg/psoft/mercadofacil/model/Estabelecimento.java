@@ -29,7 +29,6 @@ public class Estabelecimento {
     @JsonProperty("nome")
     private String nome;
 
-    // Acho que deveria ser um Set, não uma lista.
     @OneToMany(mappedBy = "estabelecimento")
     private List<Associacao> associacoes = new ArrayList<>();
 }
