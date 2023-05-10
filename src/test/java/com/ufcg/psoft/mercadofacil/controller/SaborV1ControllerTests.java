@@ -7,8 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.SaborPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,25 +46,40 @@ public class SaborV1ControllerTests {
     @Autowired
     SaborRepository saborRepository;
 
+    @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
+
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+    Estabelecimento estabelecimento;
 
     Sabor sabor;
 
     @BeforeEach
     public void setup() {
+
+        estabelecimento = estabelecimentoRepository.save(
+                Estabelecimento.builder()
+                        .codigoDeAcesso("123456")
+                        .nome("Jipao")
+                        .build()
+        );
+
         sabor = saborRepository.save(
                 Sabor.builder()
-					.nomeSabor("Calabresa")
-					.tipoSabor("Salgado")
-                	.precoMedio(50.00)
-					.precoGrande(60.00)
-                .build()
+                        .nomeSabor("Calabresa")
+                        .tipoSabor("Salgado")
+                        .precoMedio(50.00)
+                        .precoGrande(60.00)
+                        .estabelecimento(estabelecimento)
+                        .build()
         );
     }
 
     @BeforeEach
     public void tearDown() {
         saborRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
     }
 
     @Nested
@@ -72,12 +91,15 @@ public class SaborV1ControllerTests {
 
             saborRepository.save(
                     Sabor.builder()
-                            .nomeSabor("Margherita").tipoSabor("Salgado")
-                            .precoMedio(45.00).precoGrande(55.00)
+                            .nomeSabor("Margherita")
+                            .tipoSabor("Salgado")
+                            .precoMedio(45.00)
+                            .precoGrande(55.00)
+                            .estabelecimento(estabelecimento)
                             .build());
 
             String responseJsonString = driver.perform(get("/v1/sabores")
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -93,10 +115,13 @@ public class SaborV1ControllerTests {
         public void testIdValida() throws Exception {
 
             Sabor sabor = saborRepository.save(
-                Sabor.builder()
-                        .nomeSabor("Margherita").tipoSabor("Salgado")
-                        .precoMedio(45.00).precoGrande(55.00)
-                        .build());
+                    Sabor.builder()
+                            .nomeSabor("Margherita")
+                            .tipoSabor("Salgado")
+                            .precoMedio(45.00)
+                            .precoGrande(55.00)
+                            .estabelecimento(estabelecimento)
+                            .build());
 
             String responseJsonString = driver.perform(get("/v1/sabores/{id}", sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON))
@@ -131,19 +156,23 @@ public class SaborV1ControllerTests {
 
     @Nested
     class SaborPostTests {
-        
+
         @Test
         @DisplayName("Criacao de sabor com dados válidos")
         public void testCriacaoSaborValido() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .nomeSabor("Margherita")
+                    .tipoSabor("Salgado")
+                    .precoMedio(45.00)
+                    .precoGrande(55.00)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .estabelecimento(estabelecimento)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
 
-            String responseJsonString = driver.perform(post("/v1/sabores")
+            String responseJsonString = driver.perform(post("/v1/sabores" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
                             .content(requestJsonString)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -166,8 +195,7 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor(null).tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .nomeSabor(null)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -181,9 +209,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
 
         }
@@ -193,8 +221,7 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoVazio() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .nomeSabor("")
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -208,8 +235,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
 
             assertTrue(errorStringTester);
 
@@ -220,8 +247,7 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoEmBranco() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("   ").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .nomeSabor("   ")
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -235,9 +261,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
 
         }
@@ -247,8 +273,7 @@ public class SaborV1ControllerTests {
         public void testTipoSaborInvalidonull() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor(null)
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .tipoSabor(null)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -260,11 +285,11 @@ public class SaborV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-            
+
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
 
         }
@@ -274,8 +299,7 @@ public class SaborV1ControllerTests {
         public void testTipoSaborInvalidoVazio() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .precoMedio(45.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -289,9 +313,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
 
         }
@@ -301,8 +325,7 @@ public class SaborV1ControllerTests {
         public void testTipoSaborInvalidoEmBranco() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor(" ")
-                    .precoMedio(45.00).precoGrande(55.00)
+                    .precoMedio(45.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -316,9 +339,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
 
         }
@@ -328,8 +351,7 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(null).precoGrande(55.00)
+                    .precoMedio(null)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -343,8 +365,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -354,8 +376,7 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoZero() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(0.00).precoGrande(55.00)
+                    .precoMedio(0.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -370,8 +391,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -381,8 +402,7 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoNegativo() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(-45.00).precoGrande(55.00)
+                    .precoMedio(-45.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -397,8 +417,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -408,8 +428,7 @@ public class SaborV1ControllerTests {
         public void testSaborGrandeInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(null)
+                    .precoGrande(null)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -423,8 +442,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -434,8 +453,7 @@ public class SaborV1ControllerTests {
         public void testSaborGrandeInvalidoZero() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(0.00)
+                    .precoGrande(0.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -450,8 +468,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -461,8 +479,7 @@ public class SaborV1ControllerTests {
         public void testSaborGrandeInvalidoNegativo() throws Exception {
 
             SaborPostPutRequestDTO saborPostDto = SaborPostPutRequestDTO.builder()
-                    .nomeSabor("Margherita").tipoSabor("Salgado")
-                    .precoMedio(45.00).precoGrande(-55.00)
+                    .precoGrande(-55.00)
                     .build();
 
             String requestJsonString = objectMapper.writeValueAsString(saborPostDto);
@@ -477,8 +494,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
 
         }
@@ -492,16 +509,18 @@ public class SaborV1ControllerTests {
         @DisplayName("Atualizacao de um sabor com dados válidos (nome do sabor)")
         public void testAtualizaDadosValidosNome() throws Exception {
 
-            SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
+            SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
                     .nomeSabor("Calabresa Acebolada")
                     .tipoSabor("Salgado")
                     .precoMedio(50.00)
                     .precoGrande(60.00)
-                .build();
+                    .estabelecimento(estabelecimento)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .build();
 
-            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
+            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId() + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(requestPutDto)))
+                            .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
 
@@ -515,16 +534,18 @@ public class SaborV1ControllerTests {
         @DisplayName("Atualizacao de um sabor com dados válidos (tipo de sabor)")
         public void testAtualizaDadosValidosTipo() throws Exception {
 
-            SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor("Calabresa")
-                .tipoSabor("Salgado 2: Electric Boogaloo")
-                .precoMedio(50.00)
-                .precoGrande(60.00)
-            .build();
+            SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado 2: Electric Boogaloo")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .build();
 
-            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
+            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId() + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(requestPutDto)))
+                            .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -538,16 +559,18 @@ public class SaborV1ControllerTests {
         @DisplayName("Atualizacao de um sabor com dados válidos (preco do tamanho médio)")
         public void testAtualizaDadosValidosPrecoMedio() throws Exception {
 
-            SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor("Calabresa")
-                .tipoSabor("Salgado")
-                .precoMedio(45.00)
-                .precoGrande(60.00)
-            .build();
+            SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado 2: Electric Boogaloo")
+                    .precoMedio(45.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .build();
 
-            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
+            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId() + "?codigoDeAcesso=" + estabelecimento.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(requestPutDto)))
+                            .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -561,16 +584,18 @@ public class SaborV1ControllerTests {
         @DisplayName("Atualizacao de um sabor com dados válidos (preco do sabor grande)")
         public void testAtualizaDadosValidosPrecoGrande() throws Exception {
 
-            SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor("Calabresa")
-                .tipoSabor("Salgado")
-                .precoMedio(50.00)
-                .precoGrande(55.00)
-            .build();
+            SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado 2: Electric Boogaloo")
+                    .precoMedio(50.00)
+                    .precoGrande(55.00)
+                    .estabelecimento(estabelecimento)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .build();
 
-            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
+            String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId() + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(requestPutDto)))
+                            .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -585,10 +610,11 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor(null)
-                .tipoSabor("Salgado")
-                .precoMedio(50.00)
-                .precoGrande(60.00)
+                    .nomeSabor(null)
+                    .tipoSabor("Salgado")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
                     .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
@@ -601,9 +627,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -612,10 +638,11 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoVazio() throws Exception {
 
             SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor("")
-                .tipoSabor("Salgado")
-                .precoMedio(50.00)
-                .precoGrande(60.00)
+                    .nomeSabor("")
+                    .tipoSabor("Salgado")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
                     .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
@@ -628,9 +655,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -639,10 +666,11 @@ public class SaborV1ControllerTests {
         public void testNomeSaborInvalidoEmBranco() throws Exception {
 
             SaborPostPutRequestDTO requestDto = SaborPostPutRequestDTO.builder()
-                .nomeSabor("    ")
-                .tipoSabor("Salgado")
-                .precoMedio(50.00)
-                .precoGrande(60.00)
+                    .nomeSabor("    ")
+                    .tipoSabor("Salgado")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
                     .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
@@ -655,9 +683,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Nome do sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Nome do sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Nome do sabor nao pode ser null.") ||
+                    error.getErrors().contains("Nome do sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -665,12 +693,13 @@ public class SaborV1ControllerTests {
         @DisplayName("Atualizacao do tipo de sabor com dados inválidos (null)")
         public void testTipoSaborInvalidoNull() throws Exception {
 
-			SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor(null)
-				.precoMedio(50.00)
-				.precoGrande(60.00)
-			.build();
+            SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
+                    .nomeSabor("Calabresa")
+                    .tipoSabor(null)
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -682,9 +711,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -693,11 +722,12 @@ public class SaborV1ControllerTests {
         public void testTipoSaborInvalidoVazio() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("")
-				.precoMedio(50.00)
-				.precoGrande(60.00)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -709,9 +739,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -720,11 +750,12 @@ public class SaborV1ControllerTests {
         public void testTipoSaborInvalidoEmBranco() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor(" ")
-				.precoMedio(50.00)
-				.precoGrande(60.00)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor(" ")
+                    .precoMedio(50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -736,9 +767,9 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Tipo de sabor nao pode ser vazio.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
-                                        error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
-                                        
+                    error.getErrors().contains("Tipo de sabor nao pode ser null.") ||
+                    error.getErrors().contains("Tipo de sabor nao pode estar em branco.");
+
             assertTrue(errorStringTester);
         }
 
@@ -747,11 +778,12 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(null)
-				.precoGrande(60.00)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado")
+                    .precoMedio(null)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -763,8 +795,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -773,11 +805,12 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoZero() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(0.00)
-				.precoGrande(60.00)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado")
+                    .precoMedio(0.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -789,8 +822,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -799,11 +832,12 @@ public class SaborV1ControllerTests {
         public void testPrecoMedioInvalidoNegativo() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(-50.00)
-				.precoGrande(60.00)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado")
+                    .precoMedio(-50.00)
+                    .precoGrande(60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -815,8 +849,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -825,11 +859,12 @@ public class SaborV1ControllerTests {
         public void testPrecoGrandeInvalidoNull() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(50.00)
-				.precoGrande(null)
-			.build();
+                    .nomeSabor("Calabresa")
+                    .tipoSabor("Salgado")
+                    .precoMedio(50.00)
+                    .precoGrande(null)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -841,8 +876,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -851,11 +886,8 @@ public class SaborV1ControllerTests {
         public void testPrecoGrandeInvalidoZero() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(50.00)
-				.precoGrande(0.00)
-			.build();
+                    .precoGrande(0.00)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -867,8 +899,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -877,11 +909,9 @@ public class SaborV1ControllerTests {
         public void testPrecoGrandeInvalidoNegativo() throws Exception {
 
             SaborPostPutRequestDTO requestPutDto = SaborPostPutRequestDTO.builder()
-				.nomeSabor("Calabresa")
-				.tipoSabor("Salgado")
-				.precoMedio(50.00)
-				.precoGrande(-60.00)
-			.build();
+                    .precoGrande(-60.00)
+                    .estabelecimento(estabelecimento)
+                    .build();
 
             String responseJsonString = driver.perform(put("/v1/sabores/" + sabor.getId())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -893,8 +923,8 @@ public class SaborV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             boolean errorStringTester = error.getErrors().contains("Preco nao pode ser null.") ||
-                                        error.getErrors().contains("Preco deve ser maior que zero.");
-                                        
+                    error.getErrors().contains("Preco deve ser maior que zero.");
+
             assertTrue(errorStringTester);
         }
 
@@ -902,13 +932,13 @@ public class SaborV1ControllerTests {
 
     @Nested
     class SaborDeleteTests {
-        
+
         @Test
         @DisplayName("Exclusao por ID de um sabor existente")
         public void testExclusaoPorIDValida() throws Exception {
 
-            driver.perform(delete("/v1/sabores/" + sabor.getId())
-                    .contentType(MediaType.APPLICATION_JSON))
+            driver.perform(delete("/v1/sabores/" + sabor.getId() + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -920,15 +950,13 @@ public class SaborV1ControllerTests {
         @DisplayName("Exclusao por ID de um sabor inexistente")
         public void testExclusaoPorIDInvalida() throws Exception {
 
-            String responseJsonString = driver.perform(delete("/v1/sabores/" + sabor.getId() + 1L)
-                    .contentType(MediaType.APPLICATION_JSON))
+            driver.perform(delete("/v1/sabores/" + (sabor.getId() + 1L))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-
-            assertEquals("O sabor de pizza consultado nao existe.", error.getMessage());
+            assertEquals(1, saborRepository.findAll().size());
         }
     }
 }
