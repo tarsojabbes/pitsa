@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -35,4 +38,8 @@ public class Entregador {
     @JsonProperty("codigoDeAcesso")
     private String codigoDeAcesso;
 
+
+    // Acho que deveria ser um Set, não uma lista.
+    @OneToMany(mappedBy = "entregador")
+    private List<Associacao> associacoes = new ArrayList<>();
 }

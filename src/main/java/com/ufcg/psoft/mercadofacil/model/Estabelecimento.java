@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @Builder
@@ -26,7 +29,6 @@ public class Estabelecimento {
     @JsonProperty("nome")
     private String nome;
 
-    
-
-
+    @OneToMany(mappedBy = "estabelecimento")
+    private List<Associacao> associacoes = new ArrayList<>();
 }

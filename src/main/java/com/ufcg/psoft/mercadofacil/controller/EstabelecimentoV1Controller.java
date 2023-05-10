@@ -1,7 +1,9 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoCriarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoListarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoExcluirService;
@@ -32,6 +34,9 @@ public class EstabelecimentoV1Controller {
 
     @Autowired
     EstabelecimentoExcluirService estabelecimentoExcluirService;
+
+    @Autowired
+    AssociacaoService associacaoService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Estabelecimento> buscarEstabelecimento(@PathVariable Long id) {
@@ -65,4 +70,25 @@ public class EstabelecimentoV1Controller {
         estabelecimentoExcluirService.excluir(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
     }
+
+    @PatchMapping("/aceitar_entregador/{associacaoId}")
+    public ResponseEntity<?> associarEntregador(@PathVariable Long associacaoId,
+                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso){
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(associacaoService.aceitarAssociacao(associacaoId, codigoDeAcesso));
+    }
+
+    @DeleteMapping("/rejeitar_entregador/{associacaoId}")
+    public ResponseEntity<?> rejeitarEntregador(@PathVariable Long associacaoId,
+                                                @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
+        // ----> Verificar se o código de acesso está correto <----
+        associacaoService.recusarAssociacao(associacaoId, codigoDeAcesso);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("");
+    }
+
+
 }
