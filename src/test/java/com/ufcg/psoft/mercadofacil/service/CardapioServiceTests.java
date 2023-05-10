@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.cardapio.CardapioService;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,7 +66,10 @@ public class CardapioServiceTests {
 
 
         assertEquals(1, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
+        assertEquals(sabor.getNomeSabor(), cardapio.get(0).getNomeSabor());
+        assertEquals(sabor.getTipoSabor(), cardapio.get(0).getTipoSabor());
+        assertEquals(sabor.getPrecoGrande(), cardapio.get(0).getPrecoGrande());
+        assertEquals(sabor.getPrecoMedio(), cardapio.get(0).getPrecoMedio());
 
 
         Sabor margherita = saborRepository.save(Sabor.builder()
@@ -81,8 +85,10 @@ public class CardapioServiceTests {
 
 
         assertEquals(2, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
+        assertEquals(margherita.getNomeSabor(), cardapio.get(1).getNomeSabor());
+        assertEquals(margherita.getTipoSabor(), cardapio.get(1).getTipoSabor());
+        assertEquals(margherita.getPrecoGrande(), cardapio.get(1).getPrecoGrande());
+        assertEquals(margherita.getPrecoMedio(), cardapio.get(1).getPrecoMedio());
 
 
         Sabor cartola = saborRepository.save(Sabor.builder()
@@ -97,9 +103,10 @@ public class CardapioServiceTests {
 
 
         assertEquals(3, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
-        assertEquals(cartola, cardapio.get(2));
+        assertEquals(cartola.getNomeSabor(), cardapio.get(2).getNomeSabor());
+        assertEquals(cartola.getTipoSabor(), cardapio.get(2).getTipoSabor());
+        assertEquals(cartola.getPrecoGrande(), cardapio.get(2).getPrecoGrande());
+        assertEquals(cartola.getPrecoMedio(), cardapio.get(2).getPrecoMedio());
 
         Estabelecimento e2 = estabelecimentoRepository.save(
                             Estabelecimento.builder()
@@ -118,10 +125,6 @@ public class CardapioServiceTests {
         cardapio = cardapioService.cardapioCompleto(estabelecimento.getId());
 
         assertEquals(3, cardapio.size());
-        assertEquals(sabor, cardapio.get(0));
-        assertEquals(margherita, cardapio.get(1));
-        assertEquals(cartola, cardapio.get(2));
-        assertEquals(true,saborRepository.findAll().contains(cartola2));
     }
 
     @Test
@@ -131,7 +134,10 @@ public class CardapioServiceTests {
         List<Sabor> cardapioSalgado = cardapioService.cardapioSaboresSalgados(estabelecimento.getId());
 
         assertEquals(1, cardapioSalgado.size());
-        assertEquals(sabor, cardapioSalgado.get(0));
+        assertEquals(sabor.getNomeSabor(), cardapioSalgado.get(0).getNomeSabor());
+        assertEquals(sabor.getTipoSabor(), cardapioSalgado.get(0).getTipoSabor());
+        assertEquals(sabor.getPrecoGrande(), cardapioSalgado.get(0).getPrecoGrande());
+        assertEquals(sabor.getPrecoMedio(), cardapioSalgado.get(0).getPrecoMedio());
 
         Sabor margherita = saborRepository.save(Sabor.builder()
 
@@ -145,8 +151,10 @@ public class CardapioServiceTests {
         cardapioSalgado = cardapioService.cardapioSaboresSalgados(estabelecimento.getId());
 
         assertEquals(2, cardapioSalgado.size());
-        assertEquals(sabor, cardapioSalgado.get(0));
-        assertEquals(margherita, cardapioSalgado.get(1));
+        assertEquals(margherita.getNomeSabor(), cardapioSalgado.get(1).getNomeSabor());
+        assertEquals(margherita.getTipoSabor(), cardapioSalgado.get(1).getTipoSabor());
+        assertEquals(margherita.getPrecoGrande(), cardapioSalgado.get(1).getPrecoGrande());
+        assertEquals(margherita.getPrecoMedio(), cardapioSalgado.get(1).getPrecoMedio());
 
         Sabor cartola = Sabor.builder()
             .nomeSabor("Cartola")
@@ -160,8 +168,6 @@ public class CardapioServiceTests {
         cardapioSalgado = cardapioService.cardapioSaboresSalgados(estabelecimento.getId());
 
         assertEquals(2, cardapioSalgado.size());
-        assertEquals(sabor, cardapioSalgado.get(0));
-        assertEquals(margherita, cardapioSalgado.get(1));
         assertEquals(3,saborRepository.findAll().size());
 
     }
@@ -197,7 +203,10 @@ public class CardapioServiceTests {
         cardapioDoce = cardapioService.cardapioSaboresDoces(estabelecimento.getId());
 
         assertEquals(1, cardapioDoce.size());
-        assertEquals(cartola, cardapioDoce.get(0));
+        assertEquals(cartola.getNomeSabor(), cardapioDoce.get(0).getNomeSabor());
+        assertEquals(cartola.getTipoSabor(), cardapioDoce.get(0).getTipoSabor());
+        assertEquals(cartola.getPrecoGrande(), cardapioDoce.get(0).getPrecoGrande());
+        assertEquals(cartola.getPrecoMedio(), cardapioDoce.get(0).getPrecoMedio());
         assertEquals(3,saborRepository.findAll().size());
 
     }

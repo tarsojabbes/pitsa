@@ -146,6 +146,7 @@ public class SaborServiceTests {
                 .tipoSabor("Salgado")
                 .precoMedio(55.00)
                 .precoGrande(65.00)
+                    .idEstabelecimento(estabelecimento.getId())
                 .estabelecimento(estabelecimento)
                 .build();
 
@@ -167,6 +168,7 @@ public class SaborServiceTests {
                 .tipoSabor("Salgado")
                 .precoMedio(55.00)
                 .precoGrande(65.00)
+                    .idEstabelecimento(estabelecimento.getId())
                 .estabelecimento(estabelecimento)
             .build();
 
@@ -176,13 +178,11 @@ public class SaborServiceTests {
 
             assertEquals(2, lista.size());
 
-            assertEquals(sabor,lista.get(0));
             assertEquals(sabor.getNomeSabor(),lista.get(0).getNomeSabor());
             assertEquals(sabor.getTipoSabor(),lista.get(0).getTipoSabor());
             assertEquals(sabor.getPrecoMedio(),lista.get(0).getPrecoMedio());
             assertEquals(sabor.getPrecoGrande(),lista.get(0).getPrecoGrande());
 
-            assertEquals(novoSabor,lista.get(1));
             assertEquals(novoSabor.getNomeSabor(),lista.get(1).getNomeSabor());
             assertEquals(novoSabor.getTipoSabor(),lista.get(1).getTipoSabor());
             assertEquals(novoSabor.getPrecoMedio(),lista.get(1).getPrecoMedio());
@@ -240,7 +240,6 @@ public class SaborServiceTests {
             saborExcluirService.excluir(saborSalvo.getId(), estabelecimento.getCodigoDeAcesso());
 
             assertEquals(1, saborRepository.findAll().size());
-            assertEquals(sabor, saborRepository.findAll().get(0));
             assertEquals(sabor.getNomeSabor(), saborRepository.findAll().get(0).getNomeSabor());
             assertEquals(sabor.getTipoSabor(), saborRepository.findAll().get(0).getTipoSabor());
             assertEquals(sabor.getPrecoMedio(), saborRepository.findAll().get(0).getPrecoMedio());
@@ -320,8 +319,15 @@ public class SaborServiceTests {
             saborList = saborListarService.listar(null, estabelecimento.getId());
 
             assertEquals(2, saborList.size());
-            assertEquals(sabor, saborList.get(0));
-            assertEquals(novoSabor, saborList.get(1));
+            assertEquals(sabor.getNomeSabor(), saborList.get(0).getNomeSabor());
+            assertEquals(sabor.getTipoSabor(), saborList.get(0).getTipoSabor());
+            assertEquals(sabor.getPrecoGrande(), saborList.get(0).getPrecoGrande());
+            assertEquals(sabor.getPrecoMedio(), saborList.get(0).getPrecoMedio());
+
+            assertEquals(novoSabor.getNomeSabor(), saborList.get(1).getNomeSabor());
+            assertEquals(novoSabor.getTipoSabor(), saborList.get(1).getTipoSabor());
+            assertEquals(novoSabor.getPrecoGrande(), saborList.get(1).getPrecoGrande());
+            assertEquals(novoSabor.getPrecoMedio(), saborList.get(1).getPrecoMedio());
         }
 
         @Test

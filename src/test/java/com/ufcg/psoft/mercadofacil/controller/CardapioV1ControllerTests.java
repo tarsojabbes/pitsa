@@ -95,8 +95,15 @@ public class CardapioV1ControllerTests {
         List<Sabor> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Sabor>>() {});
 
         assertEquals(2, resultado.size());
-        assertEquals(sabor, resultado.get(0));
-        assertEquals(novoSabor, resultado.get(1));
+        assertEquals(sabor.getNomeSabor(), resultado.get(0).getNomeSabor());
+        assertEquals(sabor.getTipoSabor(), resultado.get(0).getTipoSabor());
+        assertEquals(sabor.getPrecoMedio(),resultado.get(0).getPrecoMedio());
+        assertEquals(sabor.getPrecoGrande(),resultado.get(0).getPrecoGrande());
+
+        assertEquals(novoSabor.getNomeSabor(),resultado.get(1).getNomeSabor());
+        assertEquals(novoSabor.getTipoSabor(),resultado.get(1).getTipoSabor());
+        assertEquals(novoSabor.getPrecoMedio(),resultado.get(1).getPrecoMedio());
+        assertEquals(novoSabor.getPrecoGrande(),resultado.get(1).getPrecoGrande());
     }
 
     @Test
