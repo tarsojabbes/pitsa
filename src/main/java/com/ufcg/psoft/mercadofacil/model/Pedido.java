@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Entity
 @Data
@@ -19,13 +19,15 @@ import java.util.List;
 public class Pedido {
 
     @JsonProperty("listaPizzas")
-    private List<Pizza> pizzasPedido;
-
-    @JsonProperty("precoPedido")
-    private Double precoPedido;
+    private Map<Pizza,Integer> pizzasPedido;
 
     @JsonProperty("cliente")
     private Cliente cliente;
+
+    public Pedido(Cliente cliente, Map<Pizza,Integer> pizzas){
+        this.cliente = cliente;
+        this.pizzasPedido = pizzas;
+    }
 
     public Double getPrecoPedido(){
 
@@ -37,11 +39,10 @@ public class Pedido {
 
         Double total = 0.00;
 
-        for (Pizza pizza : pizzasPedido){
-            total += pizza.getPrecoPizza();
+        for (Map.Entry<Pizza,Integer> listagem : pizzasPedido.entrySet()){
+            total += listagem.getKey().getPrecoPizza() * listagem.getValue();
         }
 
-        precoPedido = total;
         return total;
     }
     

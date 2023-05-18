@@ -25,7 +25,6 @@ public class SaborServiceTests {
 
 
    @Autowired
-
     SaborAlterarService saborAlterarService;
 
     @Autowired
@@ -44,6 +43,7 @@ public class SaborServiceTests {
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
+    @Nested
     public class SaborAlterarServiceTests {
 
         Sabor sabor;

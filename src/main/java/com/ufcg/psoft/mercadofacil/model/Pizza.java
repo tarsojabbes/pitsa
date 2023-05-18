@@ -26,7 +26,7 @@ public abstract class Pizza {
     @JsonProperty("precoPizza")
     private Double precoPizza;
 
-    protected Pizza(Sabor sabor1, Double precoPizza){
+    public Pizza(Sabor sabor1, Double precoPizza){
         this.sabor1 = sabor1;
         this.precoPizza = precoPizza;
     }

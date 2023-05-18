@@ -1,6 +1,9 @@
 package com.ufcg.psoft.mercadofacil.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
 
@@ -22,8 +25,10 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PedidoPostPutRequestDTO {
 
-    @JsonProperty("pizza")
-    private Pizza pizza;
+    @JsonProperty("pizzas")
+    @NotNull(message = "A listagem de pedidos nao pode ser null.")
+    @NotEmpty(message = "A listagem de pedidos nao pode estar vazia.")
+    private Map<Pizza,Integer> pizzas;
 
     @JsonProperty("codigoDeAcesso.")
     @NotBlank(message = "Codigo de acesso nao pode estar me branco.")
@@ -31,11 +36,6 @@ public class PedidoPostPutRequestDTO {
     @NotEmpty(message = "Codigo de acesso nao pode ser vazio.")
     @Size(min=6, message = "Codigo de acesso deve ter tamanho minimo de 6 digitos")
     private String codigoDeAcesso;
-
-    @JsonProperty("quantidade")
-    @NotNull(message = "A quantidade de pizzas nao pode ser null.")
-    @Positive(message = "A quantidade de pizzas deve ser maior que zero.")
-    private Integer quantidade;
 
     @JsonProperty("idCliente")
     @NotNull(message = "A id do cliente nao deve ser nula.")

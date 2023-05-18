@@ -10,7 +10,7 @@ public class PizzaGrandeDoisSabores extends Pizza{
     @JsonProperty
     private Sabor sabor2;
 
-    protected PizzaGrandeDoisSabores(Sabor sabor1, Sabor sabor2){
+    public PizzaGrandeDoisSabores(Sabor sabor1, Sabor sabor2){
 
         super(sabor1, (sabor1.getPrecoGrande() + sabor2.getPrecoGrande()) / 2);
         this.sabor2 = sabor2;
