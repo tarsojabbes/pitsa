@@ -24,9 +24,18 @@ public class Pedido {
     @JsonProperty("cliente")
     private Cliente cliente;
 
-    public Pedido(Cliente cliente, Map<Pizza,Integer> pizzas){
+    @JsonProperty
+    private String endereco;
+
+    public Pedido(Cliente cliente, Map<Pizza,Integer> pizzas, String endereco){
         this.cliente = cliente;
         this.pizzasPedido = pizzas;
+
+        if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
+            endereco = cliente.getEndereco();
+        } else {
+            this.endereco = endereco;
+        }
     }
 
     public Double getPrecoPedido(){
