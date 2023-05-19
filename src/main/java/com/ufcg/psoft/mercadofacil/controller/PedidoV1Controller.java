@@ -64,7 +64,7 @@ public class PedidoV1Controller {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pedido> atualizarPedido(@PathVariable Long id, 
+    public ResponseEntity<Pedido> atualizarPedido(@PathVariable Long id,
                                                   @RequestBody @Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO,
                                                   @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
 
