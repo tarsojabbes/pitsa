@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -29,12 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
-import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -434,6 +431,50 @@ public class PedidoV1ControllerTests {
             assertEquals("Avenida Augusto dos Anjos 44", resposta.getEndereco());
         }
 
+        /*Atualiza o endereço original (composto em cliente) por uma string
+        válida, e realiza nova atualização com uma string inválida (vazia,em
+        branco, ou null) para verificar se o endereço volta a ser o original*/
+        @Test
+        @DisplayName("Atualização de um pedido com argumentos inválidos (endereço).")
+        public void testValidacaoEndereco() throws Exception{
+
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+            .codigoDeAcesso(cliente.getCodigoDeAcesso())
+            .idCLiente(cliente.getId())
+            .enderecoAlternativo("Avenida Augusto dos Anjos 44")
+            .pizzas(pedido.getPizzasPedido())
+            .build();
+
+            String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson,Pedido.class);
+
+            assertEquals("Avenida Augusto dos Anjos 44", resposta.getEndereco());
+
+            pedidoDTO = PedidoPostPutRequestDTO.builder()
+            .codigoDeAcesso(cliente.getCodigoDeAcesso())
+            .idCLiente(cliente.getId())
+            .enderecoAlternativo(null)
+            .pizzas(pedido.getPizzasPedido())
+            .build();
+
+            respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            resposta = objectMapper.readValue(respostaJson,Pedido.class);
+
+            assertEquals(cliente.getEndereco(),resposta.getEndereco());
+        }
+
         @Test
         @DisplayName("Atualização de um pedido com argumentos válidos (pizzas do pedido)")
         public void testAtualizacaoValidaListaPizzas() throws Exception{
@@ -441,7 +482,6 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
             .codigoDeAcesso(cliente.getCodigoDeAcesso())
             .idCLiente(cliente.getId())
-            .enderecoAlternativo("")
             .pizzas(bandoDeGordosEsquisitos())
             .build();
 
@@ -459,15 +499,52 @@ public class PedidoV1ControllerTests {
 
         @Test
         @DisplayName("Atualização de um pedido com argumento inválido (map de pizzas null)")
-        public void testAtualizacaoInvalida() throws Exception{
+        public void testAtualizacaoInvalidaPizzasNull() throws Exception{
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+                .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                .idCLiente(cliente.getId())
+                .pizzas(null)
+                .build();
 
+            String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode ser null.")
+                                     || error.getErrors().contains("A listagem de pedidos nao pode estar vazia.");
+
+            assertTrue(errorStringTester);
         }
 
         @Test
-        @DisplayName("")
-        public void test() throws Exception{
-            //TODO
+        @DisplayName("Atualização de um pedido com argumento inválido (map de pizzas vazia)")
+        public void testAtualizacaoInvalidaPizzasVazia() throws Exception{
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+                .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                .idCLiente(cliente.getId())
+                .pizzas(new HashMap<Pizza,Integer>())
+                .build();
+
+            String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode ser null.")
+                                     || error.getErrors().contains("A listagem de pedidos nao pode estar vazia.");
+
+            assertTrue(errorStringTester);
         }
+
     }
 
     @Nested

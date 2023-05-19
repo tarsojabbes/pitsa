@@ -51,6 +51,14 @@ public class Pedido {
 
     }
 
+    public void setEndereco(String novoEndereco){
+        if (novoEndereco == null || novoEndereco.isEmpty() || novoEndereco.isBlank()){
+            this.endereco = this.cliente.getEndereco();
+        } else {
+            this.endereco  = novoEndereco;
+        }
+    }
+
     private Double calculaPrecoPedido(){
 
         Double total = 0.00;

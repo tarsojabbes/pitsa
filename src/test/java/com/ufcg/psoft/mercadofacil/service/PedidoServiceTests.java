@@ -31,7 +31,7 @@ import com.ufcg.psoft.mercadofacil.service.pedido.PedidoAlterarService;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoCriarService;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoExcluirService;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoListarService;
-
+ 
 @SpringBootTest
 public class PedidoServiceTests {
     
@@ -103,6 +103,7 @@ public class PedidoServiceTests {
     @Nested
     public class PedidoCriarServiceTests{
 
+        
         @Test
         @DisplayName("Criacao de Pedido valido em BD vazio")
         void testPedidoValidoBDVazio(){
@@ -115,12 +116,13 @@ public class PedidoServiceTests {
                 .idCLiente(cliente.getId())
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .pizzas(duasCalabresasGrandesCreator())
+                .enderecoAlternativo("")
             .build();
 
-            Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
+            Pedido pedidoCriado = pedidoCriarService.criar(cliente.getCodigoDeAcesso(),novoPedido);
 
             assertEquals(1,pedidoRepository.findAll().size());
-            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()));
+            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()).get());
 
         }
 
@@ -169,7 +171,7 @@ public class PedidoServiceTests {
                 .enderecoAlternativo("Rua 2")
             .build();
 
-            assertThrows(MercadoFacilException.class, () -> pedidoAlterarService.alterar(pedido.getId()+6L, cliente.getCodigoDeAcesso(), pedidoModificado));
+            assertThrows(MercadoFacilException.class, () -> pedidoAlterarService.alterar(pedido.getId()+6L, cliente.getCodigoDeAcesso(), pedidoModificado).getClass());
         }
 
     }
