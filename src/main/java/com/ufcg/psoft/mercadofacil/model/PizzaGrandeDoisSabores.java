@@ -6,7 +6,14 @@ import com.ufcg.psoft.mercadofacil.exception.PizzaInvalidaException;
 
 import jakarta.persistence.*;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
+
 @Entity
+@Data
+@EqualsAndHashCode(callSuper=false)
+@SuperBuilder
 public class PizzaGrandeDoisSabores extends Pizza{
 
     @JsonProperty

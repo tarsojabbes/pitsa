@@ -6,11 +6,13 @@ import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper=false)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public abstract class Pizza {
     @JsonProperty("precoPizza")
     private Double precoPizza;
 
-    public Pizza(Sabor sabor1, Double precoPizza){
+    protected Pizza(Sabor sabor1, Double precoPizza){
         this.sabor1 = sabor1;
         this.precoPizza = precoPizza;
     }

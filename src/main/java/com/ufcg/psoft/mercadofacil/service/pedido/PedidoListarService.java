@@ -4,8 +4,6 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 
 import java.util.List;
 
-import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
-
 @FunctionalInterface
 public interface PedidoListarService {
     
