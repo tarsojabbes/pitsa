@@ -42,7 +42,7 @@ public class Sabor {
 
     @JsonProperty("interessados")
     @Builder.Default
-    private List<Integer> interessados = new ArrayList<Integer>();
+    private List<Long> interessados = new ArrayList<Long>();
 
     @ManyToOne()
     @JoinColumn(name = "id_estabelecimento", nullable = false)

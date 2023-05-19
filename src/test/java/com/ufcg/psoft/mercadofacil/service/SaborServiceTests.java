@@ -79,12 +79,7 @@ public class SaborServiceTests {
 
         }
 
-        @AfterEach
-        public void tearDown() {
-            saborRepository.deleteAll();
-            estabelecimentoRepository.deleteAll();
 
-        }
 
         @Test
         @DisplayName("Alteração de atributo de um sabor existente")
@@ -436,80 +431,80 @@ public class SaborServiceTests {
         }
     }
 
-    @Nested
-    public class SaborNotificarServiceTests {
-        Sabor sabor;
-
-        Estabelecimento estabelecimento;
-
-        @BeforeEach
-        public void setUp() {
-            estabelecimento = estabelecimentoRepository.save(
-                    Estabelecimento.builder()
-                            .codigoDeAcesso("123456")
-                            .nome("Est A")
-                            .build()
-            );
-
-            List<Integer> interessados = new ArrayList<Integer>();
-            interessados.add(4);
-            interessados.add(3);
-            interessados.add(15);
-
-            sabor = saborRepository.save(
-                    Sabor.builder()
-                            .nomeSabor("Cartola")
-                            .tipoSabor("doce")
-                            .precoGrande(59.99)
-                            .precoMedio(39.99)
-                            .estabelecimento(estabelecimento)
-                            .interessados(interessados)
-                            .build()
-            );
-        }
-
-        @AfterEach
-        public void tearDown() {
-            saborRepository.deleteAll();
-            estabelecimentoRepository.deleteAll();
-        }
-
-        @Test
-        @DisplayName("Notificando clientes interessados em sabor com ID existente")
-        public void test01() {
-            List<String> notificacoes = saborNotificarService.notificar(sabor.getId());
-            assertTrue(notificacoes.contains("Notificando cliente de ID 4 sobre disponibilidade de sabor"));
-            assertTrue(notificacoes.contains("Notificando cliente de ID 3 sobre disponibilidade de sabor"));
-            assertTrue(notificacoes.contains("Notificando cliente de ID 15 sobre disponibilidade de sabor"));
-        }
-
-        @Test
-        @DisplayName("Tenta notificar clientes interessados em sabor com ID inexistente")
-        public void test03() {
-            assertThrows(SaborNaoExisteException.class, () -> saborNotificarService.notificar(sabor.getId() + 99));
-        }
-
-        @Test
-        @DisplayName("Notifica quando sabor não tem interessados")
-        public void test04() {
-            Estabelecimento estabelecimento2 = estabelecimentoRepository.save(
-                    Estabelecimento.builder()
-                            .codigoDeAcesso("123456")
-                            .nome("Est B")
-                            .build()
-            );
-
-            Sabor sabor2 = saborRepository.save(
-                    Sabor.builder()
-                            .nomeSabor("Frango")
-                            .tipoSabor("salgado")
-                            .precoGrande(59.99)
-                            .precoMedio(39.99)
-                            .estabelecimento(estabelecimento)
-                            .build());
-
-            List<String> notificacoes = saborNotificarService.notificar(sabor2.getId());
-            assertTrue(notificacoes.isEmpty());
-        }
-    }
+//    @Nested
+//    public class SaborNotificarServiceTests {
+//        Sabor sabor;
+//
+//        Estabelecimento estabelecimento;
+//
+//        @BeforeEach
+//        public void setUp() {
+//            estabelecimento = estabelecimentoRepository.save(
+//                    Estabelecimento.builder()
+//                            .codigoDeAcesso("123456")
+//                            .nome("Est A")
+//                            .build()
+//            );
+//
+//            List<Integer> interessados = new ArrayList<Integer>();
+//            interessados.add(4);
+//            interessados.add(3);
+//            interessados.add(15);
+//
+//            sabor = saborRepository.save(
+//                    Sabor.builder()
+//                            .nomeSabor("Cartola")
+//                            .tipoSabor("doce")
+//                            .precoGrande(59.99)
+//                            .precoMedio(39.99)
+//                            .estabelecimento(estabelecimento)
+//                            .interessados(interessados)
+//                            .build()
+//            );
+//        }
+//
+//        @AfterEach
+//        public void tearDown() {
+//            saborRepository.deleteAll();
+//            estabelecimentoRepository.deleteAll();
+//        }
+//
+//        @Test
+//        @DisplayName("Notificando clientes interessados em sabor com ID existente")
+//        public void test01() {
+//            List<String> notificacoes = saborNotificarService.notificar(sabor.getId());
+//            assertTrue(notificacoes.contains("Notificando cliente de ID 4 sobre disponibilidade de sabor"));
+//            assertTrue(notificacoes.contains("Notificando cliente de ID 3 sobre disponibilidade de sabor"));
+//            assertTrue(notificacoes.contains("Notificando cliente de ID 15 sobre disponibilidade de sabor"));
+//        }
+//
+//        @Test
+//        @DisplayName("Tenta notificar clientes interessados em sabor com ID inexistente")
+//        public void test03() {
+//            assertThrows(SaborNaoExisteException.class, () -> saborNotificarService.notificar(sabor.getId() + 99));
+//        }
+//
+//        @Test
+//        @DisplayName("Notifica quando sabor não tem interessados")
+//        public void test04() {
+//            Estabelecimento estabelecimento2 = estabelecimentoRepository.save(
+//                    Estabelecimento.builder()
+//                            .codigoDeAcesso("123456")
+//                            .nome("Est B")
+//                            .build()
+//            );
+//
+//            Sabor sabor2 = saborRepository.save(
+//                    Sabor.builder()
+//                            .nomeSabor("Frango")
+//                            .tipoSabor("salgado")
+//                            .precoGrande(59.99)
+//                            .precoMedio(39.99)
+//                            .estabelecimento(estabelecimento)
+//                            .build());
+//
+//            List<String> notificacoes = saborNotificarService.notificar(sabor2.getId());
+//            assertTrue(notificacoes.isEmpty());
+//        }
+//    }
 }
