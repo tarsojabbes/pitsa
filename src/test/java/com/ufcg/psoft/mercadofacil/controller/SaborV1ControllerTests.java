@@ -1047,10 +1047,10 @@ public class SaborV1ControllerTests {
         @Test
         @DisplayName("Quando altero para sabor disponivel e notifico clientes interessados")
         public void test06() throws Exception {
-            List<Integer> interessados = new ArrayList<Integer>();
-            interessados.add(4);
-            interessados.add(3);
-            interessados.add(15);
+            List<Long> interessados = new ArrayList<Long>();
+            interessados.add(4L);
+            interessados.add(3L);
+            interessados.add(15L);
 
             Sabor sabor1 = saborRepository.save(
                     Sabor.builder()

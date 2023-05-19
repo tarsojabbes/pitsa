@@ -18,17 +18,17 @@ public class SaborNotificarPadraoService implements SaborNotificarService{
     public List<String> notificar(Long id) {
         Sabor sabor = saborRepository.findById(id).orElseThrow(SaborNaoExisteException::new);
 
-        List<Integer> interessados = sabor.getInteressados();
+        List<Long> interessados = sabor.getInteressados();
         List<String> saida = new ArrayList<String>();
 
         if (!interessados.isEmpty()) {
-            for (Integer interessado : interessados) {
+            for (Long interessado : interessados) {
                 String notificacao = "Notificando cliente de ID " + interessado + " sobre disponibilidade de sabor";
                 System.out.println(notificacao);
                 saida.add(notificacao);
             }
 
-            sabor.setInteressados(new ArrayList<Integer>());
+            sabor.setInteressados(new ArrayList<Long>());
             return saida;
         }
 

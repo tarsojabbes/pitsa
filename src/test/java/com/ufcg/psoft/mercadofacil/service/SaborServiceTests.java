@@ -451,10 +451,10 @@ public class SaborServiceTests {
                             .build()
             );
 
-            List<Integer> interessados = new ArrayList<Integer>();
-            interessados.add(4);
-            interessados.add(3);
-            interessados.add(15);
+            List<Long> interessados = new ArrayList<Long>();
+            interessados.add(4L);
+            interessados.add(3L);
+            interessados.add(15L);
 
             sabor = saborRepository.save(
                     Sabor.builder()
