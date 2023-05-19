@@ -6,7 +6,6 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
@@ -27,14 +26,14 @@ public class PedidoListarPadraoService implements PedidoListarService{
     ClienteRepository clienteRepository;
 
     @Override
-    public List<Pedido> listar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
+    public List<Pedido> listar(Long id, String codigoDeAcesso) {
         
         if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
             throw new IllegalArgumentException();
         }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
-        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
+        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
 
         List<Pedido> pedidos = new ArrayList<>();
         pedidos.add(pedido);

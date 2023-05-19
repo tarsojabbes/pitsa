@@ -8,7 +8,6 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
-
 import org.modelmapper.ModelMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService{
     @Override
     public Pedido alterar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
 
-        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
+        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
             throw new IllegalArgumentException();
         }
         
@@ -38,7 +37,6 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService{
 
         if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())){
             modelMapper.map(pedidoPostPutRequestDTO,pedido);
-
             return pedidoRepository.save(pedido);
         } else {
             throw new ClienteNaoAutorizadoException();

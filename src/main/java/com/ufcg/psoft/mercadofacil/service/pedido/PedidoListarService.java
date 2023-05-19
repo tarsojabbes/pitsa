@@ -9,5 +9,5 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 @FunctionalInterface
 public interface PedidoListarService {
     
-    public List<Pedido> listar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO);
+    public List<Pedido> listar(Long id, String codigoDeAcesso);
 }

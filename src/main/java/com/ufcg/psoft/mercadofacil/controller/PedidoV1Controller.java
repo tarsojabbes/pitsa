@@ -51,7 +51,7 @@ public class PedidoV1Controller {
                                                @Valid String codigoDeAcessoCliente,
                                                @ Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarService.listar(id, codigoDeAcessoCliente, pedidoPostPutRequestDTO).get(0));
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarService.listar(id, codigoDeAcessoCliente).get(0));
         
     }
 

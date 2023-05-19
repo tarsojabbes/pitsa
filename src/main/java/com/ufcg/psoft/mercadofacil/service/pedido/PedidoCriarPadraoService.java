@@ -31,7 +31,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
     @Override
     public Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
         
-        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
+        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
             throw new IllegalArgumentException();
         }
         

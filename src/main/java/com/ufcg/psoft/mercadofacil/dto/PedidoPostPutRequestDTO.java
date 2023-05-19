@@ -31,7 +31,7 @@ public class PedidoPostPutRequestDTO {
     private Map<Pizza,Integer> pizzas;
 
     @JsonProperty("codigoDeAcesso.")
-    @NotBlank(message = "Codigo de acesso nao pode estar me branco.")
+    @NotBlank(message = "Codigo de acesso nao pode estar em branco.")
     @NotNull(message = "Codigo de acesso nao pode ser null.")
     @NotEmpty(message = "Codigo de acesso nao pode ser vazio.")
     @Size(min=6, message = "Codigo de acesso deve ter tamanho minimo de 6 digitos")

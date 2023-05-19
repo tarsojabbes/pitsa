@@ -1,5 +1,8 @@
 package com.ufcg.psoft.mercadofacil.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -68,10 +73,6 @@ public class PedidoServiceTests {
             .associacoes(new ArrayList<>())
         .build());
 
-        Pizza pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
-        Map<Pizza,Integer> pizzas = new HashMap<Pizza,Integer>();
-        pizzas.put(pizza,2);
-
         cliente = clienteRepository.save(Cliente.builder()
             .nome("Joao")
             .endereco("Rua 1")
@@ -80,7 +81,7 @@ public class PedidoServiceTests {
 
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-            .pizzasPedido(pizzas)
+            .pizzasPedido(duasCalabresasGrandesCreator())
         .build()
         );
     }
@@ -92,80 +93,83 @@ public class PedidoServiceTests {
         pedidoRepository.deleteAll();
     }
 
+    private Map<Pizza,Integer> duasCalabresasGrandesCreator(){
+        Pizza pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
+        Map<Pizza,Integer> pizzas = new HashMap<Pizza,Integer>();
+        pizzas.put(pizza,2);
+        return pizzas;
+    }
+
     @Nested
     public class PedidoCriarServiceTests{
 
         @Test
-        @DisplayName("Criacao de Pedido valido")
-        void testPedidoValido(){
-            //TODO
+        @DisplayName("Criacao de Pedido valido em BD vazio")
+        void testPedidoValidoBDVazio(){
+
+            pedidoRepository.deleteAll();
+            assertEquals(0, pedidoRepository.findAll().size());
+
+            
+            PedidoPostPutRequestDTO novoPedido = PedidoPostPutRequestDTO.builder()
+                .idCLiente(cliente.getId())
+                .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                .pizzas(duasCalabresasGrandesCreator())
+            .build();
+
+            Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
+
+            assertEquals(1,pedidoRepository.findAll().size());
+            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()));
+
         }
 
         @Test
-        @DisplayName("Criacao de Pedido invalido (Cliente null)")
-        void testPedidoInvalidoClienteNull(){
-            //TODO
-        }
+        @DisplayName("Criacao de Pedido valido em BD ja populado")
+        void testPedidoValidoBDPopulado(){
 
-        @Test
-        @DisplayName("Criacao de Pedido invalido (Pizza null)")
-        void testPedidoInvalidoPizzaNull(){
-            //TODO
+            assertEquals(1, pedidoRepository.findAll().size());
+
+            PedidoPostPutRequestDTO novoPedido = PedidoPostPutRequestDTO.builder()
+                .idCLiente(cliente.getId())
+                .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                .pizzas(duasCalabresasGrandesCreator())
+            .build();
+
+            Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
+
+            assertEquals(2,pedidoRepository.findAll().size());
+            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()).get());
+
         }
 
     }
-
-        
 
     @Nested
     public class PedidoAlterarTests{
 
         @Test
-        @DisplayName("Adiciona uma Pizza ao pedido")
-        void testAdicionaPizza(){
-            //TODO
+        @DisplayName("Modifica um pedido válido")
+        void testModificaPedido(){
+
+            PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
+                .enderecoAlternativo("Rua 2")
+            .build();
+
+            Pedido pedidoAtualizado = pedidoAlterarService.alterar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoModificado);
+
+            assertEquals(pedidoAtualizado,pedidoRepository.findById(pedido.getId()).get());
         }
 
         @Test
-        @DisplayName("Remove uma pizza existente do pedido")
+        @DisplayName("Tenta modificar um pedido inexistente")
         void testRemovePizzaValida(){
-            //TODO
-        }
 
-        @Test
-        @DisplayName("Altera a quantidade de uma pizza no pedido (aumento)")
-        void testAumentaQuantidadePizza(){
-            //TODO
-        }
+            PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
+                .enderecoAlternativo("Rua 2")
+            .build();
 
-        @Test
-        @DisplayName("Altera a quantidade de uma pizza (reducao)")
-        void testReduzQuantidadePizza(){
-            //TODO
-        }
-
-        @Test
-        @DisplayName("Zera a quantidade de uma pizza existente")
-        void testZeraPizzaExistente(){
-            //TODO
-        }
-
-        @Test
-        @DisplayName("Tenta remover uma pizza inexistente")
-        void testPizzaInexistente(){
-            //TODO
-        }
-
-        @Test
-        @DisplayName("Tenta definir uma quantidade negativa de pizzas")
-        void testPizzaNegativa(){
-            //TODO
-        }
-
-        @Test
-        @DisplayName("Tenta definir uma pizza com quantidade null")
-        void testPizzaNull(){
-            //TODO
+            assertThrows(MercadoFacilException.class, () -> pedidoAlterarService.alterar(pedido.getId()+6L, cliente.getCodigoDeAcesso(), pedidoModificado));
         }
 
     }
@@ -174,31 +178,44 @@ public class PedidoServiceTests {
     public class PedidoListarTests{
 
         @Test
-        @DisplayName("Lista o pedido atual de um cliente válido")
+        @DisplayName("Lista o pedido atual de um cliente válido. Só deve existir um pedido por cliente em qualquer momento")
         void testListaPedidoClienteValido(){
-            //TODO
+            
+            assertEquals(pedido, pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()));
         }
 
         @Test
-        @DisplayName("Tenta listar um pedido de cliente inválido (pedido)")
+        @DisplayName("Tenta listar um pedido de cliente inválido")
         void testListaPedidoClienteInvalido(){
-            //TODO
+            
+            assertThrows(MercadoFacilException.class, () -> pedidoListarService.listar(cliente.getId()+1L, cliente.getCodigoDeAcesso()));
+            assertThrows(MercadoFacilException.class, () -> pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()+"789"));
+
         }
     }
     
     @Nested
-    public class PedidoExluirTests{
+    public class PedidoExcluirTests{
 
         @Test
         @DisplayName("Exclui um pedido corretamente a partir da id do cliente")
         void testExclusaoValidaPedido(){
-            //TODO
+            
+            pedidoExcluirService.excluir(pedido.getId(), cliente.getCodigoDeAcesso());
+
+            assertEquals(0,pedidoRepository.findAll().size());
         }
 
         @Test
-        @DisplayName("Tenta excluir o pedido de um cliente diferente")
+        @DisplayName("Tenta excluir um pedido invalido")
         void testExclusaoInvalidaPedido(){
-            //TODO
+            
+            assertEquals(1, pedidoRepository.findAll().size());
+
+            assertThrows(MercadoFacilException.class, () -> pedidoExcluirService.excluir(pedido.getId()+2L, cliente.getCodigoDeAcesso()));
+
+            assertEquals(1, pedidoRepository.findAll().size());
+
         }
 
     }
