@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -63,6 +64,8 @@ public class PedidoV1ControllerTests {
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Pedido pedido;
+    Pizza pizza;
+    List<Pizza> pizzas;
 
     Cliente cliente;
 
@@ -83,9 +86,14 @@ public class PedidoV1ControllerTests {
             .codigoDeAcesso("123456")
         .build());
 
+        pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
+        pizzas = new ArrayList<Pizza>();
+        pizzas.add(pizza);
+        pizzas.add(pizza);
+
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-            .pizzasPedido(duasCalabresasGrandesCreator())
+            .pizzasPedido(pizzas)
         .build()
         );
     }
@@ -104,15 +112,17 @@ public class PedidoV1ControllerTests {
         return pizzas;
     }
 
-    private Map<Pizza,Integer> bandoDeGordosEsquisitos(){
+    private List<Pizza> bandoDeGordosEsquisitos(){
         Pizza atum = new PizzaGrandeUmSabor(new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento));
         Pizza margherita = new PizzaGrandeUmSabor(new Sabor(3L,"Margherita","Salgada",55.00,65.00,estabelecimento));
         Pizza pacoca = new PizzaMedia(new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento));
-        Map<Pizza,Integer> gordice = new HashMap<Pizza,Integer>();
-        gordice.put(atum,2);
-        gordice.put(margherita,2);
-        gordice.put(pacoca, 1);
-        return gordice;
+        List<Pizza> pizzas1 = new ArrayList<Pizza>();
+        pizzas1.add(atum);
+        pizzas1.add(atum);
+        pizzas1.add(margherita);
+        pizzas1.add(margherita);
+        pizzas1.add(pacoca);
+        return pizzas1;
     }
 
     @Nested
@@ -165,7 +175,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
-                .pizzas(vazio)
+                .pizzas(new ArrayList<Pizza>())
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -223,7 +233,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(null)
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -252,7 +262,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(-2L)
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -281,7 +291,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(null)
                 .idCLiente(cliente.getId())
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -311,7 +321,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso("")
                 .idCLiente(cliente.getId())
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -341,7 +351,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso("     ")
                 .idCLiente(cliente.getId())
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -527,7 +537,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
-                .pizzas(new HashMap<Pizza,Integer>())
+                .pizzas(new ArrayList<Pizza>())
                 .build();
 
             String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())

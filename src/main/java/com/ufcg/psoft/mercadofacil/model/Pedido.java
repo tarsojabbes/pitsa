@@ -21,18 +21,22 @@ import java.util.Map;
 public class Pedido {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @JsonProperty("listaPizzas")
-    private Map<Pizza,Integer> pizzasPedido;
+    @OneToMany(mappedBy = "pedido")
+    private List<Pizza> pizzasPedido;
 
     @JsonProperty("cliente")
+    @ManyToOne()
+    @JoinColumn(name="id_cliente", nullable = false)
     private Cliente cliente;
 
     @JsonProperty
     private String endereco;
 
-    public Pedido(Cliente cliente, Map<Pizza,Integer> pizzas, String endereco){
+    public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco){
         
         this.cliente = cliente;
         this.pizzasPedido = pizzas;
@@ -67,19 +71,8 @@ public class Pedido {
             return total;
         }
 
-        List<Pizza> listagensInvalidas = new ArrayList<>();
-        for (Map.Entry<Pizza,Integer> listagem : pizzasPedido.entrySet()){
-            if (listagem.getKey().getClass().equals(Pizza.class) && listagem.getValue() > 0){
-                total += listagem.getKey().getPrecoPizza() * listagem.getValue();
-            } else {
-                listagensInvalidas.add(listagem.getKey());
-            }
-        }
-
-        if (!listagensInvalidas.isEmpty()){
-            for (Pizza p: listagensInvalidas){
-                pizzasPedido.remove(p);
-            }
+        for (Pizza listagem : pizzasPedido){
+            total += listagem.getPrecoPizza();
         }
 
         return total;

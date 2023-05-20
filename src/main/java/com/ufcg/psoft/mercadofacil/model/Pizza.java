@@ -12,24 +12,30 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper=false)
-@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Pizza {
+public class Pizza {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("sabor1")
-    protected Sabor sabor1;
+    @JsonProperty("pedido")
+    @ManyToOne()
+    @JoinColumn(name="id_pedido")
+    private Pedido pedido;
+
+    @JsonProperty("sabor")
+    @ManyToOne()
+    @JoinColumn(name = "id_sabor")
+    private Sabor sabor;
 
     @JsonProperty("precoPizza")
     private Double precoPizza;
 
-    protected Pizza(Sabor sabor1, Double precoPizza){
-        this.sabor1 = sabor1;
+    Pizza(Sabor sabor1, Double precoPizza){
+        this.sabor = sabor1;
         this.precoPizza = precoPizza;
     }
     

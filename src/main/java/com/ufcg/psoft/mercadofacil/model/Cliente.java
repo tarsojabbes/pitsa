@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -26,5 +28,9 @@ public class Cliente {
 
     @JsonProperty("codigoDeAcesso")
     private String codigoDeAcesso;
+
+    @JsonProperty("pedidos")
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Pedido> pedidos;
 }
 

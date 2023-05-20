@@ -1,5 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import java.util.List;
 import java.util.Map;
 
 import org.modelmapper.ModelMapper;
@@ -39,7 +40,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
         if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
 
-            Map<Pizza,Integer> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
+            List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
             Pedido pedido = Pedido.builder()
             .pizzasPedido(inicioPedido)

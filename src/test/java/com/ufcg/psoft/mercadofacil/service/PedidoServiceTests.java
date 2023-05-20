@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -60,6 +61,8 @@ public class PedidoServiceTests {
 
     Pizza pizza;
 
+    List<Pizza> pizzas;
+
     Cliente cliente;
 
     Estabelecimento estabelecimento;
@@ -79,9 +82,14 @@ public class PedidoServiceTests {
             .codigoDeAcesso("123456")
         .build());
 
+        pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
+        pizzas = new ArrayList<Pizza>();
+        pizzas.add(pizza);
+        pizzas.add(pizza);
+
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-            .pizzasPedido(duasCalabresasGrandesCreator())
+            .pizzasPedido(pizzas)
         .build()
         );
     }
@@ -94,7 +102,7 @@ public class PedidoServiceTests {
     }
 
     private Map<Pizza,Integer> duasCalabresasGrandesCreator(){
-        Pizza pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
+
         Map<Pizza,Integer> pizzas = new HashMap<Pizza,Integer>();
         pizzas.put(pizza,2);
         return pizzas;
@@ -115,7 +123,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO novoPedido = PedidoPostPutRequestDTO.builder()
                 .idCLiente(cliente.getId())
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
                 .enderecoAlternativo("")
             .build();
 
@@ -135,7 +143,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO novoPedido = PedidoPostPutRequestDTO.builder()
                 .idCLiente(cliente.getId())
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
-                .pizzas(duasCalabresasGrandesCreator())
+                .pizzas(pizzas)
             .build();
 
             Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);

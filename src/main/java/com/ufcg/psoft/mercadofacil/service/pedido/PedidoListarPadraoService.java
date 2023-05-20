@@ -13,7 +13,9 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PedidoListarPadraoService implements PedidoListarService{
 
     @Autowired

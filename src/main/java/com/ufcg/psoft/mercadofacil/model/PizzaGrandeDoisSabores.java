@@ -12,11 +12,11 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper=false)
-@SuperBuilder
-public class PizzaGrandeDoisSabores extends Pizza{
+public class PizzaGrandeDoisSabores extends Pizza {
 
     @JsonProperty
+    @ManyToOne()
+    @JoinColumn(name = "id_sabor2")
     private Sabor sabor2;
 
     public PizzaGrandeDoisSabores(Sabor sabor1, Sabor sabor2){

@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,7 +29,7 @@ public class PedidoPostPutRequestDTO {
     @JsonProperty("pizzas")
     @NotNull(message = "A listagem de pedidos nao pode ser null.")
     @NotEmpty(message = "A listagem de pedidos nao pode estar vazia.")
-    private Map<Pizza,Integer> pizzas;
+    private List<Pizza> pizzas;
 
     @JsonProperty("codigoDeAcesso.")
     @NotBlank(message = "Codigo de acesso nao pode estar em branco.")

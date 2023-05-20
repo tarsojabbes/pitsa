@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "estabelecimentos")
+@Table(name = "estabelecimento")
 public class Estabelecimento {
 
     @Id
@@ -31,4 +31,5 @@ public class Estabelecimento {
 
     @OneToMany(mappedBy = "estabelecimento")
     private List<Associacao> associacoes = new ArrayList<>();
+
 }

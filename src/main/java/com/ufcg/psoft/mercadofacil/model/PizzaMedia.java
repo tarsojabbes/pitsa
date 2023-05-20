@@ -8,8 +8,6 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper=false)
-@SuperBuilder
 public class PizzaMedia extends Pizza{
 
     public PizzaMedia(Sabor sabor1){
