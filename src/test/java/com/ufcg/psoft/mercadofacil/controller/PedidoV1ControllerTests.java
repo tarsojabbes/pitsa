@@ -1,13 +1,10 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -83,8 +82,10 @@ public class PedidoV1ControllerTests {
 
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-            .pizzasPedido(duasCalabresasGrandesCreator())
+            .pizzasPedido(pizzas)
                         .endereco("abc")
+            .pizzasPedido(duasCalabresasGrandesCreator())
+
         .build()
         );
     }
@@ -153,16 +154,17 @@ public class PedidoV1ControllerTests {
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
-//
-//            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
-//
-//            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
-//
-//            assertNotNull(pedidoSalvo);
-//            assertEquals(pedidoDTO.getPizzas(),pedidoSalvo.getPizzasPedido());
-//            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
-//            assertEquals(pedidoSalvo,bandoDeGordosEsquisitos());
-//            assertEquals(2,pedidoRepository.findAll().size());
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(pedidoDTO.getPizzas().get(0), pedidoSalvo.getPizzasPedido().get(0));
+//            assertArrayEquals(pedidoDTO.getPizzas().toArray(),pedidoSalvo.getPizzasPedido().toArray());
+            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
+//            assertEquals(pedidoSalvo, bandoDeGordosEsquisitos());
+            assertEquals(2,pedidoRepository.findAll().size());
 
         }
 
