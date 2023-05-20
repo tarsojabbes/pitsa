@@ -14,6 +14,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -49,5 +52,13 @@ public class SaborPostPutRequestDTO {
 
     @JsonProperty("estabelecimento")
     private Estabelecimento estabelecimento;
+
+    @JsonProperty("disponivel")
+    @Builder.Default
+    private Boolean disponivel = true;
+
+    @JsonProperty("interessados")
+    @Builder.Default
+    private List<Integer> interessados = new ArrayList<Integer>();
 
 }

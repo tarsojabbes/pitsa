@@ -16,7 +16,23 @@ public class CardapioService {
     SaborListarService saborListarService;
 
     public List<Sabor> cardapioCompleto(Long idEstabelecimento){
-        return saborListarService.listar(null, idEstabelecimento);
+        List<Sabor> sabores = saborListarService.listar(null, idEstabelecimento);
+        List<Sabor> saboresOrdenados = new ArrayList<Sabor>();
+
+        // Adiciona todos os sabores disponíveis primeiro
+        for (Sabor s : sabores) {
+            if (s.getDisponivel()) {
+                saboresOrdenados.add(s);
+            }
+        }
+
+        for (Sabor s : sabores) {
+            if (!saboresOrdenados.contains(s)) {
+                saboresOrdenados.add(s);
+            }
+        }
+
+        return saboresOrdenados;
     }
 
     public List<Sabor> cardapioSaboresSalgados(Long idEstabelecimento){

@@ -3,12 +3,14 @@ package com.ufcg.psoft.mercadofacil.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.mercadofacil.dto.SaborAlterarDisponivelDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborAlterarDisponivelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,6 +43,9 @@ public class CardapioV1ControllerTests {
 
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
+    SaborAlterarDisponivelService saborAlterarDisponivelService;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -264,6 +269,43 @@ public class CardapioV1ControllerTests {
         CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
         assertEquals("O estabelecimento consultado nao existe!", error.getMessage());
+
+    }
+
+    @Test
+    @DisplayName("Quando listo sabores de cardápio e possuo um sabor indisponível")
+    public void testListagemCardapioSaborIndisponivel() throws Exception {
+        Sabor margherita = saborRepository.save(Sabor.builder()
+                .nomeSabor("Margherita")
+                .tipoSabor("Salgado")
+                .precoMedio(45.00)
+                .precoGrande(55.00)
+                .estabelecimento(estabelecimento)
+                .build());
+
+        Sabor cartola = saborRepository.save(Sabor.builder()
+                .nomeSabor("Cartola")
+                .tipoSabor("Doce")
+                .precoMedio(50.00)
+                .precoGrande(60.00)
+                .estabelecimento(estabelecimento)
+                .build());
+
+        SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
+        saborAlterarDisponivelService.alterar(sabor.getId(), estabelecimento.getCodigoDeAcesso(), saborAlterarDisponivelDTO);
+
+        String responseJsonString = driver.perform(get("/v1/cardapios/"+ estabelecimento.getId() +"/completo")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+        List<Sabor> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Sabor>>() {});
+
+        assertEquals(3, resultado.size());
+        assertEquals(sabor.getNomeSabor(), resultado.get(2).getNomeSabor());
+        assertFalse(resultado.get(2).getDisponivel());
+
 
     }
 }

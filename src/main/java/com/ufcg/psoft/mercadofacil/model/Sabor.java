@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @Builder
@@ -32,6 +35,14 @@ public class Sabor {
 
     @JsonProperty("precoGrande")
     private Double precoGrande;
+
+    @JsonProperty("disponivel")
+    @Builder.Default
+    private Boolean disponivel = true;
+
+    @JsonProperty("interessados")
+    @Builder.Default
+    private List<Long> interessados = new ArrayList<Long>();
 
     @ManyToOne()
     @JoinColumn(name = "id_estabelecimento", nullable = false)
