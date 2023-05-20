@@ -199,7 +199,7 @@ public class PedidoServiceTests {
 
         @Test
         @DisplayName("Lista o pedido atual de um cliente válido. Só deve existir um pedido por cliente em qualquer momento")
-        void testListaPedidoClienteValido(){
+        void testListaPedidoClienteValido() throws Exception {
             
             assertEquals(pedido, pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()));
         }

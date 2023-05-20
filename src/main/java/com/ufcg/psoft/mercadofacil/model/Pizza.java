@@ -1,6 +1,7 @@
 package com.ufcg.psoft.mercadofacil.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -52,5 +53,24 @@ public class Pizza {
         this.precoPizza = precoPizza;
         this.quantidade = quantidade;
     }
+
+    @Override
+	public int hashCode() {
+		return Objects.hash(id, pedido, precoPizza, quantidade, sabor1, sabor2);
+	}
+    
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pizza other = (Pizza) obj;
+		return Objects.equals(id, other.id) && Objects.equals(pedido, other.pedido)
+				&& Objects.equals(precoPizza, other.precoPizza) && Objects.equals(quantidade, other.quantidade)
+				&& Objects.equals(sabor1, other.sabor1) && Objects.equals(sabor2, other.sabor2);
+	}
     
 }

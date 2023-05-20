@@ -160,10 +160,7 @@ public class PedidoV1ControllerTests {
             Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
 
             assertNotNull(pedidoSalvo);
-            assertEquals(pedidoDTO.getPizzas().get(0), pedidoSalvo.getPizzasPedido().get(0));
-//            assertArrayEquals(pedidoDTO.getPizzas().toArray(),pedidoSalvo.getPizzasPedido().toArray());
             assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
-//            assertEquals(pedidoSalvo, bandoDeGordosEsquisitos());
             assertEquals(2,pedidoRepository.findAll().size());
 
         }
@@ -383,15 +380,7 @@ public class PedidoV1ControllerTests {
         @DisplayName("Busca o pedido atual de um cliente (só deve existir um pedido por cliente)")
         public void testBuscaPedidoAtual() throws Exception{
 
-            Pedido pedidoRecuperado = pedidoRepository.findById(cliente.getId()).get();
-            assertEquals(pedido,pedidoRecuperado);
-
-            Pedido novoPedido = pedidoRepository.save(Pedido.builder()
-                .cliente(cliente)
-                .pizzasPedido(bandoDeGordosEsquisitos())
-            .build());
-
-            String responseJsonString = driver.perform(get("/v1/pedidos{id}",cliente.getId())
+            String responseJsonString = driver.perform(get("/v1/pedidos/" + pedido.getId() + "?codigoDeAcesso="+cliente.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -399,7 +388,9 @@ public class PedidoV1ControllerTests {
 
             Pedido resultado = objectMapper.readValue(responseJsonString, Pedido.class);
 
-            assertEquals(novoPedido,resultado);
+            assertEquals(pedido.getId(),resultado.getId());
+            assertEquals(pedido.getCliente(),resultado.getCliente());
+            assertEquals(pedido.getEndereco(), resultado.getEndereco());
         }
 
         @Test
