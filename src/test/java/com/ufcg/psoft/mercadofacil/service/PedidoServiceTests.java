@@ -83,6 +83,7 @@ public class PedidoServiceTests {
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
             .pizzasPedido(duasCalabresasGrandesCreator())
+            .meioDePagamento("PIX")
         .build()
         );
     }
@@ -157,11 +158,11 @@ public class PedidoServiceTests {
         @Test
         @DisplayName("Modifica um pedido válido")
         void testModificaPedido(){
-            System.out.println(pedido.getId());
+
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                 .enderecoAlternativo(novaRua)
-            .build();
+                .build();
 
             pedidoAlterarService.alterar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoModificado);
 

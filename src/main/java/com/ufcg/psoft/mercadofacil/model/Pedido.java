@@ -36,6 +36,9 @@ public class Pedido {
     private Double precoPedido;
 
     @JsonProperty
+    private String meioDePagamento;
+
+    @JsonProperty
     private String endereco;
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco){

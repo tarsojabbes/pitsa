@@ -37,6 +37,12 @@ public class PedidoPostPutRequestDTO {
     @Size(min=6, message = "Codigo de acesso deve ter tamanho minimo de 6 digitos")
     private String codigoDeAcesso;
 
+    @JsonProperty("meioDePagamento")
+    @NotBlank(message = "Meio de pagamento nao pode estar em branco.")
+    @NotEmpty(message = "Meio de pagamento nao pode ser vazio.")
+    @NotNull(message = "Meio de pagamento nao pode ser null.")
+    private String meioDePagamento;
+
     @JsonProperty("idCliente")
     @NotNull(message = "A id do cliente nao deve ser nula.")
     @Positive(message = "A id do cliente deve ser maior que zero.")

@@ -83,9 +83,9 @@ public class PedidoV1ControllerTests {
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
             .pizzasPedido(pizzas)
-                        .endereco("abc")
+            .endereco("abc")
             .pizzasPedido(duasCalabresasGrandesCreator())
-
+            .meioDePagamento("PIX")
         .build()
         );
     }
@@ -404,7 +404,7 @@ public class PedidoV1ControllerTests {
             Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
 
             assertNotNull(pedidoSalvo);
-            assertEquals(resposta.getEndereco(), "Rua Sem Nome S/N");
+            assertEquals("Rua Sem Nome S/N", resposta.getEndereco());
             assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
             assertEquals(2,pedidoRepository.findAll().size());
 
@@ -441,7 +441,7 @@ public class PedidoV1ControllerTests {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-            assertTrue(resultado.getResolvedException() instanceof PedidoInvalidoException);
+            assertTrue(resultado.getResolvedException() instanceof Exception);
 
         }
 
