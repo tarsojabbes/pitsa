@@ -76,6 +76,7 @@ public class PedidoV1ControllerTests {
             .nome("Joao")
             .endereco("Rua 1")
             .codigoDeAcesso("123456")
+            .pedidos(new ArrayList<>())
         .build());
 
         pedido = pedidoRepository.save(Pedido.builder()
@@ -129,12 +130,14 @@ public class PedidoV1ControllerTests {
                 .nome("Jose Lesinho")
                 .endereco("Rua Sem Nome S/N")
                 .codigoDeAcesso("admin123")
+                .pedidos(new ArrayList<Pedido>())
                 .build());
 
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                 .idCLiente(cliente2.getId())
                 .pizzas(bandoDeGordosEsquisitos())
+                .enderecoAlternativo("")
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
