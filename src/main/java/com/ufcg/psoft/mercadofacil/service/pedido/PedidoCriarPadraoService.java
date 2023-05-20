@@ -44,8 +44,20 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
             Pedido pedido = Pedido.builder()
             .pizzasPedido(inicioPedido)
                     .cliente(cliente)
-                    .endereco("abc")
+                    .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
             .build();
+
+            // Colocando o endereço do pedido
+            // Se o endereço de entrega não for informado,
+            // o pedido deverá ser entregue no endereço principal do(a) cliente que fez o pedido.
+
+            String enderecoAlternativo = pedidoPostPutRequestDTO.getEnderecoAlternativo();
+
+            if (enderecoAlternativo != null) {
+                pedido.setEndereco(enderecoAlternativo);
+            } else {
+                pedido.setEndereco(cliente.getEndereco());
+            }
 
             return pedidoRepository.save(pedido);
         } else {
