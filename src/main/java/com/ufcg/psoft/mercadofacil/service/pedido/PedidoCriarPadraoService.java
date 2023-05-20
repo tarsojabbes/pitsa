@@ -42,10 +42,6 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
-
-            inicioPedido = new ArrayList<>();
-
-
             Pedido pedido = Pedido.builder()
             .pizzasPedido(inicioPedido)
                     .cliente(cliente)

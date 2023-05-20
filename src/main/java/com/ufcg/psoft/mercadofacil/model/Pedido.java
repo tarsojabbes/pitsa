@@ -48,33 +48,33 @@ public class Pedido {
         }
     }
 
-    public Double getPrecoPedido(){
-
-        return calculaPrecoPedido();
-
-    }
-
-    public void setEndereco(String novoEndereco){
-        if (novoEndereco == null || novoEndereco.isEmpty() || novoEndereco.isBlank()){
-            this.endereco = this.cliente.getEndereco();
-        } else {
-            this.endereco  = novoEndereco;
-        }
-    }
-
-    private Double calculaPrecoPedido(){
-
-        Double total = 0.00;
-
-        if (pizzasPedido.isEmpty()){
-            return total;
-        }
-
-        for (Pizza listagem : pizzasPedido){
-            total += listagem.getPrecoPizza() * listagem.getQuantidade();
-        }
-
-        return total;
-    }
+//    public Double getPrecoPedido(){
+//
+//        return calculaPrecoPedido();
+//
+//    }
+//
+//    public void setEndereco(String novoEndereco){
+//        if (novoEndereco == null || novoEndereco.isEmpty() || novoEndereco.isBlank()){
+//            this.endereco = this.cliente.getEndereco();
+//        } else {
+//            this.endereco  = novoEndereco;
+//        }
+//    }
+//
+//    private Double calculaPrecoPedido(){
+//
+//        Double total = 0.00;
+//
+//        if (pizzasPedido.isEmpty()){
+//            return total;
+//        }
+//
+//        for (Pizza listagem : pizzasPedido){
+//            total += listagem.getPrecoPizza() * listagem.getQuantidade();
+//        }
+//
+//        return total;
+//    }
 
 }
