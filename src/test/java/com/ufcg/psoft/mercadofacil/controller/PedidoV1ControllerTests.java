@@ -3,6 +3,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -371,6 +372,45 @@ public class PedidoV1ControllerTests {
             assertTrue(errorStringTester);
         }
 
+
+        @Test
+        @Transactional
+        @DisplayName("Criação de Pedido sem endereço alternativo")
+        public void testCriaPedidoSemEndereco() throws Exception{
+
+            Cliente cliente2 = clienteRepository.save(Cliente.builder()
+                    .nome("Jose Lesinho")
+                    .endereco("Rua Sem Nome S/N")
+                    .codigoDeAcesso("admin123")
+                    .pedidos(new ArrayList<Pedido>())
+                    .build());
+
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(bandoDeGordosEsquisitos())
+                    .build();
+
+            String jsonString = objectMapper.writeValueAsString(pedidoDTO);
+
+            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso="+cliente2.getCodigoDeAcesso())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(resposta.getEndereco(), "Rua Sem Nome S/N");
+            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
+            assertEquals(2,pedidoRepository.findAll().size());
+
+        }
+
     }
 
     @Nested
@@ -402,7 +442,7 @@ public class PedidoV1ControllerTests {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-            assertTrue(resultado.getResolvedException() instanceof MercadoFacilException);
+            assertTrue(resultado.getResolvedException() instanceof PedidoInvalidoException);
 
         }
 
