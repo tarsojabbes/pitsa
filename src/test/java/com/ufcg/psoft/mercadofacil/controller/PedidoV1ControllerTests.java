@@ -412,6 +412,7 @@ public class PedidoV1ControllerTests {
     class PedidoPutTests{
 
         @Test
+        @Transactional
         @DisplayName("Atualização de um pedido com argumentos válidos (endereço)")
         public void testAtualizacaoValidaEndereco() throws Exception{
 
@@ -438,6 +439,7 @@ public class PedidoV1ControllerTests {
         válida, e realiza nova atualização com uma string inválida (vazia,em
         branco, ou null) para verificar se o endereço volta a ser o original*/
         @Test
+        @Transactional
         @DisplayName("Atualização de um pedido com argumentos inválidos (endereço).")
         public void testValidacaoEndereco() throws Exception{
 
@@ -479,6 +481,7 @@ public class PedidoV1ControllerTests {
         }
 
         @Test
+        @Transactional
         @DisplayName("Atualização de um pedido com argumentos válidos (pizzas do pedido)")
         public void testAtualizacaoValidaListaPizzas() throws Exception{
 
