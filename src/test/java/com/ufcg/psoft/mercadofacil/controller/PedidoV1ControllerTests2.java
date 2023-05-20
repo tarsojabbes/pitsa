@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Map;
 
 import jakarta.transaction.Transactional;
+=======
+>>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,8 +40,6 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
-import com.ufcg.psoft.mercadofacil.model.PizzaGrandeUmSabor;
-import com.ufcg.psoft.mercadofacil.model.PizzaMedia;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
@@ -65,12 +65,9 @@ public class PedidoV1ControllerTests {
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Pedido pedido;
-    Pizza pizza;
     List<Pizza> pizzas;
-
-    Cliente cliente;
-
     Estabelecimento estabelecimento;
+    Cliente cliente;
 
     @BeforeEach
     void setup(){
@@ -87,15 +84,14 @@ public class PedidoV1ControllerTests {
             .codigoDeAcesso("123456")
         .build());
 
-        pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
-        pizzas = new ArrayList<Pizza>();
-        pizzas.add(pizza);
-        pizzas.add(pizza);
-
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
+<<<<<<< HEAD
             .pizzasPedido(pizzas)
                         .endereco("abc")
+=======
+            .pizzasPedido(duasCalabresasGrandesCreator())
+>>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
         .build()
         );
     }
@@ -108,24 +104,30 @@ public class PedidoV1ControllerTests {
 
     }
 
-    private Map<Pizza,Integer> duasCalabresasGrandesCreator(){
-        Pizza pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
-        Map<Pizza,Integer> pizzas = new HashMap<Pizza,Integer>();
-        pizzas.put(pizza,2);
-        return pizzas;
+    private List<Pizza> duasCalabresasGrandesCreator(){
+        Sabor sabor = new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento);
+        List<Sabor> sabores = new ArrayList<>();
+        sabores.add(sabor);
+
+        Pizza duasCalabresasGrandes = new Pizza(sabores,false,sabor.getPrecoGrande(),2);
+        List<Pizza> novoPedido = new ArrayList<Pizza>();
+        novoPedido.add(duasCalabresasGrandes);
+
+        return novoPedido;
     }
 
     private List<Pizza> bandoDeGordosEsquisitos(){
-        Pizza atum = new PizzaGrandeUmSabor(new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento));
-        Pizza margherita = new PizzaGrandeUmSabor(new Sabor(3L,"Margherita","Salgada",55.00,65.00,estabelecimento));
-        Pizza pacoca = new PizzaMedia(new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento));
-        List<Pizza> pizzas1 = new ArrayList<Pizza>();
-        pizzas1.add(atum);
-        pizzas1.add(atum);
-        pizzas1.add(margherita);
-        pizzas1.add(margherita);
-        pizzas1.add(pacoca);
-        return pizzas1;
+        Sabor atum = new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento);
+        Sabor pacoca = new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento);
+        List<Sabor> sabores = new ArrayList<Sabor>();
+        sabores.add(atum);
+        sabores.add(pacoca);
+
+        List<Pizza> pizzaMaldita = new ArrayList<>();
+        Pizza p = new Pizza(sabores, true, (atum.getPrecoGrande()+pacoca.getPrecoGrande())/2,1);
+        pizzaMaldita.add(p);
+
+        return pizzaMaldita;
     }
 
     @Nested
@@ -156,6 +158,7 @@ public class PedidoV1ControllerTests {
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
+<<<<<<< HEAD
 //
 //            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
 //
@@ -166,16 +169,24 @@ public class PedidoV1ControllerTests {
 //            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
 //            assertEquals(pedidoSalvo,bandoDeGordosEsquisitos());
 //            assertEquals(2,pedidoRepository.findAll().size());
+=======
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(2,pedidoRepository.findAll().size());
+>>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
 
         }
 
         @Test
-        @DisplayName("Tenta criar um pedido inválido (map de pizzas vazio)")
+        @DisplayName("Tenta criar um pedido inválido (lista de pizzas vazia)")
         public void testCriaPedidoInvalidoMapVazio() throws Exception{
 
             pedidoRepository.deleteAll();
 
-            Map<Pizza,Integer> vazio = new HashMap<Pizza,Integer>();
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
@@ -193,8 +204,8 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode estar vazia.") 
-                                        || error.getErrors().contains("A listagem de pedidos nao pode ser null.");
+            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode estar vazia.")
+                                     || error.getErrors().contains("A listagem de pedidos nao pode ser null.");
             
             assertTrue(errorStringTester);
         }
@@ -222,8 +233,8 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode estar vazia.") 
-                                        || error.getErrors().contains("A listagem de pedidos nao pode ser null.");
+            boolean errorStringTester = error.getErrors().contains("A listagem de pedidos nao pode estar vazia.")
+                                     || error.getErrors().contains("A listagem de pedidos nao pode ser null.");
             
             assertTrue(errorStringTester);
         }
@@ -251,8 +262,8 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("A id do cliente nao deve ser nula.") 
-                                        || error.getErrors().contains("A id do cliente deve ser maior que zero.");
+            boolean errorStringTester = error.getErrors().contains("A id do cliente nao deve ser nula.")
+                                     || error.getErrors().contains("A id do cliente deve ser maior que zero.");
             
             assertTrue(errorStringTester);
         }
@@ -280,8 +291,8 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("A id do cliente nao deve ser nula.") 
-                                        || error.getErrors().contains("A id do cliente deve ser maior que zero.");
+            boolean errorStringTester = error.getErrors().contains("A id do cliente nao deve ser nula.")
+                                     || error.getErrors().contains("A id do cliente deve ser maior que zero.");
             
             assertTrue(errorStringTester);
         }
@@ -309,9 +320,9 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.") 
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser null.")
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
+            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser null.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
 
             assertTrue(errorStringTester);
         }
@@ -339,9 +350,9 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.") 
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser null.")
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
+            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser null.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
 
             assertTrue(errorStringTester);
         }
@@ -369,9 +380,9 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
 
-            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.") 
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser null.")
-                                        || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
+            boolean errorStringTester = error.getErrors().contains("Codigo de acesso nao pode estar em branco.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser null.")
+                                     || error.getErrors().contains("Codigo de acesso nao pode ser vazio.");
 
             assertTrue(errorStringTester);
         }

@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +20,6 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
-import com.ufcg.psoft.mercadofacil.model.PizzaGrandeUmSabor;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
@@ -82,14 +78,9 @@ public class PedidoServiceTests {
             .codigoDeAcesso("123456")
         .build());
 
-        pizza = new PizzaGrandeUmSabor(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
-        pizzas = new ArrayList<Pizza>();
-        pizzas.add(pizza);
-        pizzas.add(pizza);
-
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-            .pizzasPedido(pizzas)
+            .pizzasPedido(duasCalabresasGrandesCreator())
         .build()
         );
     }
@@ -101,11 +92,30 @@ public class PedidoServiceTests {
         pedidoRepository.deleteAll();
     }
 
-    private Map<Pizza,Integer> duasCalabresasGrandesCreator(){
+    private List<Pizza> duasCalabresasGrandesCreator(){
+        Sabor sabor = new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento);
+        List<Sabor> sabores = new ArrayList<>();
+        sabores.add(sabor);
 
-        Map<Pizza,Integer> pizzas = new HashMap<Pizza,Integer>();
-        pizzas.put(pizza,2);
-        return pizzas;
+        Pizza duasCalabresasGrandes = new Pizza(sabores,false,sabor.getPrecoGrande(),2);
+        List<Pizza> novoPedido = new ArrayList<Pizza>();
+        novoPedido.add(duasCalabresasGrandes);
+
+        return novoPedido;
+    }
+
+    private List<Pizza> bandoDeGordosEsquisitos(){
+        Sabor atum = new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento);
+        Sabor pacoca = new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento);
+        List<Sabor> sabores = new ArrayList<Sabor>();
+        sabores.add(atum);
+        sabores.add(pacoca);
+
+        List<Pizza> pizzaMaldita = new ArrayList<>();
+        Pizza p = new Pizza(sabores, true, (atum.getPrecoGrande()+pacoca.getPrecoGrande())/2,1);
+        pizzaMaldita.add(p);
+        
+        return pizzaMaldita;
     }
 
     @Nested
