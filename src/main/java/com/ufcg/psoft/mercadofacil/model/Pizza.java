@@ -1,14 +1,14 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Data
@@ -26,17 +26,31 @@ public class Pizza {
     @JoinColumn(name="id_pedido")
     private Pedido pedido;
 
-    @JsonProperty("sabor")
+    @JsonProperty("sabor1")
     @ManyToOne()
-    @JoinColumn(name = "id_sabor")
-    private Sabor sabor;
+    @JoinColumn(name = "id_sabor1")
+    private Sabor sabor1;
+
+    @JsonProperty("sabor2")
+    @ManyToOne()
+    @JoinColumn(name = "id_sabor2")
+    private Sabor sabor2;
+
+    @JsonProperty
+    private Integer quantidade;
 
     @JsonProperty("precoPizza")
     private Double precoPizza;
 
-    Pizza(Sabor sabor1, Double precoPizza){
-        this.sabor = sabor1;
+    public Pizza(List<Sabor> sabores, boolean eGrandeDoisSabores, Double precoPizza, Integer quantidade){
+        this.sabor1 = sabores.get(0);
+        if (eGrandeDoisSabores){
+            this.sabor2 = sabores.get(1);
+        } else {
+            this.sabor2 = null;
+        }
         this.precoPizza = precoPizza;
+        this.quantidade = quantidade;
     }
     
 }

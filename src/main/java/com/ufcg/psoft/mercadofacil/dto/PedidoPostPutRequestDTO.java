@@ -3,7 +3,6 @@ package com.ufcg.psoft.mercadofacil.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ufcg.psoft.mercadofacil.model.Pizza;

@@ -9,9 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Data
@@ -72,7 +70,7 @@ public class Pedido {
         }
 
         for (Pizza listagem : pizzasPedido){
-            total += listagem.getPrecoPizza();
+            total += listagem.getPrecoPizza() * listagem.getQuantidade();
         }
 
         return total;
