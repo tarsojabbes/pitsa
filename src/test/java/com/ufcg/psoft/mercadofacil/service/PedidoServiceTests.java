@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -98,7 +100,7 @@ public class PedidoServiceTests {
         sabores.add(sabor);
 
         Pizza duasCalabresasGrandes = new Pizza(sabores,false,sabor.getPrecoGrande(),2);
-        List<Pizza> novoPedido = new ArrayList<Pizza>();
+        List<Pizza> novoPedido = new ArrayList<>();
         novoPedido.add(duasCalabresasGrandes);
 
         return novoPedido;
@@ -123,7 +125,7 @@ public class PedidoServiceTests {
                 .enderecoAlternativo("")
             .build();
 
-            Pedido pedidoCriado = pedidoCriarService.criar(cliente.getCodigoDeAcesso(),novoPedido);
+            pedidoCriarService.criar(cliente.getCodigoDeAcesso(),novoPedido);
 
             assertEquals(1,pedidoRepository.findAll().size());
 
@@ -141,7 +143,7 @@ public class PedidoServiceTests {
                 .pizzas(pizzas)
             .build();
 
-            Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
+            pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
 
             assertEquals(2,pedidoRepository.findAll().size());
 
@@ -156,13 +158,19 @@ public class PedidoServiceTests {
         @DisplayName("Modifica um pedido válido")
         void testModificaPedido(){
 
+            String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
-                .enderecoAlternativo("Rua 2")
+                .enderecoAlternativo(novaRua)
             .build();
 
-            Pedido pedidoAtualizado = pedidoAlterarService.alterar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoModificado);
+            pedidoAlterarService.alterar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoModificado);
 
-            assertEquals(pedidoAtualizado,pedidoRepository.findById(pedido.getId()).get());
+            Optional<Pedido> pedidoAlterado = pedidoRepository.findById(pedido.getId());
+
+            if(pedidoAlterado.isPresent()){
+                assertEquals(novaRua,pedidoAlterado.get().getEndereco());
+            }
+            
         }
 
         @Test

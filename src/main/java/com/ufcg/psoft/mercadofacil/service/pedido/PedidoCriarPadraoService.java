@@ -1,6 +1,5 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;

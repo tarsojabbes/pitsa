@@ -32,6 +32,9 @@ public class Pedido {
     @JoinColumn(name="id_cliente", nullable = false)
     private Cliente cliente;
 
+    @JsonProperty("precoPedido")
+    private Double precoPedido;
+
     @JsonProperty
     private String endereco;
 
@@ -46,6 +49,32 @@ public class Pedido {
         } else {
             this.endereco = endereco;
         }
+    }
+
+    public void setPrecoPedido(){
+
+        this.precoPedido = calculaPrecoPedido();
+    }
+
+    public Double getPrecoPedido(){
+
+        return calculaPrecoPedido();
+
+    }
+
+    private Double calculaPrecoPedido(){
+
+        Double preco = 0.00;
+
+        if (pizzasPedido.isEmpty()){
+            return preco;
+        }
+
+        for (Pizza p:pizzasPedido){
+            preco += p.getPrecoPizza() * p.getQuantidade();
+        }
+
+        return preco;
     }
 
 }

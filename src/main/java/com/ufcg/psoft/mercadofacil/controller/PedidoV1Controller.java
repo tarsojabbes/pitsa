@@ -49,7 +49,7 @@ public class PedidoV1Controller {
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> buscarPedido(@PathVariable @Valid Long id,
                                                @Valid String codigoDeAcessoCliente,
-                                               @ Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
+                                               @Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
 
         return ResponseEntity.status(HttpStatus.OK).body(pedidoListarService.listar(id, codigoDeAcessoCliente).get(0));
         
@@ -64,7 +64,7 @@ public class PedidoV1Controller {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pedido> atualizarPedido(@PathVariable Long id,
+    public ResponseEntity<Pedido> atualizarPedido(@PathVariable @Valid Long id,
                                                   @RequestBody @Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO,
                                                   @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
 
@@ -73,7 +73,7 @@ public class PedidoV1Controller {
     }
 
     @DeleteMapping("/{id}")
-    public void excluirPedido(@PathVariable Long id,
+    public void excluirPedido(@PathVariable @Valid Long id,
                               @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcesso) {
 
         pedidoExcluirService.excluir(id, codigoDeAcesso);

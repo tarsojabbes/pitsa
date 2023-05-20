@@ -111,7 +111,7 @@ public class CardapioServiceTests {
                                 .codigoDeAcesso("11111")
                             .build());
 
-        Sabor cartola2 = saborRepository.save(Sabor.builder()
+        saborRepository.save(Sabor.builder()
             .nomeSabor("Cartola")
             .tipoSabor("Doce")
             .precoMedio(50.00)
@@ -177,7 +177,7 @@ public class CardapioServiceTests {
 
         assertEquals(0, cardapioDoce.size());
 
-        Sabor margherita = saborRepository.save(Sabor.builder()
+        saborRepository.save(Sabor.builder()
             .nomeSabor("Margherita")
             .tipoSabor("Salgado")
             .precoMedio(45.00)
