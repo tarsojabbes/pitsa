@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-<<<<<<< HEAD
 
 import jakarta.transaction.Transactional;
-=======
->>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -86,12 +83,8 @@ public class PedidoV1ControllerTests {
 
         pedido = pedidoRepository.save(Pedido.builder()
             .cliente(cliente)
-<<<<<<< HEAD
-            .pizzasPedido(pizzas)
-                        .endereco("abc")
-=======
             .pizzasPedido(duasCalabresasGrandesCreator())
->>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
+                        .endereco("abc")
         .build()
         );
     }
@@ -160,7 +153,6 @@ public class PedidoV1ControllerTests {
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
-<<<<<<< HEAD
 //
 //            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
 //
@@ -171,15 +163,6 @@ public class PedidoV1ControllerTests {
 //            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
 //            assertEquals(pedidoSalvo,bandoDeGordosEsquisitos());
 //            assertEquals(2,pedidoRepository.findAll().size());
-=======
-
-            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
-
-            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
-
-            assertNotNull(pedidoSalvo);
-            assertEquals(2,pedidoRepository.findAll().size());
->>>>>>> a71466291d6f7fcec791c641d4d82a6b9a65b098
 
         }
 
