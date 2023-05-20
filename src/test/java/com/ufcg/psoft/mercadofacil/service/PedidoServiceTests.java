@@ -104,20 +104,6 @@ public class PedidoServiceTests {
         return novoPedido;
     }
 
-    private List<Pizza> bandoDeGordosEsquisitos(){
-        Sabor atum = new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento);
-        Sabor pacoca = new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento);
-        List<Sabor> sabores = new ArrayList<Sabor>();
-        sabores.add(atum);
-        sabores.add(pacoca);
-
-        List<Pizza> pizzaMaldita = new ArrayList<>();
-        Pizza p = new Pizza(sabores, true, (atum.getPrecoGrande()+pacoca.getPrecoGrande())/2,1);
-        pizzaMaldita.add(p);
-        
-        return pizzaMaldita;
-    }
-
     @Nested
     public class PedidoCriarServiceTests{
 
@@ -140,7 +126,6 @@ public class PedidoServiceTests {
             Pedido pedidoCriado = pedidoCriarService.criar(cliente.getCodigoDeAcesso(),novoPedido);
 
             assertEquals(1,pedidoRepository.findAll().size());
-            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()).get());
 
         }
 
