@@ -1,5 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,8 +43,14 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
+
+            inicioPedido = new ArrayList<>();
+
+
             Pedido pedido = Pedido.builder()
             .pizzasPedido(inicioPedido)
+                    .cliente(cliente)
+                    .endereco("abc")
             .build();
 
             return pedidoRepository.save(pedido);
