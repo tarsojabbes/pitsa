@@ -43,7 +43,7 @@ public class Pedido {
         this.cliente = cliente;
         this.pizzasPedido = pizzas;
         this.id = cliente.getId();
-
+        this.precoPedido = calculaPrecoPedido();
         if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
             endereco = cliente.getEndereco();
         } else {
