@@ -157,7 +157,7 @@ public class PedidoServiceTests {
         @Test
         @DisplayName("Modifica um pedido válido")
         void testModificaPedido(){
-
+            System.out.println(pedido.getId());
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                 .enderecoAlternativo(novaRua)
@@ -176,7 +176,7 @@ public class PedidoServiceTests {
         @Test
         @DisplayName("Tenta modificar um pedido inexistente")
         void testRemovePizzaValida(){
-
+            
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                 .enderecoAlternativo("Rua 2")
             .build();
