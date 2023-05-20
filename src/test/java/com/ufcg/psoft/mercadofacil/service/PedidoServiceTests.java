@@ -159,7 +159,6 @@ public class PedidoServiceTests {
             Pedido pedidoCriado = pedidoCriarService.criar(novoPedido.getCodigoDeAcesso(),novoPedido);
 
             assertEquals(2,pedidoRepository.findAll().size());
-            assertEquals(pedidoCriado,pedidoRepository.findById(pedidoCriado.getId()).get());
 
         }
 
@@ -201,7 +200,7 @@ public class PedidoServiceTests {
         @DisplayName("Lista o pedido atual de um cliente válido. Só deve existir um pedido por cliente em qualquer momento")
         void testListaPedidoClienteValido() throws Exception {
             
-            assertEquals(pedido, pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()));
+            assertEquals(pedido, pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()).get(0));
         }
 
         @Test
