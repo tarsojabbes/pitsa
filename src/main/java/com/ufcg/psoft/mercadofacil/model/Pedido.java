@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Pedido {
 
+    @JsonProperty("id")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -35,7 +36,7 @@ public class Pedido {
     private String endereco;
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco){
-        
+
         this.cliente = cliente;
         this.pizzasPedido = pizzas;
         this.id = cliente.getId();
@@ -75,5 +76,5 @@ public class Pedido {
 
         return total;
     }
-    
+
 }
