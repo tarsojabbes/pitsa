@@ -1,7 +1,9 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
+import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
@@ -28,15 +30,19 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService{
     @Override
     public Pedido alterar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
 
-        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
-            throw new IllegalArgumentException();
-        }
-        
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
         Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
 
         if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())){
-            modelMapper.map(pedidoPostPutRequestDTO,pedido);
+            pedido.setCliente(cliente);
+            pedido.setPizzasPedido(pedidoPostPutRequestDTO.getPizzas());
+
+            if (!pedidoPostPutRequestDTO.getEnderecoAlternativo().equals("") ||
+                    pedidoPostPutRequestDTO.getEnderecoAlternativo() != null) {
+                pedido.setEndereco(pedidoPostPutRequestDTO.getEnderecoAlternativo());
+            }
+
+            pedido.setMeioDePagamento(pedidoPostPutRequestDTO.getMeioDePagamento());
             return pedidoRepository.save(pedido);
         } else {
             throw new ClienteNaoAutorizadoException();

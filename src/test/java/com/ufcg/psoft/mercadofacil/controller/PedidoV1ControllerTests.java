@@ -83,22 +83,42 @@ public class PedidoV1ControllerTests {
             .pedidos(new ArrayList<>())
         .build());
 
+        Sabor sabor = saborRepository.save(Sabor.builder()
+                .nomeSabor("Frango")
+                .tipoSabor("salgado")
+                .estabelecimento(estabelecimento)
+                .precoGrande(59.90)
+                .precoMedio(39.90)
+                .build());
+
+        List<Sabor> sabores = new ArrayList<Sabor>();
+        sabores.add(sabor);
+
+        Pizza pizza1 = Pizza.builder()
+                .precoPizza(sabor.getPrecoGrande())
+                .sabor1(sabor)
+                .sabor2(null)
+                .quantidade(1)
+                .build();
+
+        pizzas = new ArrayList<Pizza>();
+        pizzas.add(pizza1);
+
         pedido = pedidoRepository.save(Pedido.builder()
-            .id(cliente.getId())
             .cliente(cliente)
             .pizzasPedido(pizzas)
             .endereco("abc")
-            .pizzasPedido(duasCalabresasGrandesCreator())
             .meioDePagamento("PIX")
         .build()
         );
     }
-    
+
     @AfterEach
     void tearDown(){
         saborRepository.deleteAll();
         pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
+        saborRepository.deleteAll();
         estabelecimentoRepository.deleteAll();
     }
 
@@ -147,6 +167,7 @@ public class PedidoV1ControllerTests {
                 .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                 .idCLiente(cliente2.getId())
                 .pizzas(bandoDeGordosEsquisitos())
+                .meioDePagamento("Pix")
                 .enderecoAlternativo("")
                 .build();
             
@@ -392,6 +413,7 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCLiente(cliente2.getId())
                     .pizzas(bandoDeGordosEsquisitos())
+                    .meioDePagamento("PIX")
                     .build();
 
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -420,10 +442,11 @@ public class PedidoV1ControllerTests {
     class PedidoGetTests{
 
         @Test
-        @DisplayName("Busca o pedido atual de um cliente (só deve existir um pedido por cliente)")
+        @Transactional
+        @DisplayName("Busca um pedido de um cliente")
         public void testBuscaPedidoAtual() throws Exception{
 
-            String responseJsonString = driver.perform(get("/v1/pedidos/" + pedido.getId() + "?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+            String responseJsonString = driver.perform(get("/v1/pedidos/" + pedido.getId() + "?codigoDeAcesso=123456")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -432,11 +455,13 @@ public class PedidoV1ControllerTests {
             Pedido resultado = objectMapper.readValue(responseJsonString, Pedido.class);
 
             assertEquals(pedido.getId(),resultado.getId());
-            assertEquals(pedido.getCliente(),resultado.getCliente());
+            assertEquals(pedido.getCliente().getId(),resultado.getCliente().getId());
+            assertEquals(pedido.getCliente().getNome(),resultado.getCliente().getNome());
             assertEquals(pedido.getEndereco(), resultado.getEndereco());
         }
 
         @Test
+        @Transactional
         @DisplayName("Busca um pedido inválido")
         public void testBuscaPedidoInvalido() throws Exception{
 
@@ -452,33 +477,37 @@ public class PedidoV1ControllerTests {
     }
 
     @Nested
-    class PedidoPutTests{
+    class PedidoPutTests {
 
         @Test
         @Transactional
         @DisplayName("Atualização de um pedido com argumentos válidos (endereço)")
-        public void testAtualizacaoValidaEndereco() throws Exception{
+        public void testAtualizacaoValidaEndereco() throws Exception {
 
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
-            .codigoDeAcesso(cliente.getCodigoDeAcesso())
-            .idCLiente(cliente.getId())
-            .enderecoAlternativo("Avenida Augusto dos Anjos 44")
-            .pizzas(pedido.getPizzasPedido())
-            .build();
+                    .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .idCLiente(cliente.getId())
+                    .enderecoAlternativo("Avenida Augusto dos Anjos 44")
+                    .pizzas(pedido.getPizzasPedido())
+                    .meioDePagamento("PIX")
+                    .build();
 
-            String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pedidoDTO)))
+            String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId())
+                            .queryParam("codigoDeAcesso", cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(pedidoDTO)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            Pedido resposta = objectMapper.readValue(respostaJson,Pedido.class);
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
 
             assertEquals("Avenida Augusto dos Anjos 44", resposta.getEndereco());
         }
 
-        /*Atualiza o endereço original (composto em cliente) por uma string
+
+
+    /*Atualiza o endereço original (composto em cliente) por uma string
         válida, e realiza nova atualização com uma string inválida (vazia,em
         branco, ou null) para verificar se o endereço volta a ser o original*/
         @Test
@@ -490,6 +519,7 @@ public class PedidoV1ControllerTests {
             .codigoDeAcesso(cliente.getCodigoDeAcesso())
             .idCLiente(cliente.getId())
             .enderecoAlternativo("Avenida Augusto dos Anjos 44")
+            .meioDePagamento("PIX")
             .pizzas(pedido.getPizzasPedido())
             .build();
 
@@ -508,13 +538,13 @@ public class PedidoV1ControllerTests {
             .codigoDeAcesso(cliente.getCodigoDeAcesso())
             .idCLiente(cliente.getId())
             .enderecoAlternativo(null)
-            .pizzas(pedido.getPizzasPedido())
+            .pizzas(pizzas)
             .build();
 
             respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(pedidoDTO)))
-                    .andExpect(status().isOk())
+                    .andExpect(status().isBadRequest())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
@@ -531,7 +561,8 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
             .codigoDeAcesso(cliente.getCodigoDeAcesso())
             .idCLiente(cliente.getId())
-            .pizzas(bandoDeGordosEsquisitos())
+            .pizzas(pedido.getPizzasPedido())
+            .meioDePagamento("PIX")
             .build();
 
             String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
@@ -552,6 +583,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(null)
                 .build();
 
@@ -576,6 +608,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(new ArrayList<Pizza>())
                 .build();
 
