@@ -164,7 +164,6 @@ public class PedidoServiceTests {
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                     .idCLiente(cliente.getId())
-
                 .enderecoAlternativo(novaRua)
                 .build();
 

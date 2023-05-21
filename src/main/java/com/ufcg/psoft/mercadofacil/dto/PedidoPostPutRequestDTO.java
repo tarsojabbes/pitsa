@@ -48,7 +48,7 @@ public class PedidoPostPutRequestDTO {
     @Positive(message = "A id do cliente deve ser maior que zero.")
     private Long idCLiente;
 
-    @JsonProperty
+    @JsonProperty("enderecoAlternativo")
     private String enderecoAlternativo;
 
 }
