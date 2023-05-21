@@ -21,7 +21,7 @@ public class PedidoV1Controller {
     PedidoAlterarService pedidoAlterarService;
 
     @Autowired
-    PedidoConfirmarService pedidoConfirmarService;
+    PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
 
     @Autowired
     PedidoCriarService pedidoCriarService;
@@ -57,11 +57,11 @@ public class PedidoV1Controller {
         return ResponseEntity.status(HttpStatus.OK).body(pedidoAlterarService.alterar(id, codigoDeAcesso, pedidoPostPutRequestDTO));
     }
 
-    @PutMapping("/{id}/confirmar")
+    @PutMapping("/{id}/confirmarPagamento")
     public ResponseEntity<Pedido> confirmarPedido(@PathVariable @Valid Long id,
                                                   @RequestBody @Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO,
                                                   @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
-        return ResponseEntity.status(HttpStatus.OK).body(pedidoConfirmarService.confirmar(id, codigoDeAcesso, pedidoPostPutRequestDTO));
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoConfirmarPagamentoService.confirmar(id, codigoDeAcesso, pedidoPostPutRequestDTO));
     }
 
     @DeleteMapping("/{id}")

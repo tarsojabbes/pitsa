@@ -37,7 +37,7 @@ public class PedidoServiceTests {
     PedidoExcluirService pedidoExcluirService;
 
     @Autowired
-    PedidoConfirmarService pedidoConfirmarService;
+    PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
 
     @Autowired
     PedidoRepository pedidoRepository;
@@ -228,12 +228,12 @@ public class PedidoServiceTests {
     }
 
     @Nested
-    public class PedidoConfirmarTests {
+    public class PedidoConfirmarPagamentoTests {
 
         @Test
         @Transactional
-        @DisplayName("Confirma um pedido válido passando PIX como meio de pagamento")
-        void testConfirmaPedidoValidoPIX() {
+        @DisplayName("Confirma o pagamento de um pedido válido passando PIX como meio de pagamento")
+        void testConfirmaPagamentoPedidoValidoPIX() {
             // Valor antes de confirmar o pedido com o meio de pagamento
             assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
@@ -243,7 +243,7 @@ public class PedidoServiceTests {
                     .meioDePagamento(PIX)
                     .build();
 
-            pedidoConfirmarService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+            pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
 
             assertEquals(PIX, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
@@ -252,8 +252,8 @@ public class PedidoServiceTests {
 
         @Test
         @Transactional
-        @DisplayName("Confirma um pedido válido passando CREDITO como meio de pagamento")
-        void testConfirmaPedidoValidoCREDITO() {
+        @DisplayName("Confirma o pagamento de um pedido válido passando CREDITO como meio de pagamento")
+        void testConfirmaPagamentoPedidoValidoCREDITO() {
             // Valor antes de confirmar o pedido com o meio de pagamento
             assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
@@ -263,7 +263,7 @@ public class PedidoServiceTests {
                     .meioDePagamento(CREDITO)
                     .build();
 
-            pedidoConfirmarService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+            pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
 
             assertEquals(CREDITO, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
@@ -272,8 +272,8 @@ public class PedidoServiceTests {
 
         @Test
         @Transactional
-        @DisplayName("Confirma um pedido válido passando DEBITO como meio de pagamento")
-        void testConfirmaPedidoValidoDEBITO() {
+        @DisplayName("Confirma o pagamento de um pedido válido passando DEBITO como meio de pagamento")
+        void testConfirmaPagamentoPedidoValidoDEBITO() {
             // Valor antes de confirmar o pedido com o meio de pagamento
             assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
@@ -283,7 +283,7 @@ public class PedidoServiceTests {
                     .meioDePagamento(DEBITO)
                     .build();
 
-            pedidoConfirmarService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+            pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
 
             assertEquals(DEBITO, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
@@ -292,14 +292,14 @@ public class PedidoServiceTests {
 
         @Test
         @Transactional
-        @DisplayName("Tenta confirmar um pedido inexistente passando um meio de pagamento")
-        void testConfirmaPedidoInexistente() {
+        @DisplayName("Tenta confirmar o pagamento de um pedido inexistente passando um meio de pagamento")
+        void testConfirmaPagamentoPedidoInexistente() {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .meioDePagamento(PIX)
                     .build();
 
-            assertThrows(MercadoFacilException.class, () -> pedidoConfirmarService.confirmar(pedido.getId() + 2L, cliente.getCodigoDeAcesso(), pedidoConfirmado));
+            assertThrows(MercadoFacilException.class, () -> pedidoConfirmarPagamentoService.confirmar(pedido.getId() + 2L, cliente.getCodigoDeAcesso(), pedidoConfirmado));
         }
 
     }

@@ -4,7 +4,7 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 
 @FunctionalInterface
-public interface PedidoConfirmarService {
+public interface PedidoConfirmarPagamentoService {
 
     Pedido confirmar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO);
 }

@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PedidoConfirmarPadraoService implements PedidoConfirmarService {
+public class PedidoConfirmarPagamentoPadraoService implements PedidoConfirmarPagamentoService {
 
     @Autowired
     ModelMapper modelMapper;
@@ -29,6 +29,8 @@ public class PedidoConfirmarPadraoService implements PedidoConfirmarService {
 
         if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null) {
             throw new IllegalArgumentException();
+        } else if (pedidoPostPutRequestDTO.getMeioDePagamento() == null) {
+            throw new IllegalArgumentException("Meio de pagamento nao eh valido");
         }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
@@ -40,5 +42,7 @@ public class PedidoConfirmarPadraoService implements PedidoConfirmarService {
             modelMapper.map(pedidoPostPutRequestDTO, pedido);
             return pedidoRepository.save(pedido);
         }
+
     }
+
 }
