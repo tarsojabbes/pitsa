@@ -24,7 +24,7 @@ public class Pedido {
     private Long id;
 
     @JsonProperty("pizzas")
-    @OneToMany(mappedBy = "pedido")
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Pizza> pizzasPedido;
 
@@ -36,10 +36,10 @@ public class Pedido {
     @JsonProperty("precoPedido")
     private Double precoPedido;
 
-    @JsonProperty
+    @JsonProperty("meioDePagamento")
     private String meioDePagamento;
 
-    @JsonProperty
+    @JsonProperty("endereco")
     private String endereco;
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco){

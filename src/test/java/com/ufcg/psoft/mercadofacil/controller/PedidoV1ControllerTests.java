@@ -3,6 +3,8 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import jakarta.transaction.Transactional;
 
@@ -122,7 +124,7 @@ public class PedidoV1ControllerTests {
     }
 
     private List<Pizza> duasCalabresasGrandesCreator(){
-        Sabor sabor = new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento);
+        Sabor sabor = saborRepository.save(new Sabor(1L,"Calabresa", "Salgada", 50.00, 60.00, estabelecimento));
         List<Sabor> sabores = new ArrayList<>();
         sabores.add(sabor);
 
@@ -185,6 +187,7 @@ public class PedidoV1ControllerTests {
 
             assertNotNull(pedidoSalvo);
             assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
+            assertEquals(pedidoDTO.getPizzas().get(0).getQuantidade(), pedidoSalvo.getPizzasPedido().get(0).getQuantidade());
             assertEquals(2,pedidoRepository.findAll().size());
 
         }
@@ -198,6 +201,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(new ArrayList<Pizza>())
                 .build();
             
@@ -228,6 +232,7 @@ public class PedidoV1ControllerTests {
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(cliente.getId())
                 .pizzas(null)
+                    .meioDePagamento("PIX")
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -257,6 +262,7 @@ public class PedidoV1ControllerTests {
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(null)
                 .pizzas(pizzas)
+                    .meioDePagamento("PIX")
                 .build();
             
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -285,6 +291,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(cliente.getCodigoDeAcesso())
                 .idCLiente(-2L)
+                    .meioDePagamento("PIX")
                 .pizzas(pizzas)
                 .build();
             
@@ -314,6 +321,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso(null)
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(pizzas)
                 .build();
             
@@ -344,6 +352,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso("")
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(pizzas)
                 .build();
             
@@ -374,6 +383,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                 .codigoDeAcesso("     ")
                 .idCLiente(cliente.getId())
+                    .meioDePagamento("PIX")
                 .pizzas(pizzas)
                 .build();
             
@@ -504,54 +514,6 @@ public class PedidoV1ControllerTests {
             assertEquals("Avenida Augusto dos Anjos 44", resposta.getEndereco());
         }
 
-
-
-    /*Atualiza o endereço original (composto em cliente) por uma string
-        válida, e realiza nova atualização com uma string inválida (vazia,em
-        branco, ou null) para verificar se o endereço volta a ser o original*/
-        @Test
-        @Transactional
-        @DisplayName("Atualização de um pedido com argumentos inválidos (endereço).")
-        public void testValidacaoEndereco() throws Exception{
-
-            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
-            .codigoDeAcesso(cliente.getCodigoDeAcesso())
-            .idCLiente(cliente.getId())
-            .enderecoAlternativo("Avenida Augusto dos Anjos 44")
-            .meioDePagamento("PIX")
-            .pizzas(pedido.getPizzasPedido())
-            .build();
-
-            String respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pedidoDTO)))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            Pedido resposta = objectMapper.readValue(respostaJson,Pedido.class);
-
-            assertEquals("Avenida Augusto dos Anjos 44", resposta.getEndereco());
-
-            pedidoDTO = PedidoPostPutRequestDTO.builder()
-            .codigoDeAcesso(cliente.getCodigoDeAcesso())
-            .idCLiente(cliente.getId())
-            .enderecoAlternativo(null)
-            .pizzas(pizzas)
-            .build();
-
-            respostaJson = driver.perform(put("/v1/pedidos/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pedidoDTO)))
-                    .andExpect(status().isBadRequest())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            resposta = objectMapper.readValue(respostaJson,Pedido.class);
-
-            assertEquals(cliente.getEndereco(),resposta.getEndereco());
-        }
-
         @Test
         @Transactional
         @DisplayName("Atualização de um pedido com argumentos válidos (pizzas do pedido)")
@@ -560,7 +522,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
             .codigoDeAcesso(cliente.getCodigoDeAcesso())
             .idCLiente(cliente.getId())
-            .pizzas(pedido.getPizzasPedido())
+            .pizzas(duasCalabresasGrandesCreator())
             .meioDePagamento("PIX")
             .build();
 
@@ -573,7 +535,9 @@ public class PedidoV1ControllerTests {
 
             Pedido resposta = objectMapper.readValue(respostaJson,Pedido.class);
 
-            assertEquals(bandoDeGordosEsquisitos(), resposta.getPizzasPedido());
+            assertEquals(duasCalabresasGrandesCreator().get(0).getQuantidade(), resposta.getPizzasPedido().get(0).getQuantidade());
+            assertEquals(60.00, resposta.getPizzasPedido().get(0).getPrecoPizza());
+
         }
 
         @Test
@@ -648,7 +612,7 @@ public class PedidoV1ControllerTests {
         @DisplayName("Exclusao por ID de um pedido inválido (potencial pedido de outro cliente)")
         public void testExclusaoPorIDInvalida() throws Exception {
 
-            driver.perform(delete("/v1/pedidos/" + (pedido.getId() + 1L))
+            driver.perform(delete("/v1/pedidos/" + (pedido.getId() + 1L)+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())

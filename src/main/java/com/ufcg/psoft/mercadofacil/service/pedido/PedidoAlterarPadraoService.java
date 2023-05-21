@@ -33,17 +33,11 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService{
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
         Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())){
-            pedido.setCliente(cliente);
-            pedido.setPizzasPedido(pedidoPostPutRequestDTO.getPizzas());
+        if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())) {
+            modelMapper.map(pedidoPostPutRequestDTO, pedido);
 
-            if (!pedidoPostPutRequestDTO.getEnderecoAlternativo().equals("") ||
-                    pedidoPostPutRequestDTO.getEnderecoAlternativo() != null) {
-                pedido.setEndereco(pedidoPostPutRequestDTO.getEnderecoAlternativo());
-            }
-
-            pedido.setMeioDePagamento(pedidoPostPutRequestDTO.getMeioDePagamento());
-            return pedidoRepository.save(pedido);
+            Pedido pedidoSalvo = pedidoRepository.save(pedido);
+            return pedidoSalvo;
         } else {
             throw new ClienteNaoAutorizadoException();
         }
