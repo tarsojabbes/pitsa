@@ -38,7 +38,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
         if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
             throw new IllegalArgumentException();
         }
-        
+
         Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
 
         if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
@@ -46,7 +46,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
             Pedido pedido = Pedido.builder()
-            .pizzasPedido(inicioPedido)
+                    .pizzasPedido(inicioPedido)
                     .cliente(cliente)
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
             .build();
@@ -67,6 +67,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
         } else {
             throw new ClienteNaoAutorizadoException();
         }
+
     }
-    
+
 }
