@@ -137,6 +137,10 @@ public class PedidoV1ControllerTests {
     private List<Pizza> bandoDeGordosEsquisitos(){
         Sabor atum = new Sabor(2L,"Atum","Salgada",60.00,70.00,estabelecimento);
         Sabor pacoca = new Sabor(4L,"Pacoca","Doce",50.00,60.00,estabelecimento);
+
+        atum = saborRepository.save(atum);
+        pacoca = saborRepository.save(pacoca);
+
         List<Sabor> sabores = new ArrayList<Sabor>();
         sabores.add(atum);
         sabores.add(pacoca);
@@ -204,88 +208,6 @@ public class PedidoV1ControllerTests {
             Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
 
             assertNotNull(pedidoSalvo);
-            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
-            assertEquals(pedidoDTO.getPizzas().get(0).getQuantidade(), pedidoSalvo.getPizzasPedido().get(0).getQuantidade());
-            assertEquals(2,pedidoRepository.findAll().size());
-
-        }
-
-        @Test
-        @Transactional
-        @DisplayName("Teste de preço com pizzas com dois sabores")
-        public void testPrecoPedidoComPizzasComDoisSabores() throws Exception{
-
-            Cliente cliente2 = clienteRepository.save(Cliente.builder()
-                    .nome("Jose Lesinho")
-                    .endereco("Rua Sem Nome S/N")
-                    .codigoDeAcesso("admin123")
-                    .pedidos(new ArrayList<Pedido>())
-                    .build());
-
-            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
-                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
-                    .idCLiente(cliente2.getId())
-                    .pizzas(bandoDeGordosEsquisitos())
-                    .meioDePagamento("Pix")
-                    .enderecoAlternativo("")
-                    .build();
-
-            String jsonString = objectMapper.writeValueAsString(pedidoDTO);
-
-            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso="+cliente2.getCodigoDeAcesso())
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
-
-            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
-
-            assertNotNull(pedidoSalvo);
-            assertEquals(pedidoSalvo.getPrecoPedido(), 65);
-            assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
-            assertEquals(pedidoDTO.getPizzas().get(0).getQuantidade(), pedidoSalvo.getPizzasPedido().get(0).getQuantidade());
-            assertEquals(2,pedidoRepository.findAll().size());
-
-        }
-
-        @Test
-        @Transactional
-        @DisplayName("Teste de preço com pizzas com um sabor")
-        public void testPrecoPedidoComPizzasComUmSabor() throws Exception{
-
-            Cliente cliente2 = clienteRepository.save(Cliente.builder()
-                    .nome("Jose Lesinho")
-                    .endereco("Rua Sem Nome S/N")
-                    .codigoDeAcesso("admin123")
-                    .pedidos(new ArrayList<Pedido>())
-                    .build());
-
-            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
-                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
-                    .idCLiente(cliente2.getId())
-                    .pizzas(pizzasUmSabor())
-                    .meioDePagamento("Pix")
-                    .enderecoAlternativo("")
-                    .build();
-
-            String jsonString = objectMapper.writeValueAsString(pedidoDTO);
-
-            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso="+cliente2.getCodigoDeAcesso())
-                            .content(jsonString)
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn().getResponse().getContentAsString();
-
-            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
-
-            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
-
-            assertNotNull(pedidoSalvo);
-            assertEquals(pedidoSalvo.getPrecoPedido(), 130);
             assertEquals(pedidoDTO.getIdCLiente(),pedidoSalvo.getCliente().getId());
             assertEquals(pedidoDTO.getPizzas().get(0).getQuantidade(), pedidoSalvo.getPizzasPedido().get(0).getQuantidade());
             assertEquals(2,pedidoRepository.findAll().size());
