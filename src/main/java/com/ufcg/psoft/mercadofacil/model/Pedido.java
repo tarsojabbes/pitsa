@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -84,10 +83,6 @@ public class Pedido {
         return this.endereco;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public List<Pizza> getPizzasPedido() {
         return pizzasPedido;
     }
@@ -104,10 +99,6 @@ public class Pedido {
         this.cliente = cliente;
     }
 
-    public void setPrecoPedido(Double precoPedido) {
-        this.precoPedido = precoPedido;
-    }
-
     public String getMeioDePagamento() {
         return meioDePagamento;
     }
@@ -117,6 +108,12 @@ public class Pedido {
     }
 
     public void setEndereco(String endereco) {
-        this.endereco = endereco;
+
+        if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
+            this.endereco = this.cliente.getEndereco();
+        } else {
+            this.endereco = endereco;
+        }
+        
     }
 }

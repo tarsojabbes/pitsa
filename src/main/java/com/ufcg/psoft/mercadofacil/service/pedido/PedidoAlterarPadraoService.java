@@ -1,9 +1,7 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
-import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
-import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
@@ -36,8 +34,8 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService{
         if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())) {
             modelMapper.map(pedidoPostPutRequestDTO, pedido);
 
-            Pedido pedidoSalvo = pedidoRepository.save(pedido);
-            return pedidoSalvo;
+            return pedidoRepository.save(pedido);
+            
         } else {
             throw new ClienteNaoAutorizadoException();
         }

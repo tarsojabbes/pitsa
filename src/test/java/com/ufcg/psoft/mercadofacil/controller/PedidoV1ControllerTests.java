@@ -3,8 +3,6 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import jakarta.transaction.Transactional;
 
