@@ -3,6 +3,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -56,6 +57,9 @@ public class PedidoV1ControllerTests {
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
+    @Autowired
+    SaborRepository saborRepository;
+
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Pedido pedido;
@@ -92,10 +96,10 @@ public class PedidoV1ControllerTests {
     
     @AfterEach
     void tearDown(){
+        saborRepository.deleteAll();
         pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
         estabelecimentoRepository.deleteAll();
-
     }
 
     private List<Pizza> duasCalabresasGrandesCreator(){
@@ -619,6 +623,135 @@ public class PedidoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             assertEquals(1, pedidoRepository.findAll().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("Testes relacionados ao preço do pedido")
+    class PedidoPrecoTests {
+
+
+        Sabor saborCalabresa;
+
+        Sabor saborMussarela;
+
+        Sabor saborBrigadeiro;
+
+        Cliente cliente2;
+
+        PedidoPostPutRequestDTO pedidoSimplesDTO;
+
+        PedidoPostPutRequestDTO pedidoCompostoDTO;
+
+        List<Pizza> pizzasSimples;
+
+        List<Pizza> pizzasCompostas;
+        @BeforeEach
+        void setup() {
+            Cliente cliente2 = clienteRepository.save(Cliente.builder()
+                    .nome("Jose Lesinho")
+                    .endereco("Rua Sem Nome S/N")
+                    .codigoDeAcesso("admin123")
+                    .pedidos(new ArrayList<Pedido>())
+                    .build());
+
+            criaSabores();
+
+            PedidoPostPutRequestDTO pedidoSimplesDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(criaPizzasSimples())
+                    .build();
+
+            PedidoPostPutRequestDTO pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(criaPizzasCompostas())
+                    .build();
+        }
+
+        private void criaSabores() {
+            saborCalabresa = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(40.0)
+                            .tipoSabor("Salgada")
+                            .nomeSabor("Calabresa")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+
+            saborMussarela = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(30.0)
+                            .tipoSabor("Salgada")
+                            .nomeSabor("Mussarela")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+
+            saborBrigadeiro = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(50.0)
+                            .tipoSabor("Doce")
+                            .nomeSabor("Brigadeiro")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+        }
+
+        private List<Pizza> criaPizzasSimples() {
+
+            Pizza pizzaCalabresa;
+            Pizza pizzaMussarela;
+            Pizza pizzaBrigadeiro;
+
+            pizzaCalabresa = Pizza.builder()
+                    .sabor1(saborCalabresa)
+                    .build();
+
+            pizzaMussarela = Pizza.builder()
+                    .sabor1(saborMussarela)
+                    .build();
+
+            pizzaBrigadeiro = Pizza.builder()
+                    .sabor1(saborBrigadeiro)
+                    .build();
+
+            List<Pizza> pizzas = new ArrayList<Pizza>();
+
+            pizzas.add(pizzaBrigadeiro);
+            pizzas.add(pizzaMussarela);
+            pizzas.add(pizzaCalabresa);
+
+            return pizzas;
+        }
+
+        private List<Pizza> criaPizzasCompostas() {
+
+            Pizza pizzaMussarelaCalabresa;
+            Pizza pizzaBrigadeiro;
+
+            pizzaMussarelaCalabresa = Pizza.builder()
+                    .sabor1(saborCalabresa)
+                    .sabor2(saborMussarela)
+                    .build();
+
+
+            pizzaBrigadeiro = Pizza.builder()
+                    .sabor1(saborBrigadeiro)
+                    .build();
+
+            List<Pizza> pizzas = new ArrayList<Pizza>();
+
+            pizzas.add(pizzaBrigadeiro);
+            pizzas.add(pizzaMussarelaCalabresa);
+
+            return pizzas;
+        }
+
+        @Test
+        void testSetup() {
+            assertTrue(true);
         }
     }
 }
