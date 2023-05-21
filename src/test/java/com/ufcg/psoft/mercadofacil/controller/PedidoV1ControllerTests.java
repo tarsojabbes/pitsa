@@ -115,7 +115,6 @@ public class PedidoV1ControllerTests {
 
     @AfterEach
     void tearDown(){
-        saborRepository.deleteAll();
         pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
         saborRepository.deleteAll();
