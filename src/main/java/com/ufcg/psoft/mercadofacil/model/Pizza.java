@@ -3,17 +3,21 @@ package com.ufcg.psoft.mercadofacil.model;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class Pizza {
 
@@ -23,8 +27,9 @@ public class Pizza {
     private Long id;
 
     @JsonProperty("pedido")
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name="id_pedido")
+    @JsonBackReference
     private Pedido pedido;
 
     @JsonProperty("sabor1")

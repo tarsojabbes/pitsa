@@ -29,21 +29,15 @@ public class PedidoListarPadraoService implements PedidoListarService{
 
     @Override
     public List<Pedido> listar(Long id, String codigoDeAcesso) {
-        
-        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
-            throw new IllegalArgumentException();
+        if (id == null) {
+            return pedidoRepository.findAll();
         }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
-        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
-
-        List<Pedido> pedidos = new ArrayList<>();
-        pedidos.add(pedido);
-
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
-            return pedidos;
-        } else {
+        if (!codigoDeAcesso.equals(pedido.getCliente().getCodigoDeAcesso())) {
             throw new ClienteNaoAutorizadoException();
         }
+
+        return pedidoRepository.findAllByCliente(pedido.getCliente());
     }
 }

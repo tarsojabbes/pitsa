@@ -48,8 +48,7 @@ public class PedidoV1Controller {
 
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> buscarPedido(@PathVariable @Valid Long id,
-                                               @Valid String codigoDeAcessoCliente,
-                                               @Valid PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
+                                               @RequestParam(value = "codigoDeAcesso", required = true) String codigoDeAcessoCliente) {
 
         return ResponseEntity.status(HttpStatus.OK).body(pedidoListarService.listar(id, codigoDeAcessoCliente).get(0));
         

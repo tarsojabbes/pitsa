@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -81,7 +82,6 @@ public class PedidoServiceTests {
         .build());
 
         pedido = pedidoRepository.save(Pedido.builder()
-            .id(cliente.getId())
             .cliente(cliente)
             .pizzasPedido(duasCalabresasGrandesCreator())
             .meioDePagamento("PIX")
@@ -91,9 +91,10 @@ public class PedidoServiceTests {
     
     @AfterEach
     void tearDown(){
+        pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
         estabelecimentoRepository.deleteAll();
-        pedidoRepository.deleteAll();
+
     }
 
     private List<Pizza> duasCalabresasGrandesCreator(){
@@ -101,7 +102,7 @@ public class PedidoServiceTests {
         List<Sabor> sabores = new ArrayList<>();
         sabores.add(sabor);
 
-        Pizza duasCalabresasGrandes = new Pizza(sabores,false,sabor.getPrecoGrande(),2);
+        Pizza duasCalabresasGrandes = new Pizza(sabores,false, sabor.getPrecoGrande(),2);
         List<Pizza> novoPedido = new ArrayList<>();
         novoPedido.add(duasCalabresasGrandes);
 
@@ -162,6 +163,8 @@ public class PedidoServiceTests {
 
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
+                    .idCLiente(cliente.getId())
+
                 .enderecoAlternativo(novaRua)
                 .build();
 
@@ -192,10 +195,16 @@ public class PedidoServiceTests {
     public class PedidoListarTests{
 
         @Test
-        @DisplayName("Lista o pedido atual de um cliente válido. Só deve existir um pedido por cliente em qualquer momento")
+        @Transactional
+        @DisplayName("Lista um pedido de um cliente válido")
         void testListaPedidoClienteValido() throws Exception {
-            
-            assertEquals(pedido, pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso()).get(0));
+            List<Pedido> pedidos = pedidoListarService.listar(pedido.getId(), cliente.getCodigoDeAcesso());
+            Pedido pedido1 = pedidos.get(0);
+
+            assertEquals(pedido.getMeioDePagamento(), pedido1.getMeioDePagamento());
+            assertEquals(pedido.getPizzasPedido(), pedido1.getPizzasPedido());
+            assertEquals(pedido.getEndereco(), pedido1.getEndereco());
+
         }
 
         @Test

@@ -1,5 +1,6 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -12,7 +13,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,11 +20,12 @@ public class Pedido {
 
     @JsonProperty("id")
     @Id
-    //@GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonProperty("listaPizzas")
+    @JsonProperty("pizzas")
     @OneToMany(mappedBy = "pedido")
+    @JsonManagedReference
     private List<Pizza> pizzasPedido;
 
     @JsonProperty("cliente")
@@ -45,10 +46,9 @@ public class Pedido {
 
         this.cliente = cliente;
         this.pizzasPedido = pizzas;
-        this.id = cliente.getId();
         this.precoPedido = calculaPrecoPedido();
         if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
-            endereco = cliente.getEndereco();
+            this.endereco = cliente.getEndereco();
         } else {
             this.endereco = endereco;
         }
@@ -69,10 +69,6 @@ public class Pedido {
 
         Double preco = 0.00;
 
-        if (pizzasPedido.isEmpty()){
-            return preco;
-        }
-
         for (Pizza p:pizzasPedido){
             preco += p.getPrecoPizza() * p.getQuantidade();
         }
@@ -80,4 +76,47 @@ public class Pedido {
         return preco;
     }
 
+    public Long getId() {
+        return this.id;
+    }
+
+    public String getEndereco() {
+        return this.endereco;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<Pizza> getPizzasPedido() {
+        return pizzasPedido;
+    }
+
+    public void setPizzasPedido(List<Pizza> pizzasPedido) {
+        this.pizzasPedido = pizzasPedido;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public void setPrecoPedido(Double precoPedido) {
+        this.precoPedido = precoPedido;
+    }
+
+    public String getMeioDePagamento() {
+        return meioDePagamento;
+    }
+
+    public void setMeioDePagamento(String meioDePagamento) {
+        this.meioDePagamento = meioDePagamento;
+    }
+
+    public void setEndereco(String endereco) {
+        this.endereco = endereco;
+    }
 }
