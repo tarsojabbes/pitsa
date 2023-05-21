@@ -3,6 +3,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import jakarta.transaction.Transactional;
 
@@ -720,5 +721,240 @@ public class PedidoV1ControllerTests {
             assertEquals(1, pedidoRepository.findAll().size());
         }
     }
+
+    @Nested
+    @DisplayName("Testes relacionados ao preço do pedido")
+    class PedidoPrecoTests {
+
+
+        Sabor saborCalabresa;
+
+        Sabor saborMussarela;
+
+        Sabor saborBrigadeiro;
+
+        Cliente cliente2;
+
+        PedidoPostPutRequestDTO pedidoSimplesDTO;
+
+        PedidoPostPutRequestDTO pedidoCompostoDTO;
+
+        List<Pizza> pizzasSimples;
+
+        List<Pizza> pizzasCompostas;
+        @BeforeEach
+        void setup() {
+            cliente2 = clienteRepository.save(Cliente.builder()
+                    .nome("Jose Lesinho")
+                    .endereco("Rua Sem Nome S/N")
+                    .codigoDeAcesso("admin123")
+                    .pedidos(new ArrayList<Pedido>())
+                    .build());
+
+            criaSabores();
+
+            pedidoSimplesDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(criaPizzasSimples())
+                    .meioDePagamento("Pix")
+                    .build();
+
+            pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(criaPizzasCompostas())
+                    .meioDePagamento("Pix")
+                    .build();
+        }
+
+        private void criaSabores() {
+            saborCalabresa = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(40.0)
+                            .precoGrande(60.0)
+                            .tipoSabor("Salgada")
+                            .nomeSabor("Calabresa")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+
+            saborMussarela = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(30.0)
+                            .precoGrande(50.0)
+                            .tipoSabor("Salgada")
+                            .nomeSabor("Mussarela")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+
+            saborBrigadeiro = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(50.0)
+                            .precoGrande(70.0)
+                            .tipoSabor("Doce")
+                            .nomeSabor("Brigadeiro")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+        }
+
+        private List<Pizza> criaPizzasSimples() {
+
+            Pizza pizzaCalabresa;
+            Pizza pizzaMussarela;
+            Pizza pizzaBrigadeiro;
+
+            pizzaCalabresa = Pizza.builder()
+                    .quantidade(1)
+                    .precoPizza(60.0)
+                    .sabor1(saborCalabresa)
+                    .build();
+
+            pizzaMussarela = Pizza.builder()
+                    .quantidade(1)
+                    .precoPizza(50.0)
+                    .sabor1(saborMussarela)
+                    .build();
+
+            pizzaBrigadeiro = Pizza.builder()
+                    .quantidade(1)
+                    .precoPizza(70.0)
+                    .sabor1(saborBrigadeiro)
+                    .build();
+
+            List<Pizza> pizzas = new ArrayList<Pizza>();
+
+            pizzas.add(pizzaBrigadeiro);
+            pizzas.add(pizzaMussarela);
+            pizzas.add(pizzaCalabresa);
+
+            return pizzas;
+        }
+
+        private List<Pizza> criaPizzasCompostas() {
+
+            Pizza pizzaMussarelaCalabresa;
+            Pizza pizzaBrigadeiro;
+
+            pizzaMussarelaCalabresa = Pizza.builder()
+                    .sabor1(saborCalabresa)
+                    .sabor2(saborMussarela)
+                    .quantidade(1)
+                    .precoPizza(55.0)
+                    .build();
+
+
+            pizzaBrigadeiro = Pizza.builder()
+                    .sabor1(saborBrigadeiro)
+                    .quantidade(1)
+                    .precoPizza(70.0)
+                    .build();
+
+            List<Pizza> pizzas = new ArrayList<Pizza>();
+
+            pizzas.add(pizzaBrigadeiro);
+            pizzas.add(pizzaMussarelaCalabresa);
+
+            return pizzas;
+        }
+
+        @Test
+        void testSetup() {
+            assertTrue(true);
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste de preço com pizzas de um único sabor.")
+        void testPrecoPedidoPizzaSimples() throws Exception{
+            String jsonString = objectMapper.writeValueAsString(pedidoSimplesDTO);
+
+            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(pedidoSalvo.getPrecoPedido(), 180);
+            assertEquals(pedidoSimplesDTO.getIdCLiente(), pedidoSalvo.getCliente().getId());
+            assertEquals(2, pedidoRepository.findAll().size());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste de preço com pizzas de dois sabores.")
+        void testPrecoPedidoPizzaCompostas() throws Exception{
+            String jsonString = objectMapper.writeValueAsString(pedidoCompostoDTO);
+
+            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(pedidoSalvo.getPrecoPedido(), 125);
+            assertEquals(pedidoSimplesDTO.getIdCLiente(), pedidoSalvo.getCliente().getId());
+            assertEquals(2, pedidoRepository.findAll().size());
+        }
+
+        @Test
+        void testSegurancaContraFraudeDeValorDePizza() throws Exception {
+            Sabor saborAtum = saborRepository.save(
+                    Sabor.builder()
+                            .precoMedio(40.0)
+                            .precoGrande(60.0)
+                            .tipoSabor("Salgada")
+                            .nomeSabor("Calabresa")
+                            .estabelecimento(estabelecimento)
+                            .build()
+            );
+
+            Pizza pizzaAtum = Pizza.builder()
+                    .sabor1(saborAtum)
+                    .quantidade(1)
+                    // tentando enganar :)
+                    .precoPizza(15.0)
+                    .build();
+
+            List<Pizza> pizzaErronea = new ArrayList<>();
+            pizzaErronea.add(pizzaAtum);
+
+            PedidoPostPutRequestDTO pedidoErroneoDTO = PedidoPostPutRequestDTO.builder()
+                    .codigoDeAcesso(cliente2.getCodigoDeAcesso())
+                    .idCLiente(cliente2.getId())
+                    .pizzas(pizzaErronea)
+                    .meioDePagamento("Pix")
+                    .build();
+
+            String jsonString = objectMapper.writeValueAsString(pedidoErroneoDTO);
+
+            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O preco do pedido requisitado nao e valido. Pizzas foram instanciadas com precos erroneos");
+        }
+    }
+
+
 
 }
