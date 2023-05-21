@@ -79,12 +79,7 @@ public class SaborServiceTests {
 
         }
 
-        @AfterEach
-        public void tearDown() {
-            saborRepository.deleteAll();
-            estabelecimentoRepository.deleteAll();
 
-        }
 
         @Test
         @DisplayName("Alteração de atributo de um sabor existente")
@@ -435,7 +430,6 @@ public class SaborServiceTests {
                     saborAlterarDisponivelDTO));
         }
     }
-
     @Nested
     public class SaborNotificarServiceTests {
         Sabor sabor;

@@ -7,13 +7,19 @@ import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteDemonstrarInteresseService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -21,6 +27,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -32,6 +39,16 @@ public class ClienteV1ControllerTests {
 
     @Autowired
     ClienteRepository clienteRepository;
+
+    @Autowired
+    ClienteDemonstrarInteresseService clienteDemonstrarInteresseService;
+
+    @Autowired
+    SaborRepository saborRepository;
+
+    @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
+
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -384,5 +401,114 @@ public class ClienteV1ControllerTests {
             assertTrue(clienteRepository.findAll().contains(cliente));
         }
     }
+
+    @Nested
+    public class DemonstrarInteressePorPizza{
+
+        Estabelecimento estabelecimento;
+        Cliente cliente;
+        Sabor sabor;
+
+        @BeforeEach
+        void setup(){
+            cliente = clienteRepository.save(Cliente.builder()
+                    .codigoDeAcesso("12345")
+                    .nome("Sabrina Barbosa")
+                    .endereco("Avenida Ipiranga com Avenida São João")
+                    .build());
+
+            estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
+                    .codigoDeAcesso("123456")
+                    .nome("Estabelecimento Zero")
+                    .build());
+
+            sabor = saborRepository.save(
+                    Sabor.builder()
+                            .nomeSabor("Sabor Zero")
+                            .tipoSabor("Salgado")
+                            .precoMedio(20.00)
+                            .precoGrande(40.00)
+                            .estabelecimento(estabelecimento)
+                            .build());
+        }
+        @AfterEach
+        public void tearDown() {
+            saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
+            clienteRepository.deleteAll();
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento demonstrar interesse por um sabor com credenciais erradas")
+        public void testDemonstrarInteressePorSabor_CredenciaisErradas() throws Exception {
+            Long clienteId = cliente.getId();
+            Long saborId = sabor.getId();
+            String codigoDeAcesso = "senhaerrada";
+
+            driver.perform(post("/v1/clientes/cliente/{clienteId}/sabor/{saborId}/interesse", clienteId, saborId)
+                            .param("codigoDeAcesso", codigoDeAcesso))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string("O cliente nao possui permissao para alterar dados de outro cliente"));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento demonstrar interesse por um sabor com Cliente não existente")
+        public void testDemonstrarInteressePorSabor_ClienteNaoExiste() throws Exception {
+            Long clienteId = 100L;
+            Long saborId = sabor.getId();
+
+            driver.perform(post("/v1/clientes/cliente/{clienteId}/sabor/{saborId}/interesse", clienteId, saborId)
+                            .param("codigoDeAcesso", "12345"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string("O cliente consultado nao existe!"));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento demonstrar interesse por um sabor com Sabor não existente")
+        public void testDemonstrarInteressePorSabor_SaborNaoExiste() throws Exception {
+            Long clienteId = cliente.getId();
+            Long saborId = 100L;
+
+            driver.perform(post("/v1/clientes/cliente/{clienteId}/sabor/{saborId}/interesse", clienteId, saborId)
+                            .param("codigoDeAcesso", "12345"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string("O sabor de pizza consultado nao existe."));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento demonstrar interesse por um sabor com Sabor disponível")
+        public void testDemonstrarInteressePorSabor_SaborDisponivel() throws Exception {
+            Long clienteId = cliente.getId();
+            Long saborId = sabor.getId();
+
+            driver.perform(post("/v1/clientes/cliente/{clienteId}/sabor/{saborId}/interesse", clienteId, saborId)
+                            .param("codigoDeAcesso", "12345"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string("O sabor de pizza consultado esta disponivel."));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento demonstrar interesse por um sabor com Sabor indisponível")
+        public void testDemonstrarInteressePorSabor_SaborIndisponivel() throws Exception {
+            Long clienteId = cliente.getId();
+            Long saborId = sabor.getId();
+
+            sabor.setDisponivel(false);
+            saborRepository.save(sabor);
+
+            driver.perform(post("/v1/clientes/cliente/{clienteId}/sabor/{saborId}/interesse", clienteId, saborId)
+                            .param("codigoDeAcesso", "12345"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("Interesse registrado com sucesso."));
+        }
+
+
+    }
+
 
 }
