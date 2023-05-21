@@ -1,13 +1,5 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
-import java.util.List;
-
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
-import org.modelmapper.ModelMapper;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
@@ -16,9 +8,15 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
-public class PedidoCriarPadraoService implements PedidoCriarService{
+public class PedidoCriarPadraoService implements PedidoCriarService {
 
     @Autowired
     ModelMapper modelMapper;
@@ -31,25 +29,25 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
     @Autowired
     ClienteRepository clienteRepository;
-    
+
     @Override
     public Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
-        
-        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
+
+        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null) {
             throw new IllegalArgumentException();
         }
 
-        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
+        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
+        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)) {
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
             Pedido pedido = Pedido.builder()
-                    .pizzasPedido(inicioPedido)
+                    .pizzas(inicioPedido)
                     .cliente(cliente)
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
-            .build();
+                    .build();
 
             // Colocando o endereço do pedido
             // Se o endereço de entrega não for informado,

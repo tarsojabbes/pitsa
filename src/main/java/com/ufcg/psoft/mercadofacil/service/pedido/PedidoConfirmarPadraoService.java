@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PedidoAlterarPadraoService implements PedidoAlterarService {
+public class PedidoConfirmarPadraoService implements PedidoConfirmarService {
 
     @Autowired
     ModelMapper modelMapper;
@@ -25,18 +25,20 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService {
     ClienteRepository clienteRepository;
 
     @Override
-    public Pedido alterar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
+    public Pedido confirmar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
+
+        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null) {
+            throw new IllegalArgumentException();
+        }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
-        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
+        Cliente cliente = clienteRepository.findById(pedido.getCliente().getId()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())) {
-            modelMapper.map(pedidoPostPutRequestDTO, pedido);
-
-            return pedidoRepository.save(pedido);
-
-        } else {
+        if (!cliente.getCodigoDeAcesso().equals(codigoDeAcesso)) {
             throw new ClienteNaoAutorizadoException();
+        } else {
+            modelMapper.map(pedidoPostPutRequestDTO, pedido);
+            return pedidoRepository.save(pedido);
         }
     }
 }
