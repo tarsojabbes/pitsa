@@ -81,6 +81,7 @@ public class PedidoServiceTests {
         .build());
 
         pedido = pedidoRepository.save(Pedido.builder()
+            .id(cliente.getId())
             .cliente(cliente)
             .pizzasPedido(duasCalabresasGrandesCreator())
             .meioDePagamento("PIX")

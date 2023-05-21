@@ -3,7 +3,6 @@ package com.ufcg.psoft.mercadofacil.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -81,6 +80,7 @@ public class PedidoV1ControllerTests {
         .build());
 
         pedido = pedidoRepository.save(Pedido.builder()
+            .id(cliente.getId())
             .cliente(cliente)
             .pizzasPedido(pizzas)
             .endereco("abc")
