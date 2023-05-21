@@ -36,7 +36,11 @@ public class SaborAlterarPadraoService implements SaborAlterarService {
         throw new EstabelecimentoNaoAutorizadoException();
        }
 
-       modelMapper.map(saborPostPutRequestDTO, sabor);
+       sabor.setNomeSabor(saborPostPutRequestDTO.getNomeSabor());
+       sabor.setTipoSabor(saborPostPutRequestDTO.getTipoSabor());
+       sabor.setEstabelecimento(saborPostPutRequestDTO.getEstabelecimento());
+       sabor.setPrecoGrande(saborPostPutRequestDTO.getPrecoGrande());
+       sabor.setPrecoMedio(saborPostPutRequestDTO.getPrecoMedio());
 
        return saborRepository.save(sabor);
        

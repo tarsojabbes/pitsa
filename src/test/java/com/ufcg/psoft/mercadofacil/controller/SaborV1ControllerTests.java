@@ -963,126 +963,126 @@ public class SaborV1ControllerTests {
         }
     }
 
-//    @Nested
-//    class SaborAlterarDisponibilidadeTests {
-//        @Test
-//        @DisplayName("Quando altero a disponibilidade de um sabor com sucesso")
-//        public void test01() throws Exception {
-//            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
-//
-//            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
-//                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isOk())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            Sabor saborAlterado = objectMapper.readValue(responseJsonString, Sabor.class);
-//
-//            assertFalse(saborAlterado.getDisponivel());
-//        }
-//
-//        @Test
-//        @DisplayName("Quando tento alterar disponibilidade de sabor inexistente")
-//        public void test02() throws Exception {
-//            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
-//
-//            String responseJsonString = driver.perform(patch("/v1/sabores/" + (sabor.getId() + 99) + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
-//                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isBadRequest())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-//
-//            assertEquals("O sabor de pizza consultado nao existe.", error.getMessage());
-//
-//        }
-//
-//        @Test
-//        @DisplayName("Quando tento alterar a disponibilidade de sabor com código de acesso inválido")
-//        public void test03() throws Exception {
-//            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
-//
-//            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor.getId() + "/disponibilidade" + "?codigoDeAcesso=codigoInvalido")
-//                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isBadRequest())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-//
-//            assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
-//        }
-//
-//        @Test
-//        @DisplayName("Quando busco disponibilidade de um sabor existente")
-//        public void test04() throws Exception {
-//            String responseJsonString = driver.perform(get("/v1/sabores/" + sabor.getId() + "/disponibilidade")
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isOk())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            assertTrue(Boolean.parseBoolean(responseJsonString));
-//        }
-//
-//        @Test
-//        @DisplayName("Quando busco disponibilidade de um sabor inexistente")
-//        public void test05() throws Exception {
-//            String responseJsonString = driver.perform(get("/v1/sabores/" + (sabor.getId() + 99) + "/disponibilidade")
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isBadRequest())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
-//            assertEquals("O sabor de pizza consultado nao existe.", error.getMessage());
-//
-//        }
-//
-//
-//        @Test
-//        @DisplayName("Quando altero para sabor disponivel e notifico clientes interessados")
-//        public void test06() throws Exception {
-//            List<Integer> interessados = new ArrayList<Integer>();
-//            interessados.add(4);
-//            interessados.add(3);
-//            interessados.add(15);
-//
-//            Sabor sabor1 = saborRepository.save(
-//                    Sabor.builder()
-//                            .nomeSabor("Frango com catupiry")
-//                            .tipoSabor("salgado")
-//                            .estabelecimento(estabelecimento)
-//                            .precoGrande(49.90)
-//                            .precoMedio(29.90)
-//                            .interessados(interessados)
-//                            .build());
-//
-//            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
-//            driver.perform(patch("/v1/sabores/" + sabor1.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
-//                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isOk())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            saborAlterarDisponivelDTO.setDisponivel(true);
-//            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor1.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
-//                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
-//                            .contentType(MediaType.APPLICATION_JSON))
-//                    .andExpect(status().isOk())
-//                    .andDo(print())
-//                    .andReturn().getResponse().getContentAsString();
-//
-//            Sabor saborAlterado = objectMapper.readValue(responseJsonString, Sabor.class);
-//
-//            assertTrue(saborAlterado.getInteressados().isEmpty());
-//
-//
-//        }
-//    }
+    @Nested
+    class SaborAlterarDisponibilidadeTests {
+        @Test
+        @DisplayName("Quando altero a disponibilidade de um sabor com sucesso")
+        public void test01() throws Exception {
+            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
+
+            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
+                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Sabor saborAlterado = objectMapper.readValue(responseJsonString, Sabor.class);
+
+            assertFalse(saborAlterado.getDisponivel());
+        }
+
+        @Test
+        @DisplayName("Quando tento alterar disponibilidade de sabor inexistente")
+        public void test02() throws Exception {
+            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
+
+            String responseJsonString = driver.perform(patch("/v1/sabores/" + (sabor.getId() + 99) + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
+                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("O sabor de pizza consultado nao existe.", error.getMessage());
+
+        }
+
+        @Test
+        @DisplayName("Quando tento alterar a disponibilidade de sabor com código de acesso inválido")
+        public void test03() throws Exception {
+            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
+
+            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor.getId() + "/disponibilidade" + "?codigoDeAcesso=codigoInvalido")
+                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando busco disponibilidade de um sabor existente")
+        public void test04() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/sabores/" + sabor.getId() + "/disponibilidade")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertTrue(Boolean.parseBoolean(responseJsonString));
+        }
+
+        @Test
+        @DisplayName("Quando busco disponibilidade de um sabor inexistente")
+        public void test05() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/sabores/" + (sabor.getId() + 99) + "/disponibilidade")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+            assertEquals("O sabor de pizza consultado nao existe.", error.getMessage());
+
+        }
+
+
+        @Test
+        @DisplayName("Quando altero para sabor disponivel e notifico clientes interessados")
+        public void test06() throws Exception {
+            List<Long> interessados = new ArrayList<Long>();
+            interessados.add(4L);
+            interessados.add(3L);
+            interessados.add(15L);
+
+            Sabor sabor1 = saborRepository.save(
+                    Sabor.builder()
+                            .nomeSabor("Frango com catupiry")
+                            .tipoSabor("salgado")
+                            .estabelecimento(estabelecimento)
+                            .precoGrande(49.90)
+                            .precoMedio(29.90)
+                            .interessados(interessados)
+                            .build());
+
+            SaborAlterarDisponivelDTO saborAlterarDisponivelDTO = SaborAlterarDisponivelDTO.builder().disponivel(false).build();
+            driver.perform(patch("/v1/sabores/" + sabor1.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
+                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            saborAlterarDisponivelDTO.setDisponivel(true);
+            String responseJsonString = driver.perform(patch("/v1/sabores/" + sabor1.getId() + "/disponibilidade" + "?codigoDeAcesso="+estabelecimento.getCodigoDeAcesso())
+                            .content(objectMapper.writeValueAsString(saborAlterarDisponivelDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Sabor saborAlterado = objectMapper.readValue(responseJsonString, Sabor.class);
+
+            assertTrue(saborAlterado.getInteressados().isEmpty());
+
+
+        }
+    }
 }
