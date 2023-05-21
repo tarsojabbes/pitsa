@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@Builder
 @AllArgsConstructor
 public class Pizza {
 

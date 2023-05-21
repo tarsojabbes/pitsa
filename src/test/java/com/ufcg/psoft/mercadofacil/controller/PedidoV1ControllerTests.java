@@ -681,7 +681,7 @@ public class PedidoV1ControllerTests {
         List<Pizza> pizzasCompostas;
         @BeforeEach
         void setup() {
-            Cliente cliente2 = clienteRepository.save(Cliente.builder()
+            cliente2 = clienteRepository.save(Cliente.builder()
                     .nome("Jose Lesinho")
                     .endereco("Rua Sem Nome S/N")
                     .codigoDeAcesso("admin123")
@@ -690,46 +690,51 @@ public class PedidoV1ControllerTests {
 
             criaSabores();
 
-            PedidoPostPutRequestDTO pedidoSimplesDTO = PedidoPostPutRequestDTO.builder()
+            pedidoSimplesDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCLiente(cliente2.getId())
                     .pizzas(criaPizzasSimples())
+                    .meioDePagamento("Pix")
                     .build();
 
-            PedidoPostPutRequestDTO pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
+            pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCLiente(cliente2.getId())
                     .pizzas(criaPizzasCompostas())
+                    .meioDePagamento("Pix")
                     .build();
         }
 
         private void criaSabores() {
-            saborCalabresa = saborRepository.save(
+            saborCalabresa = // saborRepository.save(
                     Sabor.builder()
                             .precoMedio(40.0)
+                            .precoGrande(60.0)
                             .tipoSabor("Salgada")
                             .nomeSabor("Calabresa")
                             .estabelecimento(estabelecimento)
-                            .build()
-            );
+                            .build();
+//            );
 
-            saborMussarela = saborRepository.save(
-                    Sabor.builder()
+            saborMussarela = // saborRepository.save(
+                        Sabor.builder()
                             .precoMedio(30.0)
+                                .precoGrande(60.0)
                             .tipoSabor("Salgada")
                             .nomeSabor("Mussarela")
                             .estabelecimento(estabelecimento)
-                            .build()
-            );
+                            .build();
+//            );
 
-            saborBrigadeiro = saborRepository.save(
+            saborBrigadeiro = // saborRepository.save(
                     Sabor.builder()
                             .precoMedio(50.0)
+                            .precoGrande(60.0)
                             .tipoSabor("Doce")
                             .nomeSabor("Brigadeiro")
                             .estabelecimento(estabelecimento)
-                            .build()
-            );
+                            .build();
+//            );
         }
 
         private List<Pizza> criaPizzasSimples() {
@@ -785,6 +790,28 @@ public class PedidoV1ControllerTests {
         @Test
         void testSetup() {
             assertTrue(true);
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Teste de preço com pizzas de um único sabor.")
+        void testPrecoPedidoPizzaSimples() throws Exception{
+            String jsonString = objectMapper.writeValueAsString(pedidoSimplesDTO);
+
+            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
+
+            assertNotNull(pedidoSalvo);
+            assertEquals(pedidoSimplesDTO.getIdCLiente(), pedidoSalvo.getCliente().getId());
+            assertEquals(1, pedidoRepository.findAll().size());
         }
     }
 }

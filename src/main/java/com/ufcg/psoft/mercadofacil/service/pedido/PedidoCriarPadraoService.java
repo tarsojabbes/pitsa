@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import org.modelmapper.ModelMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
     @Autowired
     PedidoRepository pedidoRepository;
+
+    @Autowired
+    SaborRepository saborRepository;
 
     @Autowired
     ClienteRepository clienteRepository;
