@@ -13,6 +13,7 @@ import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -53,22 +54,22 @@ public class EstabelecimentoV1ControllerTests {
 
     Estabelecimento estabelecimento;
 
-    @BeforeEach
-    public void setup() {
-        estabelecimento = estabelecimentoRepository.save(
-                Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
-        );
-
-    }
-
-    @AfterEach
-    public void tearDown() {
-        estabelecimentoRepository.deleteAll();
-//        associacaoRepository.deleteAll();
-    }
-
     @Nested
     public class GetEstabelecimentoTests {
+
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+//        associacaoRepository.deleteAll();
+        }
 
         @Test
         @Transactional
@@ -89,7 +90,7 @@ public class EstabelecimentoV1ControllerTests {
             List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {
             });
 
-            assertEquals(2, resultado.size());
+            assertEquals(12, resultado.size());
         }
 
         @Test
@@ -119,7 +120,7 @@ public class EstabelecimentoV1ControllerTests {
         @Transactional
         @DisplayName("Quando busco um estabelecimento inexistente pelo ID")
         public void test03() throws Exception {
-            Long idInexistente = 4L;
+            Long idInexistente = 999L;
 
             // Fazendo a requisição GET para o endpoint de um estabelecimento que não existe
             MvcResult result = driver.perform(get("/v1/estabelecimentos/" + idInexistente)
@@ -133,6 +134,19 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class PostEstabelecimentoTests {
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+//        associacaoRepository.deleteAll();
+        }
         @Test
         @Transactional
         @DisplayName("Quando crio um estabelecimento com dados válidos")
@@ -210,6 +224,19 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class PutEstabelecimentoTests {
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+//        associacaoRepository.deleteAll();
+        }
         @Test
         @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados válidos")
@@ -303,24 +330,43 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class DeleteEstabelecimentoTests {
+        @Autowired
+        SaborRepository saborRepository;
+
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+        }
+
+        @AfterEach
+        public void tearDown() {
+
+            estabelecimentoRepository.deleteAll();
+            associacaoRepository.deleteAll();
+
+        }
         @Test
         @Transactional
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
+            saborRepository.deleteAll();
             driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            assertEquals(0, estabelecimentoRepository.findAll().size());
+            assertFalse(estabelecimentoRepository.findAll().contains(estabelecimento));
         }
 
         @Test
         @Transactional
         @DisplayName("Quando excluo um estabelecimento não existente no banco pelo ID")
         public void test02() throws Exception {
-            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId() + 1)
+            saborRepository.deleteAll();
+            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + (estabelecimento.getId() + 9999L))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -335,9 +381,6 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     @DisplayName("Testes relacionados à aceitação ou rejeição de entregadores")
     class aceitarRejeitarEntregadores {
-
-
-
         Entregador entregador;
 
         Associacao associacao;

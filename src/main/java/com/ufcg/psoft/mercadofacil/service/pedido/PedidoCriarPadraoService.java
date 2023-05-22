@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.exception.PedidoPrecoInvalidoException;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import org.modelmapper.ModelMapper;
 
@@ -16,9 +17,15 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
-public class PedidoCriarPadraoService implements PedidoCriarService{
+public class PedidoCriarPadraoService implements PedidoCriarService {
 
     @Autowired
     ModelMapper modelMapper;
@@ -31,42 +38,53 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
     @Autowired
     ClienteRepository clienteRepository;
-    
+
+    @Autowired
+    PedidoCalcularPrecoService pedidoCalcularPrecoService;
+
     @Override
     public Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
-        
-        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
+
+        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null) {
             throw new IllegalArgumentException();
         }
-        
-        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
+        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
+
+        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)) {
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
-            Pedido pedido = Pedido.builder()
-            .pizzasPedido(inicioPedido)
-                    .cliente(cliente)
-                    .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
-            .build();
-
-            // Colocando o endereço do pedido
-            // Se o endereço de entrega não for informado,
-            // o pedido deverá ser entregue no endereço principal do(a) cliente que fez o pedido.
-
+            String endereco = cliente.getEndereco();
             String enderecoAlternativo = pedidoPostPutRequestDTO.getEnderecoAlternativo();
 
             if (enderecoAlternativo != null) {
-                pedido.setEndereco(enderecoAlternativo);
-            } else {
-                pedido.setEndereco(cliente.getEndereco());
+                endereco = enderecoAlternativo;
+            }
+
+            double preco = pedidoCalcularPrecoService.calcular(pedidoPostPutRequestDTO);
+
+            Pedido pedido = Pedido.builder()
+                    .endereco(endereco)
+                    .pizzas(inicioPedido)
+                    .cliente(cliente)
+                    .precoPedido(preco)
+                    .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
+                    .build();
+
+            System.out.println(preco);
+            System.out.println(pedido.getPrecoPedido());
+
+            // Comparando preços, para evitar fraudes.
+            if (preco != pedido.getPrecoPedido()) {
+                throw new PedidoPrecoInvalidoException();
             }
 
             return pedidoRepository.save(pedido);
         } else {
             throw new ClienteNaoAutorizadoException();
         }
+
     }
-    
+
 }

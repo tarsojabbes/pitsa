@@ -1,9 +1,7 @@
 package com.ufcg.psoft.mercadofacil.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +43,7 @@ public class Sabor {
     private List<Long> interessados = new ArrayList<Long>();
 
     @ManyToOne()
-    @JoinColumn(name = "id_estabelecimento", nullable = false)
+    @JoinColumn(name = "estabelecimento")
     private Estabelecimento estabelecimento;
 
 }

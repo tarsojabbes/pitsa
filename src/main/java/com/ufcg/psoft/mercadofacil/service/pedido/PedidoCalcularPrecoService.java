@@ -4,7 +4,7 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 
 @FunctionalInterface
-public interface PedidoCriarService {
-
-    Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO);
+public interface PedidoCalcularPrecoService {
+    
+    public double calcular(PedidoPostPutRequestDTO pedido);
 }
