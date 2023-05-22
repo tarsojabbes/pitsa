@@ -53,7 +53,7 @@ public class Pedido {
     }
 
     public void setPrecoPedido(Double preco) {
-        this.precoPedido = preco;
+        this.precoPedido = calculaPrecoPedido();
     }
 
     public Double getPrecoPedido() {

@@ -112,7 +112,7 @@ public class PedidoV1ControllerTests {
         List<Sabor> sabores = new ArrayList<>();
         sabores.add(sabor);
 
-        Pizza duasCalabresasGrandes = new Pizza(sabores, false, sabor.getPrecoGrande(), 2);
+        Pizza duasCalabresasGrandes = new Pizza(sabores, false, true, 2);
         List<Pizza> novoPedido = new ArrayList<Pizza>();
         novoPedido.add(duasCalabresasGrandes);
 
@@ -131,7 +131,7 @@ public class PedidoV1ControllerTests {
         sabores.add(pacoca);
 
         List<Pizza> pizzaMaldita = new ArrayList<>();
-        Pizza p = new Pizza(sabores, true, (atum.getPrecoGrande() + pacoca.getPrecoGrande()) / 2, 1);
+        Pizza p = new Pizza(sabores, true, true, 1);
         pizzaMaldita.add(p);
 
         return pizzaMaldita;
@@ -149,8 +149,8 @@ public class PedidoV1ControllerTests {
         sabor2.add(pacoca);
 
         List<Pizza> pizzaMaldita = new ArrayList<>();
-        Pizza p1 = new Pizza(sabor1, true, atum.getPrecoGrande(),1);
-        Pizza p2 = new Pizza(sabor2, true, pacoca.getPrecoGrande(),1);
+        Pizza p1 = new Pizza(sabor1, true, false,1);
+        Pizza p2 = new Pizza(sabor2, true, true,1);
         pizzaMaldita.add(p1);
         pizzaMaldita.add(p2);
 
@@ -176,6 +176,7 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
                     .pizzas(pizzasAtumPacoca())
+                    .meioDePagamento(PIX)
                     .enderecoAlternativo("")
                     .build();
 
@@ -428,6 +429,7 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
                     .pizzas(pizzasAtumPacoca())
+                    .meioDePagamento(PIX)
                     .build();
 
             String jsonString = objectMapper.writeValueAsString(pedidoDTO);
@@ -837,17 +839,20 @@ public class PedidoV1ControllerTests {
                     .quantidade(1)
                     .precoPizza(40.0)
                     .sabor1(saborCalabresa)
+                    .ehGrande(false)
                     .build();
 
             pizzaMussarela = Pizza.builder()
                     .quantidade(1)
                     .precoPizza(30.0)
+                    .ehGrande(false)
                     .sabor1(saborMussarela)
                     .build();
 
             pizzaBrigadeiro = Pizza.builder()
                     .quantidade(1)
                     .precoPizza(50.0)
+                    .ehGrande(false)
                     .sabor1(saborBrigadeiro)
                     .build();
 
@@ -868,6 +873,7 @@ public class PedidoV1ControllerTests {
             pizzaMussarelaCalabresa = Pizza.builder()
                     .sabor1(saborCalabresa)
                     .sabor2(saborMussarela)
+                    .ehGrande(true)
                     .quantidade(1)
                     .precoPizza(55.0)
                     .build();
@@ -877,6 +883,7 @@ public class PedidoV1ControllerTests {
                     .sabor1(saborBrigadeiro)
                     .quantidade(1)
                     .precoPizza(70.0)
+                    .ehGrande(true)
                     .build();
 
             List<Pizza> pizzas = new ArrayList<Pizza>();
@@ -905,7 +912,7 @@ public class PedidoV1ControllerTests {
             Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
 
             assertNotNull(pedidoSalvo);
-            assertEquals(pedidoSalvo.getPrecoPedido(), 171);
+            assertEquals(pedidoSalvo.getPrecoPedido(), 114);
             assertEquals(pedidoSimplesDTO.getIdCliente(), pedidoSalvo.getCliente().getId());
             assertEquals(2, pedidoRepository.findAll().size());
         }
@@ -950,6 +957,7 @@ public class PedidoV1ControllerTests {
             Pizza pizzaAtum = Pizza.builder()
                     .sabor1(saborAtum)
                     .quantidade(1)
+                    .ehGrande(true)
                     // tentando enganar :)
                     .precoPizza(15.0)
                     .build();

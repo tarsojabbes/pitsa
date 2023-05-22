@@ -68,12 +68,12 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
                     .endereco(endereco)
                     .pizzas(inicioPedido)
                     .cliente(cliente)
-                    .precoPedido(preco)
+                    .meioDePagamento(pedidoPostPutRequestDTO.getMeioDePagamento())
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
                     .build();
 
-            System.out.println(preco);
             System.out.println(pedido.getPrecoPedido());
+            System.out.println("Calculado "+ preco);
 
             // Comparando preços, para evitar fraudes.
             if (preco != pedido.getPrecoPedido()) {

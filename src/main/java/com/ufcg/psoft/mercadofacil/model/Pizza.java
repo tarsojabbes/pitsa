@@ -31,6 +31,9 @@ public class Pizza {
     @JsonBackReference
     private Pedido pedido;
 
+    @JsonProperty("ehGrande")
+    private Boolean ehGrande;
+
     @JsonProperty("sabor1")
     @ManyToOne()
     @JoinColumn(name = "id_sabor1")
@@ -47,15 +50,30 @@ public class Pizza {
     @JsonProperty("precoPizza")
     private Double precoPizza;
 
-    public Pizza(List<Sabor> sabores, boolean eGrandeDoisSabores, Double precoPizza, Integer quantidade){
+    public Pizza(List<Sabor> sabores, boolean eGrandeDoisSabores, boolean ehGrande, Integer quantidade){
         this.sabor1 = sabores.get(0);
         if (eGrandeDoisSabores){
             this.sabor2 = sabores.get(1);
         } else {
             this.sabor2 = null;
         }
-        this.precoPizza = precoPizza;
+        this.ehGrande = ehGrande;
+        this.precoPizza = calculaPrecoPizza(eGrandeDoisSabores);
         this.quantidade = quantidade;
+    }
+
+    private Double calculaPrecoPizza(Boolean ehGrandeDoisSabores) {
+        Double preco = 0.00;
+        if (ehGrandeDoisSabores) {
+            preco = (sabor1.getPrecoGrande() + sabor2.getPrecoGrande())/2;
+        } else {
+            if (ehGrande) {
+                preco = sabor1.getPrecoGrande();
+            } else {
+                preco = sabor1.getPrecoMedio();
+            }
+        }
+        return preco;
     }
 
     @Override

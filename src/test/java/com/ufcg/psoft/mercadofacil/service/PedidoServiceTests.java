@@ -100,7 +100,7 @@ public class PedidoServiceTests {
         List<Sabor> sabores = new ArrayList<>();
         sabores.add(sabor);
 
-        Pizza duasCalabresasGrandes = new Pizza(sabores, false, 120.00, 2);
+        Pizza duasCalabresasGrandes = new Pizza(sabores, false, true, 2);
         List<Pizza> novoPedido = new ArrayList<>();
         novoPedido.add(duasCalabresasGrandes);
 
@@ -122,6 +122,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .pizzas(pizzas)
+                    .meioDePagamento(PIX)
                     .enderecoAlternativo("")
                     .build();
 
@@ -140,6 +141,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO novoPedido = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .meioDePagamento(CREDITO)
                     .pizzas(pizzas)
                     .build();
 
@@ -242,7 +244,7 @@ public class PedidoServiceTests {
         @DisplayName("Confirma o pagamento de um pedido válido passando PIX como meio de pagamento")
         void testConfirmaPagamentoPedidoValidoPIX() {
             // Valor antes de confirmar o pedido com o meio de pagamento
-            assertEquals(240, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
@@ -254,7 +256,7 @@ public class PedidoServiceTests {
 
             assertEquals(PIX, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
-            assertEquals(228, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(114, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
         }
 
         @Test
@@ -262,7 +264,7 @@ public class PedidoServiceTests {
         @DisplayName("Confirma o pagamento de um pedido válido passando CREDITO como meio de pagamento")
         void testConfirmaPagamentoPedidoValidoCREDITO() {
             // Valor antes de confirmar o pedido com o meio de pagamento
-            assertEquals(240, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
@@ -274,7 +276,7 @@ public class PedidoServiceTests {
 
             assertEquals(CREDITO, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
-            assertEquals(240, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
         }
 
         @Test
@@ -282,7 +284,7 @@ public class PedidoServiceTests {
         @DisplayName("Confirma o pagamento de um pedido válido passando DEBITO como meio de pagamento")
         void testConfirmaPagamentoPedidoValidoDEBITO() {
             // Valor antes de confirmar o pedido com o meio de pagamento
-            assertEquals(240, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(120, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
 
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
@@ -294,7 +296,7 @@ public class PedidoServiceTests {
 
             assertEquals(DEBITO, pedidoRepository.findById(pedido.getId()).get().getMeioDePagamento());
             // Novo valor com desconto aplicado (caso exista)
-            assertEquals(234, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
+            assertEquals(117, pedidoRepository.findById(pedido.getId()).get().getPrecoPedido());
         }
 
         @Test
