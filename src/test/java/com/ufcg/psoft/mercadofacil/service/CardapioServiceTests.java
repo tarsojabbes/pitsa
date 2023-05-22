@@ -3,7 +3,6 @@ package com.ufcg.psoft.mercadofacil.service;
 import com.ufcg.psoft.mercadofacil.dto.SaborAlterarDisponivelDTO;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
-import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.cardapio.CardapioService;
@@ -13,11 +12,11 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 public class CardapioServiceTests {
 

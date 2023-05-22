@@ -5,6 +5,8 @@ import com.ufcg.psoft.mercadofacil.dto.SaborPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
+import com.ufcg.psoft.mercadofacil.dto.SaborPostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
@@ -12,7 +14,14 @@ import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.sabor.*;
 
 import org.junit.jupiter.api.*;
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborAlterarService;
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborCriarService;
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborExcluirService;
+import com.ufcg.psoft.mercadofacil.service.sabor.SaborListarService;
 
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -22,12 +31,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 @SpringBootTest
 public class SaborServiceTests {
 
 
    @Autowired
-
     SaborAlterarService saborAlterarService;
 
     @Autowired
@@ -52,6 +62,7 @@ public class SaborServiceTests {
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
+    @Nested
     public class SaborAlterarServiceTests {
 
         Sabor sabor;
@@ -510,6 +521,7 @@ public class SaborServiceTests {
 
             List<String> notificacoes = saborNotificarService.notificar(sabor2.getId());
             assertTrue(notificacoes.isEmpty());
+            assertThrows(MercadoFacilException.class, () -> saborListarService.listar(null, sabor.getId() + 1L));
         }
     }
 }
