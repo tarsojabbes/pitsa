@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.exception.PedidoPrecoInvalidoException;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import org.modelmapper.ModelMapper;
 
@@ -31,7 +32,10 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
     @Autowired
     ClienteRepository clienteRepository;
-    
+
+    @Autowired
+    PedidoCalcularPrecoService pedidoCalcularPrecoService;
+
     @Override
     public Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
         
@@ -45,22 +49,25 @@ public class PedidoCriarPadraoService implements PedidoCriarService{
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
+            String endereco = cliente.getEndereco();
+            String enderecoAlternativo = pedidoPostPutRequestDTO.getEnderecoAlternativo();
+
+            if (enderecoAlternativo != null) {
+                endereco = enderecoAlternativo;
+            }
+
+            double preco = pedidoCalcularPrecoService.calcular(pedidoPostPutRequestDTO);
+
             Pedido pedido = Pedido.builder()
+                    .endereco(endereco)
                     .pizzasPedido(inicioPedido)
                     .cliente(cliente)
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
             .build();
 
-            // Colocando o endereço do pedido
-            // Se o endereço de entrega não for informado,
-            // o pedido deverá ser entregue no endereço principal do(a) cliente que fez o pedido.
-
-            String enderecoAlternativo = pedidoPostPutRequestDTO.getEnderecoAlternativo();
-
-            if (enderecoAlternativo != null) {
-                pedido.setEndereco(enderecoAlternativo);
-            } else {
-                pedido.setEndereco(cliente.getEndereco());
+            // Comparando preços, para evitar fraudes.
+            if (preco != pedido.getPrecoPedido()) {
+                throw new PedidoPrecoInvalidoException();
             }
 
             return pedidoRepository.save(pedido);
