@@ -7,15 +7,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class MeioDePagamentoValidatorImpl implements ConstraintValidator<MeioDePagamentoValidator, Enum<?>> {
+public class EnumValidatorImpl implements ConstraintValidator<EnumValidator, Enum<?>> {
     private Pattern pattern;
 
     @Override
-    public void initialize(MeioDePagamentoValidator annotation) {
+    public void initialize(EnumValidator annotation) {
         try {
             pattern = Pattern.compile(annotation.regexp());
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("Meio de pagamento nao eh valido", e);
+            throw new IllegalArgumentException("Tipo de veiculo nao eh valido", e);
         }
     }
 

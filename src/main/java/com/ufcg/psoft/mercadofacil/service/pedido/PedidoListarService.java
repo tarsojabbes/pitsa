@@ -6,7 +6,6 @@ import java.util.List;
 
 @FunctionalInterface
 public interface PedidoListarService {
-
-    List<Pedido> listar(Long id, String codigoDeAcesso);
-
+    
+    public List<Pedido> listar(Long id, String codigoDeAcesso);
 }

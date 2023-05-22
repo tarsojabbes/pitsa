@@ -1,8 +1,8 @@
 package com.ufcg.psoft.mercadofacil.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.mercadofacil.model.EnumValidator;
 import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo;
-import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculoValidator;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +27,7 @@ public class EntregadorPostPutRequestDTO {
     private String placaDoVeiculo;
 
     @JsonProperty("tipoDoVeiculo")
-    @TipoDoVeiculoValidator(regexp = "MOTO|CARRO")
+    @EnumValidator(regexp = "MOTO|CARRO")
     @Enumerated(EnumType.STRING)
     private TipoDoVeiculo tipoDoVeiculo;
 

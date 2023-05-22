@@ -2,7 +2,9 @@ package com.ufcg.psoft.mercadofacil.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -23,67 +25,54 @@ public class Pedido {
     @JsonProperty("pizzas")
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JsonManagedReference
-    private List<Pizza> pizzas;
+    private List<Pizza> pizzasPedido;
 
     @JsonProperty("cliente")
     @ManyToOne()
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @JoinColumn(name="id_cliente", nullable = false)
     private Cliente cliente;
 
     @JsonProperty("precoPedido")
     private Double precoPedido;
 
     @JsonProperty("meioDePagamento")
-    private MeioDePagamento meioDePagamento;
+    private String meioDePagamento;
 
     @JsonProperty("endereco")
     private String endereco;
 
-    public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
+    public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco){
 
         this.cliente = cliente;
-        this.pizzas = pizzas;
+        this.pizzasPedido = pizzas;
         this.precoPedido = calculaPrecoPedido();
-        if (endereco == null || endereco.isEmpty() || endereco.isBlank()) {
+        if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
             this.endereco = cliente.getEndereco();
         } else {
             this.endereco = endereco;
         }
-        this.meioDePagamento = null;
     }
 
-    public void setPrecoPedido() {
+    public void setPrecoPedido(){
+
         this.precoPedido = calculaPrecoPedido();
     }
 
-    public Double getPrecoPedido() {
+    public Double getPrecoPedido(){
+
         return calculaPrecoPedido();
+
     }
 
-    private double calculaPrecoComDesconto(Double preco, MeioDePagamento meioDePagamento) {
-        switch (meioDePagamento) {
-            case PIX:
-                return preco * 0.95;
-            case DEBITO:
-                return preco * 0.975;
-            case CREDITO:
-                return preco;
-        }
-        return preco;
-    }
+    private Double calculaPrecoPedido(){
 
-    private Double calculaPrecoPedido() {
         Double preco = 0.00;
 
-        for (Pizza p : pizzas) {
+        for (Pizza p:pizzasPedido){
             preco += p.getPrecoPizza() * p.getQuantidade();
         }
 
-        if (meioDePagamento != null) {
-            return calculaPrecoComDesconto(preco, meioDePagamento);
-        } else {
-            return preco;
-        }
+        return preco;
     }
 
     public Long getId() {
@@ -94,12 +83,12 @@ public class Pedido {
         return this.endereco;
     }
 
-    public List<Pizza> getPizzas() {
-        return pizzas;
+    public List<Pizza> getPizzasPedido() {
+        return pizzasPedido;
     }
 
-    public void setPizzas(List<Pizza> pizzas) {
-        this.pizzas = pizzas;
+    public void setPizzasPedido(List<Pizza> pizzasPedido) {
+        this.pizzasPedido = pizzasPedido;
     }
 
     public Cliente getCliente() {
@@ -110,20 +99,21 @@ public class Pedido {
         this.cliente = cliente;
     }
 
-    public MeioDePagamento getMeioDePagamento() {
+    public String getMeioDePagamento() {
         return meioDePagamento;
     }
 
-    public void setMeioDePagamento(MeioDePagamento meioDePagamento) {
+    public void setMeioDePagamento(String meioDePagamento) {
         this.meioDePagamento = meioDePagamento;
     }
 
     public void setEndereco(String endereco) {
-        if (endereco == null || endereco.isEmpty() || endereco.isBlank()) {
+
+        if (endereco == null || endereco.isEmpty() || endereco.isBlank()){
             this.endereco = this.cliente.getEndereco();
         } else {
             this.endereco = endereco;
         }
+        
     }
-
 }
