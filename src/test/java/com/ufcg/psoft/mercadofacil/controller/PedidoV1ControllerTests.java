@@ -1,9 +1,5 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
@@ -784,16 +780,16 @@ public class PedidoV1ControllerTests {
 
             pedidoSimplesDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
-                    .idCLiente(cliente2.getId())
+                    .idCliente(cliente2.getId())
                     .pizzas(criaPizzasSimples())
-                    .meioDePagamento("Pix")
+                    .meioDePagamento(PIX)
                     .build();
 
             pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
-                    .idCLiente(cliente2.getId())
+                    .idCliente(cliente2.getId())
                     .pizzas(criaPizzasCompostas())
-                    .meioDePagamento("Pix")
+                    .meioDePagamento(PIX)
                     .build();
         }
 
@@ -890,11 +886,6 @@ public class PedidoV1ControllerTests {
         }
 
         @Test
-        void testSetup() {
-            assertTrue(true);
-        }
-
-        @Test
         @Transactional
         @DisplayName("Teste de preço com pizzas de um único sabor.")
         void testPrecoPedidoPizzaSimples() throws Exception{
@@ -913,7 +904,7 @@ public class PedidoV1ControllerTests {
 
             assertNotNull(pedidoSalvo);
             assertEquals(pedidoSalvo.getPrecoPedido(), 180);
-            assertEquals(pedidoSimplesDTO.getIdCLiente(), pedidoSalvo.getCliente().getId());
+            assertEquals(pedidoSimplesDTO.getIdCliente(), pedidoSalvo.getCliente().getId());
             assertEquals(2, pedidoRepository.findAll().size());
         }
 
@@ -936,11 +927,13 @@ public class PedidoV1ControllerTests {
 
             assertNotNull(pedidoSalvo);
             assertEquals(pedidoSalvo.getPrecoPedido(), 125);
-            assertEquals(pedidoSimplesDTO.getIdCLiente(), pedidoSalvo.getCliente().getId());
+            assertEquals(pedidoSimplesDTO.getIdCliente(), pedidoSalvo.getCliente().getId());
             assertEquals(2, pedidoRepository.findAll().size());
         }
 
         @Test
+        @Transactional
+        @DisplayName("Teste quando o preço da pizza está incoerente com o sabor.")
         void testSegurancaContraFraudeDeValorDePizza() throws Exception {
             Sabor saborAtum = saborRepository.save(
                     Sabor.builder()
@@ -964,9 +957,9 @@ public class PedidoV1ControllerTests {
 
             PedidoPostPutRequestDTO pedidoErroneoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
-                    .idCLiente(cliente2.getId())
+                    .idCliente(cliente2.getId())
                     .pizzas(pizzaErronea)
-                    .meioDePagamento("Pix")
+                    .meioDePagamento(PIX)
                     .build();
 
             String jsonString = objectMapper.writeValueAsString(pedidoErroneoDTO);
@@ -983,7 +976,5 @@ public class PedidoV1ControllerTests {
             assertEquals(error.getMessage(), "O preco do pedido requisitado nao e valido. Pizzas foram instanciadas com precos erroneos");
         }
     }
-
-
 
 }
