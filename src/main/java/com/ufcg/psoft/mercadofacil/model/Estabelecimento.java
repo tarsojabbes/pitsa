@@ -7,24 +7,28 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name="clientes")
-public class Cliente {
+@AllArgsConstructor
+@Table(name = "estabelecimentos")
+public class Estabelecimento {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @JsonProperty("id")
     private Long id;
+
+    @JsonProperty("codigoDeAcesso")
+    private String codigoDeAcesso;
 
     @JsonProperty("nome")
     private String nome;
 
-    @JsonProperty("endereco")
-    private String endereco;
-
-    @JsonProperty("codigoDeAcesso")
-    private String codigoDeAcesso;
+    @OneToMany(mappedBy = "estabelecimento")
+    private List<Associacao> associacoes = new ArrayList<>();
 }
-
