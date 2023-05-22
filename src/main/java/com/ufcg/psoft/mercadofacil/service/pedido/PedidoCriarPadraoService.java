@@ -17,15 +17,9 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
-public class PedidoCriarPadraoService implements PedidoCriarService {
+public class PedidoCriarPadraoService implements PedidoCriarService{
 
     @Autowired
     ModelMapper modelMapper;
@@ -44,14 +38,14 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
 
     @Override
     public Pedido criar(String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO) {
-
-        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null) {
+        
+        if (codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank() || pedidoPostPutRequestDTO == null){
             throw new IllegalArgumentException();
         }
 
-        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
+        Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCLiente()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)) {
+        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
 
             List<Pizza> inicioPedido = pedidoPostPutRequestDTO.getPizzas();
 
@@ -66,10 +60,10 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
 
             Pedido pedido = Pedido.builder()
                     .endereco(endereco)
-                    .pizzas(inicioPedido)
+                    .pizzasPedido(inicioPedido)
                     .cliente(cliente)
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
-                    .build();
+            .build();
 
             // Comparando preços, para evitar fraudes.
             if (preco != pedido.getPrecoPedido()) {
