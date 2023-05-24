@@ -6,9 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
-import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
@@ -68,7 +68,6 @@ public class EstabelecimentoV1ControllerTests {
         @AfterEach
         public void tearDown() {
             estabelecimentoRepository.deleteAll();
-//        associacaoRepository.deleteAll();
         }
 
         @Test
@@ -87,10 +86,10 @@ public class EstabelecimentoV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {
+            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
             });
 
-            assertEquals(12, resultado.size());
+            assertEquals(2, resultado.size());
         }
 
         @Test
@@ -120,7 +119,7 @@ public class EstabelecimentoV1ControllerTests {
         @Transactional
         @DisplayName("Quando busco um estabelecimento inexistente pelo ID")
         public void test03() throws Exception {
-            Long idInexistente = 999L;
+            long idInexistente = 999L;
 
             // Fazendo a requisição GET para o endpoint de um estabelecimento que não existe
             MvcResult result = driver.perform(get("/v1/estabelecimentos/" + idInexistente)
@@ -145,8 +144,8 @@ public class EstabelecimentoV1ControllerTests {
         @AfterEach
         public void tearDown() {
             estabelecimentoRepository.deleteAll();
-//        associacaoRepository.deleteAll();
         }
+
         @Test
         @Transactional
         @DisplayName("Quando crio um estabelecimento com dados válidos")
@@ -235,8 +234,8 @@ public class EstabelecimentoV1ControllerTests {
         @AfterEach
         public void tearDown() {
             estabelecimentoRepository.deleteAll();
-//        associacaoRepository.deleteAll();
         }
+
         @Test
         @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados válidos")
@@ -342,11 +341,10 @@ public class EstabelecimentoV1ControllerTests {
 
         @AfterEach
         public void tearDown() {
-
             estabelecimentoRepository.deleteAll();
             associacaoRepository.deleteAll();
-
         }
+
         @Test
         @Transactional
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
@@ -401,8 +399,8 @@ public class EstabelecimentoV1ControllerTests {
             );
 
             associacao = associacaoService.associarEntregadorEstabelecimento(entregador.getId(),
-                                                                                estabelecimento.getId(),
-                                                                                entregador.getCodigoDeAcesso());
+                    estabelecimento.getId(),
+                    entregador.getCodigoDeAcesso());
         }
 
         @Test
@@ -434,7 +432,6 @@ public class EstabelecimentoV1ControllerTests {
             // Comparando estabelecimento
             assertEquals(response.getEstabelecimento().getCodigoDeAcesso(), associacao.getEstabelecimento().getCodigoDeAcesso());
             assertEquals(response.getEstabelecimento().getNome(), associacao.getEstabelecimento().getNome());
-
         }
 
         @Test
@@ -450,7 +447,6 @@ public class EstabelecimentoV1ControllerTests {
 
             assertEquals(responseJsonString, "");
             Assertions.assertFalse(associacaoRepository.findById(associacao.getId()).isPresent());
-
         }
 
         @Test
@@ -468,7 +464,6 @@ public class EstabelecimentoV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
-
         }
 
         @Test
@@ -485,8 +480,8 @@ public class EstabelecimentoV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
-
         }
 
     }
+
 }
