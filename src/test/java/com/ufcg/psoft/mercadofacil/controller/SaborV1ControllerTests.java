@@ -13,8 +13,6 @@ import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 
-import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

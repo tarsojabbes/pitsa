@@ -33,6 +33,7 @@ public class CardapioService {
         }
 
         return saboresOrdenados;
+
     }
 
     public List<Sabor> cardapioSaboresSalgados(Long idEstabelecimento){

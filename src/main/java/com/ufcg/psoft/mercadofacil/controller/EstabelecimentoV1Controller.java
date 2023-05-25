@@ -1,7 +1,6 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoCriarService;

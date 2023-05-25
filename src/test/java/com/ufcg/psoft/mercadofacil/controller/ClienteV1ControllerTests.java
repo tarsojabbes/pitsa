@@ -12,14 +12,12 @@ import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteDemonstrarInteresseService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -34,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("Testes para camada de controlador de Cliente")
 public class ClienteV1ControllerTests {
+
     @Autowired
     MockMvc driver;
 
@@ -41,14 +40,10 @@ public class ClienteV1ControllerTests {
     ClienteRepository clienteRepository;
 
     @Autowired
-    ClienteDemonstrarInteresseService clienteDemonstrarInteresseService;
-
-    @Autowired
     SaborRepository saborRepository;
 
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
-
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -81,12 +76,13 @@ public class ClienteV1ControllerTests {
                     .build());
 
             String responseJsonString = driver.perform(get("/v1/clientes")
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<ClienteGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<ClienteGetResponseDTO>>(){});
+            List<ClienteGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<ClienteGetResponseDTO>>() {
+            });
 
             assertEquals(2, resultado.size());
         }
@@ -137,8 +133,8 @@ public class ClienteV1ControllerTests {
                     .build();
 
             String responseJsonString = driver.perform(post("/v1/clientes")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(clientePostPutRequestDTO)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -403,14 +399,14 @@ public class ClienteV1ControllerTests {
     }
 
     @Nested
-    public class DemonstrarInteressePorPizza{
+    public class DemonstrarInteressePorPizza {
 
         Estabelecimento estabelecimento;
         Cliente cliente;
         Sabor sabor;
 
         @BeforeEach
-        void setup(){
+        void setup() {
             cliente = clienteRepository.save(Cliente.builder()
                     .codigoDeAcesso("12345")
                     .nome("Sabrina Barbosa")
@@ -431,6 +427,7 @@ public class ClienteV1ControllerTests {
                             .estabelecimento(estabelecimento)
                             .build());
         }
+
         @AfterEach
         public void tearDown() {
             saborRepository.deleteAll();
@@ -507,8 +504,6 @@ public class ClienteV1ControllerTests {
                     .andExpect(content().string("Interesse registrado com sucesso."));
         }
 
-
     }
-
 
 }

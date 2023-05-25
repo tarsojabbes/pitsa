@@ -192,6 +192,7 @@ public class ClienteServiceTests {
         @Test
         @DisplayName("Quando listo todos os clientes que existem no banco")
         public void test01() {
+
             Cliente cliente1 = clienteRepository.save(Cliente.builder()
                     .nome("Fulaninho")
                     .endereco("Rua do Bobo, 0")
