@@ -1,13 +1,22 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -39,6 +48,9 @@ public class Pedido {
     @JsonProperty("endereco")
     private String endereco;
 
+    @JsonProperty("acompanhamento")
+    private Acompanhamento acompanhamento;
+
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
 
         this.cliente = cliente;
@@ -50,6 +62,7 @@ public class Pedido {
             this.endereco = endereco;
         }
         this.meioDePagamento = null;
+        this.acompanhamento = new Acompanhamento();
     }
 
     public void setPrecoPedido(Double preco) {
@@ -124,6 +137,39 @@ public class Pedido {
         } else {
             this.endereco = endereco;
         }
+    }
+
+    public Acompanhamento getAcompanhamento(){
+        return this.acompanhamento;
+    }
+
+    public void modificaAcompanhamento(boolean status, int etapa){
+
+        switch (etapa){
+            case(0):
+                acompanhamento.setPedidoConfirmado(status);
+                break;
+
+            case(1):
+                acompanhamento.setPedidoEmPreparacao(status);
+                break;
+
+            case(2):
+                acompanhamento.setPedidoPronto(status);
+                break;
+
+            case(3):
+                acompanhamento.setPedidoACaminho(status);
+                break;
+
+            case(4):
+                acompanhamento.setPedidoEntregue(status);
+                break;
+
+            default:
+                throw new UnsupportedOperationException();
+        }
+
     }
 
 }

@@ -7,4 +7,5 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 public interface PedidoAlterarService {
 
     Pedido alterar(Long id, String codigoDeAcesso, PedidoPostPutRequestDTO pedidoPostPutRequestDTO);
+    
 }

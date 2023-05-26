@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -29,6 +30,10 @@ public class PedidoExcluirPadraoService implements PedidoExcluirService{
         
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
         Cliente cliente = clienteRepository.findById(pedido.getCliente().getId()).orElseThrow(ClienteNaoExisteException::new);
+
+        if (pedido.getAcompanhamento().isPedidoPronto()){
+            throw new MudancaDeStatusInvalidaException();
+        }
 
         if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
             pedidoRepository.delete(pedido);
