@@ -1,5 +1,11 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +17,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.AcompanhamentoPedidoDTO;
+import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -156,48 +166,216 @@ public class AcompanhamentoPedidoV1ControllerTests {
     }
 
     @Nested
-    class AcompanhamentoPedidoPutTests{
+    class AcompanhamentoPedidoGetTests{
 
         @Test
         @Transactional
-        @DisplayName("")
-        void test(){
+        @DisplayName("Verifica o acompanhamento de um pedido com o cliente")
+        void testVerificaAcompanhamentoPedidoCliente() throws UnsupportedEncodingException, Exception{
 
-            AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
-                .idCliente(cliente.getId())
-                .idEstabelecimento(estabelecimento.getId())
-                .statusPedido(true)
-                .build();
-            //TODO
+            String responseJsonString = driver.perform(get("/v1/acompanhamento/"+pedido.getId()+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Acompanhamento resultado = objectMapper.readValue(responseJsonString, Pedido.class).getAcompanhamento();
+
+            assertFalse(resultado.isPedidoConfirmado());
+            assertFalse(resultado.isPedidoEmPreparacao());
+            assertFalse(resultado.isPedidoPronto());
+            assertFalse(resultado.isPedidoACaminho());
+            assertFalse(resultado.isPedidoEntregue());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Verifica o acompanhamento de um pedido com o estabelecimento")
+        void testVerificaAcompanhamentoPedidoEstabelecimento() throws UnsupportedEncodingException, Exception{
+
+            String responseJsonString = driver.perform(get("/v1/acompanhamento/"+pedido.getId()+"?codigoDeAcessoEstabelecimento="+estabelecimento.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Acompanhamento resultado = objectMapper.readValue(responseJsonString, Pedido.class).getAcompanhamento();
+
+            assertFalse(resultado.isPedidoConfirmado());
+            assertFalse(resultado.isPedidoEmPreparacao());
+            assertFalse(resultado.isPedidoPronto());
+            assertFalse(resultado.isPedidoACaminho());
+            assertFalse(resultado.isPedidoEntregue());
+
+            pedido.modificaAcompanhamento(true, 0);
+            pedido.modificaAcompanhamento(true, 1);
+
+            responseJsonString = driver.perform(get("/v1/acompanhamento/"+pedido.getId()+"?codigoDeAcessoEstabelecimento="+cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            resultado = objectMapper.readValue(responseJsonString, Pedido.class).getAcompanhamento();
+
+            assertTrue(resultado.isPedidoConfirmado());
+            assertTrue(resultado.isPedidoEmPreparacao());
+            assertFalse(resultado.isPedidoPronto());
+            assertFalse(resultado.isPedidoACaminho());
+            assertFalse(resultado.isPedidoEntregue());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Tenta verificar o acompanhamento de um pedido invalido")
+        void testVerificaAcompanhamentoPedidoInvalido() throws UnsupportedEncodingException, Exception{
+
+            MvcResult resposta = driver.perform(get("/v1/acompanhamento/"+(pedido.getId()+1L)+"?codigoDeAcesso="+cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn();
+
+            assertTrue(resposta.getResolvedException() instanceof Exception);
+
         }
 
     }
 
     @Nested
-    class AcompanhamentoPedidoGetTests{
+    class AcompanhamentoPedidoPutTests{
 
         @Test
         @Transactional
-        @DisplayName("")
-        void testBuscaPedidoValido(){
+        @DisplayName("Realiza uma atualizacao valida no acompanhamento de um pedido")
+        void testAtualizacaoValidaCliente()throws Exception {
 
             AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
                 .idCliente(cliente.getId())
                 .idEstabelecimento(estabelecimento.getId())
                 .statusPedido(true)
                 .build();
+
+            String respostaJson = driver.perform(put("/v1/acompanhamento/0/"+pedido.getId()+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(acompanhamentoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+                
+            Acompanhamento resposta = objectMapper.readValue(respostaJson, Pedido.class).getAcompanhamento();
+
+            assertTrue(resposta.isPedidoConfirmado());
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Cliente tenta atualizar o acompanhamento de um pedido com uma id errada")
+        void testAtualizacaoInvalidaCliente()throws Exception {
+
+            AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
+                .idCliente(cliente.getId())
+                .idEstabelecimento(estabelecimento.getId())
+                .statusPedido(true)
+                .build();
+
+            String respostaJson = driver.perform(put("/v1/acompanhamento/0/"+(pedido.getId()+1L)+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(acompanhamentoDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+            boolean errorStringtester = error.getErrors().contains("O pedido requisitado nao e valido.");
+
+            assertTrue(errorStringtester);
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Atualizacao de acompanhamento de pedido realizada pelo estabelecimento")
+        void testAtualizacaoValidaEstabelecimento() throws Exception {
+
+            AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
+                .idCliente(cliente.getId())
+                .idEstabelecimento(estabelecimento.getId())
+                .statusPedido(true)
+                .build();
+
+            pedido.modificaAcompanhamento(true, 0);
+
+            String respostaJson = driver.perform(put("/v1/acompanhamento/1/"+pedido.getId()+"?codigoDeAcessoEstabelecimento="+estabelecimento.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(acompanhamentoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Acompanhamento resposta = objectMapper.readValue(respostaJson, Pedido.class).getAcompanhamento();
+
+            assertTrue(resposta.isPedidoConfirmado());
+            assertTrue(resposta.isPedidoEmPreparacao());
+
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Estabelecimento tenta atualizar o acompanhamento de um pedido com uma id errada")
+        void testAtualizacaoInvalidaEstabelecimento()throws Exception {
+
+            AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
+                .idCliente(cliente.getId())
+                .idEstabelecimento(estabelecimento.getId())
+                .statusPedido(true)
+                .build();
+
+            pedido.modificaAcompanhamento(true, 0);
+
+            String respostaJson = driver.perform(put("/v1/acompanhamento/1/"+(pedido.getId()+1L)+"?codigoDeAcessoEstabelecimento="+estabelecimento.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(acompanhamentoDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+                    CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+                    boolean errorStringtester = error.getErrors().contains("O pedido requisitado nao e valido.");
+        
+                    assertTrue(errorStringtester);
+
         }
 
         @Test
         @Transactional
         @DisplayName("")
-        void testBuscaPedidoInvalido(){
+        void testAtualizacaoLogicaInvalida() throws Exception {
+
+            pedido.modificaAcompanhamento(true, 0);
+            pedido.modificaAcompanhamento(true, 1);
+            pedido.modificaAcompanhamento(true, 2);
 
             AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
                 .idCliente(cliente.getId())
                 .idEstabelecimento(estabelecimento.getId())
                 .statusPedido(true)
                 .build();
+
+            String respostaJson = driver.perform(put("/v1/acompanhamento/0/"+(pedido.getId()+1L)+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(acompanhamentoDTO)))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+            
+            CustomErrorType error = objectMapper.readValue(respostaJson, CustomErrorType.class);
+
+            boolean errorStringtester = error.getErrors().contains("A operacao de mudanca de status nao pode ser realizada.");
+
+            assertTrue(errorStringtester);
         }
 
     }
@@ -207,31 +385,49 @@ public class AcompanhamentoPedidoV1ControllerTests {
 
         @Test
         @Transactional
-        @DisplayName("")
-        void testDeletaPedidoNaoPronto(){
+        @DisplayName("Exclusao de pedido valido mas ainda nao pronto")
+        void testDeletaPedidoValidoNaoPronto() throws UnsupportedEncodingException, Exception{
 
-            AcompanhamentoPedidoDTO acompanhamentoDTO = AcompanhamentoPedidoDTO.builder()
-                .idCliente(cliente.getId())
-                .idEstabelecimento(estabelecimento.getId())
-                .statusPedido(true)
-                .build();
+            driver.perform(delete("/v1/acompanhamento/"+pedido.getId()+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+            
+            assertEquals(0, pedidoRepository.findAll().size());
         }
 
         @Test
         @Transactional
-        @DisplayName("")
-        void testDeletaPedidoPronto(){
+        @DisplayName("Exclusao de pedido valido mas pronto para entrega")
+        void testDeletaPedidoValidoPronto() throws UnsupportedEncodingException, Exception{
 
-            //TODO
+            pedido.modificaAcompanhamento(true, 0);
+            pedido.modificaAcompanhamento(true, 1);
+            pedido.modificaAcompanhamento(true, 2);
+
+            driver.perform(delete("/v1/acompanhamento/"+pedido.getId()+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+            
+            assertEquals(1, pedidoRepository.findAll().size());
 
         }
 
         @Test
         @Transactional
-        @DisplayName("")
-        void testDeletaPedidoErrado(){
+        @DisplayName("Exclusao de pedido com id errado")
+        void testDeletaPedidoErrado() throws UnsupportedEncodingException, Exception{
 
-            //TODO
+            driver.perform(delete("/v1/acompanhamento/"+(pedido.getId()+1L)+"?codigoDeAcessoCliente="+cliente.getCodigoDeAcesso())
+                .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+            
+            assertEquals(1, pedidoRepository.findAll().size());
 
         }
 

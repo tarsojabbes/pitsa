@@ -39,14 +39,14 @@ public class AcompanhamentoPedidoV1Controller {
     
     @GetMapping("/{idPedido}")
     public ResponseEntity<Acompanhamento> statusAtual(@PathVariable @Valid Long idPedido,
-                                                 @RequestParam String codigoDeAcesso){
+                                                      @RequestParam String codigoDeAcesso){
 
         return ResponseEntity.status(HttpStatus.OK).body(pedidoListarService
                .listar(idPedido, codigoDeAcesso).get(0).getAcompanhamento());
                
     }
 
-    @PutMapping("/{idPedido}")
+    @PutMapping("/{idPedido}/0")
     public ResponseEntity<Acompanhamento> pedidoConfirmado(@PathVariable @Valid Long idPedido,
                                  @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                  @RequestParam(value="codigoDeAcessoCliente") String codigoDeAcessoCliente) throws InvalidAttributeValueException{
@@ -56,7 +56,7 @@ public class AcompanhamentoPedidoV1Controller {
     
     }
 
-    @PutMapping("/{idPedido}")
+    @PutMapping("/{idPedido}/1")
     public ResponseEntity<Acompanhamento> pedidoEmPreparacao(@PathVariable @Valid Long idPedido,
                                    @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                    @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
@@ -66,7 +66,7 @@ public class AcompanhamentoPedidoV1Controller {
 
     }
 
-    @PutMapping("/{idPedido}")
+    @PutMapping("/{idPedido}/2")
     public ResponseEntity<Acompanhamento> pedidoEnviado(@PathVariable @Valid Long idPedido,
                               @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                               @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
@@ -76,7 +76,7 @@ public class AcompanhamentoPedidoV1Controller {
     
     }
 
-    @PutMapping("/{idPedido}")
+    @PutMapping("/{idPedido}/3")
     public ResponseEntity<Acompanhamento> pedidoEmRota(@PathVariable @Valid Long idPedido,
                              @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                              @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
@@ -86,7 +86,7 @@ public class AcompanhamentoPedidoV1Controller {
     
     }
 
-    @PutMapping("/{idPedido}")
+    @PutMapping("/{idPedido}/4")
     public ResponseEntity<Acompanhamento> pedidoEntregue(@PathVariable @Valid Long idPedido,
                                @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                @RequestParam(value="codigoDeAcessoCliente") String codigoDeAcessoCliente) throws InvalidAttributeValueException{

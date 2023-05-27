@@ -61,8 +61,9 @@ public class AcompanhamentoPedidoPadraoService implements AcompanhamentoPedidoSe
             case(0):
                 if (!acompanhamentoPedidoDTO.isStatusPedido() && pedido.getAcompanhamento().isPedidoPronto()){
                     throw new MudancaDeStatusInvalidaException();
-                }else {
+                } else {
                     pedido.modificaAcompanhamento(acompanhamentoPedidoDTO.isStatusPedido(), andamento);
+                    pedido.modificaAcompanhamento(acompanhamentoPedidoDTO.isStatusPedido(), andamento+1);
                 }
                 break;
 
