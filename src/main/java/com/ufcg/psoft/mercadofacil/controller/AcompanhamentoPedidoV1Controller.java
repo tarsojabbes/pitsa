@@ -51,7 +51,8 @@ public class AcompanhamentoPedidoV1Controller {
                                  @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                  @RequestParam(value="codigoDeAcessoCliente") String codigoDeAcessoCliente) throws InvalidAttributeValueException{
         
-        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService.alteraAcompanhamento(idPedido, codigoDeAcessoCliente, acompanhamentoPedidoDTO, 0));
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService
+              .alteraAcompanhamento(idPedido, false, codigoDeAcessoCliente, acompanhamentoPedidoDTO, 0));
     
     }
 
@@ -60,7 +61,8 @@ public class AcompanhamentoPedidoV1Controller {
                                    @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                    @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
         
-        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService.alteraAcompanhamento(idPedido, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 1));
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService
+              .alteraAcompanhamento(idPedido, true, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 1));
 
     }
 
@@ -69,7 +71,8 @@ public class AcompanhamentoPedidoV1Controller {
                               @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                               @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
         
-        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService.alteraAcompanhamento(idPedido, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 2));
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService
+              .alteraAcompanhamento(idPedido, true, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 2));
     
     }
 
@@ -78,7 +81,8 @@ public class AcompanhamentoPedidoV1Controller {
                              @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                              @RequestParam(value="codigoDeAcessoEstabelecimento") String codigoDeAcessoEstabelecimento) throws InvalidAttributeValueException{
         
-        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService.alteraAcompanhamento(idPedido, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 3));
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService
+              .alteraAcompanhamento(idPedido, true, codigoDeAcessoEstabelecimento, acompanhamentoPedidoDTO, 3));
     
     }
 
@@ -87,7 +91,8 @@ public class AcompanhamentoPedidoV1Controller {
                                @RequestBody @Valid AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
                                @RequestParam(value="codigoDeAcessoCliente") String codigoDeAcessoCliente) throws InvalidAttributeValueException{
 
-        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService.alteraAcompanhamento(idPedido, codigoDeAcessoCliente, acompanhamentoPedidoDTO, 4));
+        return ResponseEntity.status(HttpStatus.OK).body(acompanhamentoPedidoService
+              .alteraAcompanhamento(idPedido, false, codigoDeAcessoCliente, acompanhamentoPedidoDTO, 4));
 
     }
 

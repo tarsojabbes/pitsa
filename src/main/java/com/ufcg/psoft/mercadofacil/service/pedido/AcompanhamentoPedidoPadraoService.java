@@ -36,24 +36,25 @@ public class AcompanhamentoPedidoPadraoService implements AcompanhamentoPedidoSe
     
     @Override
     public Acompanhamento alteraAcompanhamento(Long id,
-                                     String codigoDeAcesso,
-                                     AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
-                                     int andamento) throws InvalidAttributeValueException {
+                                               boolean eEstabelecimento,
+                                               String codigoDeAcesso,
+                                               AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
+                                               int andamento) throws InvalidAttributeValueException {
+
+        if (id == null || id < 1L || codigoDeAcesso == null || codigoDeAcesso.isEmpty()
+            || codigoDeAcesso.isBlank() || acompanhamentoPedidoDTO == null
+            || andamento < 0 || andamento > 4){
+            throw new IllegalArgumentException();
+        }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
         Cliente cliente = clienteRepository.findById(acompanhamentoPedidoDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(acompanhamentoPedidoDTO.getIdEstabelecimento()).orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        if (!codigoDeAcesso.equals(cliente.getCodigoDeAcesso())){
+        if (!eEstabelecimento && !codigoDeAcesso.equals(cliente.getCodigoDeAcesso())){
             throw new ClienteNaoAutorizadoException();
-        }
-
-        if (!codigoDeAcesso.equals(estabelecimento.getCodigoDeAcesso())){
+        } else if (eEstabelecimento && !codigoDeAcesso.equals(estabelecimento.getCodigoDeAcesso())){
             throw new EstabelecimentoNaoAutorizadoException();
-        }
-
-        if (andamento < 0 || andamento > 4){
-            throw new IllegalArgumentException();
         }
 
         switch (andamento){

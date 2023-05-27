@@ -9,8 +9,9 @@ import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 public interface AcompanhamentoPedidoService {
 
     public Acompanhamento alteraAcompanhamento(Long id,
-                                     String codigoDeAcesso,
-                                     AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
-                                     int andamento) throws InvalidAttributeValueException;
+                                               boolean eEstabelecimento,
+                                               String codigoDeAcesso,
+                                               AcompanhamentoPedidoDTO acompanhamentoPedidoDTO,
+                                               int andamento) throws InvalidAttributeValueException;
     
 }
