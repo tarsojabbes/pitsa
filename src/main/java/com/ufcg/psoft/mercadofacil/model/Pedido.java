@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -147,27 +148,47 @@ public class Pedido {
 
         switch (etapa){
             case(0):
-                acompanhamento.setPedidoConfirmado(status);
+                if (!acompanhamento.isPedidoPronto()){
+                    acompanhamento.setPedidoConfirmado(status);
+                } else {
+                    throw new MudancaDeStatusInvalidaException();
+                }
                 break;
 
             case(1):
-                acompanhamento.setPedidoEmPreparacao(status);
+                if (acompanhamento.isPedidoConfirmado()){
+                    acompanhamento.setPedidoEmPreparacao(status);
+                } else {
+                    throw new MudancaDeStatusInvalidaException();
+                }
                 break;
 
             case(2):
-                acompanhamento.setPedidoPronto(status);
+                if (acompanhamento.isPedidoEmPreparacao()){
+                    acompanhamento.setPedidoPronto(status);
+                } else {
+                    throw new MudancaDeStatusInvalidaException();
+                }
                 break;
 
             case(3):
-                acompanhamento.setPedidoACaminho(status);
+                if (acompanhamento.isPedidoPronto()){
+                    acompanhamento.setPedidoACaminho(status);
+                } else {
+                    throw new MudancaDeStatusInvalidaException();
+                }
                 break;
 
             case(4):
-                acompanhamento.setPedidoEntregue(status);
+                if (acompanhamento.isPedidoACaminho()){
+                    acompanhamento.setPedidoEntregue(status);
+                } else {
+                    throw new MudancaDeStatusInvalidaException();
+                }
                 break;
 
             default:
-                throw new UnsupportedOperationException();
+                throw new MudancaDeStatusInvalidaException();
         }
 
     }
