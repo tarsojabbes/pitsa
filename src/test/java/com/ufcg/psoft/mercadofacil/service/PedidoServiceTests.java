@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteConfirmarEntregaService;
 import com.ufcg.psoft.mercadofacil.service.pedido.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -42,6 +43,9 @@ public class PedidoServiceTests {
 
     @Autowired
     PedidoIndicarProntoService pedidoIndicarProntoService;
+
+    @Autowired
+    ClienteConfirmarEntregaService clienteConfirmarEntregaService;
 
     @Autowired
     PedidoRepository pedidoRepository;
@@ -364,6 +368,35 @@ public class PedidoServiceTests {
         @Transactional
         public void test04() {
             assertThrows(MudancaDeStatusInvalidaException.class, () -> pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando confirmo um pedido entregue que estava em rota de entrega")
+        @Transactional
+        public void test05() {
+            pedidoRepository.deleteAll();
+            Pedido pedido2 = pedidoRepository.save(Pedido.builder()
+                    .cliente(cliente)
+                    .pizzas(pizzas)
+                    .build());
+
+            pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            assertEquals(Acompanhamento.PEDIDO_EM_ROTA, pedido2.getAcompanhamento());
+
+            clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido2.getId());
+            assertEquals(Acompanhamento.PEDIDO_ENTREGUE, pedido2.getAcompanhamento());
+        }
+
+        @Test
+        @DisplayName("Quando tento confirmar que um pedido foi entregue, mas ele não estava em rota de entrega")
+        @Transactional
+        public void test06() {
+            pedidoRepository.deleteAll();
+            Pedido pedido3 = pedidoRepository.save(Pedido.builder()
+                    .cliente(cliente)
+                    .pizzas(pizzas)
+                    .build());
+            assertThrows(MudancaDeStatusInvalidaException.class, () -> clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido3.getId()));
         }
     }
 
