@@ -1,5 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,7 @@ public class PedidoExcluirPadraoService implements PedidoExcluirService{
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
         Cliente cliente = clienteRepository.findById(pedido.getCliente().getId()).orElseThrow(ClienteNaoExisteException::new);
 
-        if (pedido.getAcompanhamento().isPedidoPronto()){
+        if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_PRONTO)){
             throw new MudancaDeStatusInvalidaException();
         }
 

@@ -42,8 +42,10 @@ public class Pedido {
     private String endereco;
 
     @JsonProperty("acompanhamento")
+    @AcompanhamentoValidator(regexp = "PEDIDO_RECEBIDO|PEDIDO_EM_PREPARO|PEDIDO_PRONTO|PEDIDO_EM_ROTA|PEDIDO_ENTREGUE")
     @Enumerated(EnumType.STRING)
-    private Acompanhamento acompanhamento;
+    @Builder.Default
+    private Acompanhamento acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
 
@@ -137,53 +139,8 @@ public class Pedido {
         return this.acompanhamento;
     }
 
-    public void modificaAcompanhamento(boolean status, int etapa){
-
-        switch (etapa){
-            case(0):
-                if (!acompanhamento.isPedidoPronto()){
-                    acompanhamento.setPedidoConfirmado(status);
-                } else {
-                    throw new MudancaDeStatusInvalidaException();
-                }
-                break;
-
-            case(1):
-                if (acompanhamento.isPedidoConfirmado()){
-                    acompanhamento.setPedidoEmPreparacao(status);
-                } else {
-                    throw new MudancaDeStatusInvalidaException();
-                }
-                break;
-
-            case(2):
-                if (acompanhamento.isPedidoEmPreparacao()){
-                    acompanhamento.setPedidoPronto(status);
-                } else {
-                    throw new MudancaDeStatusInvalidaException();
-                }
-                break;
-
-            case(3):
-                if (acompanhamento.isPedidoPronto()){
-                    acompanhamento.setPedidoACaminho(status);
-                } else {
-                    throw new MudancaDeStatusInvalidaException();
-                }
-                break;
-
-            case(4):
-                if (acompanhamento.isPedidoACaminho()){
-                    acompanhamento.setPedidoEntregue(status);
-                } else {
-                    throw new MudancaDeStatusInvalidaException();
-                }
-                break;
-
-            default:
-                throw new MudancaDeStatusInvalidaException();
-        }
-
+    public void setAcompanhamento(Acompanhamento acompanhamento) {
+        this.acompanhamento = acompanhamento;
     }
 
 }

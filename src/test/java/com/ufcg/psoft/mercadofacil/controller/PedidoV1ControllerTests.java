@@ -987,4 +987,54 @@ public class PedidoV1ControllerTests {
         }
     }
 
+    @Nested
+    @DisplayName("Testes relacionados a atualização de status de pedido de andamento para pronto")
+    class PedidoPatchProntoTests {
+        @Test
+        @Transactional
+        @DisplayName("Quando atualizo para PEDIDO_PRONTO com sucesso")
+        public void test01() throws Exception {
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .pizzas(duasCalabresasGrandesCreator())
+                    .meioDePagamento(PIX)
+                    .build();
+
+            String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido pedidoAtualizado = objectMapper.readValue(respostaJson2, Pedido.class);
+
+            assertEquals(Acompanhamento.PEDIDO_PRONTO, pedidoAtualizado.getAcompanhamento());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando tento atualizar pedido para PEDIDO_PRONTO mas o pagamento não foi confirmado")
+        public void test02() throws Exception {
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+            assertEquals(error.getMessage(), "A operacao de mudanca de status nao pode ser realizada.");
+
+        }
+    }
+
 }

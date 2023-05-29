@@ -33,9 +33,7 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService {
 
         if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())) {
             modelMapper.map(pedidoPostPutRequestDTO, pedido);
-
             return pedidoRepository.save(pedido);
-
         } else {
             throw new ClienteNaoAutorizadoException();
         }
