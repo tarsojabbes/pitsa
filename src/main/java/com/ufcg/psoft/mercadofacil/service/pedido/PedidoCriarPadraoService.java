@@ -2,27 +2,20 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import java.util.List;
 
-import com.ufcg.psoft.mercadofacil.exception.PedidoPrecoInvalidoException;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import org.modelmapper.ModelMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.PedidoPrecoInvalidoException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.model.Pizza;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PedidoCriarPadraoService implements PedidoCriarService {

@@ -1,13 +1,15 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -39,6 +41,12 @@ public class Pedido {
     @JsonProperty("endereco")
     private String endereco;
 
+    @JsonProperty("acompanhamento")
+    @AcompanhamentoValidator(regexp = "PEDIDO_RECEBIDO|PEDIDO_EM_PREPARO|PEDIDO_PRONTO|PEDIDO_EM_ROTA|PEDIDO_ENTREGUE")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Acompanhamento acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
+
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
 
         this.cliente = cliente;
@@ -50,6 +58,7 @@ public class Pedido {
             this.endereco = endereco;
         }
         this.meioDePagamento = null;
+        this.acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
     }
 
     public void setPrecoPedido(Double preco) {
@@ -124,6 +133,14 @@ public class Pedido {
         } else {
             this.endereco = endereco;
         }
+    }
+
+    public Acompanhamento getAcompanhamento(){
+        return this.acompanhamento;
+    }
+
+    public void setAcompanhamento(Acompanhamento acompanhamento) {
+        this.acompanhamento = acompanhamento;
     }
 
 }

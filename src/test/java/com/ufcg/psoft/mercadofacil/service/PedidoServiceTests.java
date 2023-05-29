@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.service;
 
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
@@ -38,6 +39,9 @@ public class PedidoServiceTests {
 
     @Autowired
     PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
+
+    @Autowired
+    PedidoIndicarProntoService pedidoIndicarProntoService;
 
     @Autowired
     PedidoRepository pedidoRepository;
@@ -311,6 +315,56 @@ public class PedidoServiceTests {
             assertThrows(MercadoFacilException.class, () -> pedidoConfirmarPagamentoService.confirmar(pedido.getId() + 2L, cliente.getCodigoDeAcesso(), pedidoConfirmado));
         }
 
+    }
+
+    @Nested
+    public class PedidoAlterarAcompanhamentoTests {
+        @Test
+        @DisplayName("Quando crio um pedido e checo se o acompanhamento é PEDIDO_RECEBIDO")
+        @Transactional
+        public void test01() {
+            assertEquals(Acompanhamento.PEDIDO_RECEBIDO, pedido.getAcompanhamento());
+        }
+
+        @Test
+        @DisplayName("Quando confirmo o pagamento de um pedido e checo se o acompanhamento é PEDIDO_EM_PREPARO")
+        @Transactional
+        public void test02() {
+            PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .pizzas(pizzas)
+                    .meioDePagamento(DEBITO)
+                    .build();
+
+            Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+
+            assertEquals(Acompanhamento.PEDIDO_EM_PREPARO, pedido2.getAcompanhamento());
+        }
+
+        @Test
+        @DisplayName("Quando estabelecimento indica que o pedido está pronto")
+        @Transactional
+        public void test03() {
+            PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .pizzas(pizzas)
+                    .meioDePagamento(DEBITO)
+                    .build();
+
+            Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+
+            Pedido pedidoPronto = pedidoIndicarProntoService.indicarPedidoPronto(pedido2.getId());
+
+            assertEquals(Acompanhamento.PEDIDO_PRONTO, pedidoPronto.getAcompanhamento());
+
+        }
+
+        @Test
+        @DisplayName("Quando tento atualizar status para PEDIDO_PRONTO mas pagamento não foi confirmado")
+        @Transactional
+        public void test04() {
+            assertThrows(MudancaDeStatusInvalidaException.class, () -> pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId()));
+        }
     }
 
 }

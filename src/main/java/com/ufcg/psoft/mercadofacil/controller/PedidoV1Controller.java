@@ -33,6 +33,9 @@ public class PedidoV1Controller {
     PedidoExcluirService pedidoExcluirService;
 
     @Autowired
+    PedidoIndicarProntoService pedidoIndicarProntoService;
+
+    @Autowired
     ModelMapper modelMapper;
 
     @GetMapping("/{id}")
@@ -68,6 +71,11 @@ public class PedidoV1Controller {
     public void excluirPedido(@PathVariable @Valid Long id,
                               @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
         pedidoExcluirService.excluir(id, codigoDeAcesso);
+    }
+
+    @PatchMapping("/{id}/pedido-pronto")
+    public ResponseEntity<Pedido> indicarPedidoPronto(@PathVariable @Valid Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoIndicarProntoService.indicarPedidoPronto(id));
     }
 
 }
