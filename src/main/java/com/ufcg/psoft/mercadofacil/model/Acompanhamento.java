@@ -6,24 +6,12 @@ import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Data
-@NoArgsConstructor
-public class Acompanhamento {
+public enum Acompanhamento {
 
-    @JsonProperty("pedidoConfirmado")
-    private boolean pedidoConfirmado;
-
-    @JsonProperty("pedidoEmPreparacao")
-    private boolean pedidoEmPreparacao;
-
-    @JsonProperty("pedidoPronto")
-    private boolean pedidoPronto;
-
-    @JsonProperty("pedidoACaminho")
-    private boolean pedidoACaminho;
-
-    @JsonProperty("pedidoEntregue")
-    private boolean pedidoEntregue;
+    PEDIDO_RECEBIDO,
+    PEDIDO_EM_PREPARO,
+    PEDIDO_PRONTO,
+    PEDIDO_EM_ROTA,
+    PEDIDO_ENTREGUE
     
 }

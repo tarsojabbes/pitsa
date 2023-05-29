@@ -6,15 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -50,6 +42,7 @@ public class Pedido {
     private String endereco;
 
     @JsonProperty("acompanhamento")
+    @Enumerated(EnumType.STRING)
     private Acompanhamento acompanhamento;
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
@@ -63,7 +56,7 @@ public class Pedido {
             this.endereco = endereco;
         }
         this.meioDePagamento = null;
-        this.acompanhamento = new Acompanhamento();
+        this.acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
     }
 
     public void setPrecoPedido(Double preco) {
