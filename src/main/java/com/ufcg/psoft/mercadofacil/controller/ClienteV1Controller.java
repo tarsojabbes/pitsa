@@ -7,6 +7,7 @@ import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
 import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
+import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class ClienteV1Controller {
 
     @Autowired
     ClienteExcluirService clienteExcluirService;
+
+    @Autowired
+    ClienteConfirmarEntregaService clienteConfirmarEntregaService;
 
     @Autowired
     ClienteDemonstrarInteresseService clienteDemostrarInteresseService;
@@ -89,8 +93,8 @@ public class ClienteV1Controller {
         }
     }
 
-
-
-
-
+    @PatchMapping("/{id}/confirmar-entrega")
+    public ResponseEntity<Pedido> confirmarPedidoEntregue(@PathVariable @Valid Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(clienteConfirmarEntregaService.confirmarPedidoEntregue(id));
+    }
 }
