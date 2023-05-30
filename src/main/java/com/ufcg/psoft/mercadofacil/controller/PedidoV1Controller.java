@@ -36,6 +36,9 @@ public class PedidoV1Controller {
     PedidoIndicarProntoService pedidoIndicarProntoService;
 
     @Autowired
+    PedidoAtribuirEntregadorService pedidoAtribuirEntregadorService;
+
+    @Autowired
     ModelMapper modelMapper;
 
     @GetMapping("/{id}")
@@ -76,6 +79,12 @@ public class PedidoV1Controller {
     @PatchMapping("/{id}/pedido-pronto")
     public ResponseEntity<Pedido> indicarPedidoPronto(@PathVariable @Valid Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(pedidoIndicarProntoService.indicarPedidoPronto(id));
+    }
+
+    @PatchMapping("/{id}/atribuir-entregador")
+    public ResponseEntity<Pedido> atribuirEntregador(@PathVariable @Valid Long id,
+                                                     @RequestParam(value = "idEntregador", required = true) Long idEntregador) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoAtribuirEntregadorService.atribuirEntregador(id, idEntregador));
     }
 
 }

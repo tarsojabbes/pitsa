@@ -3,12 +3,11 @@ package com.ufcg.psoft.mercadofacil.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.*;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.repository.*;
+import com.ufcg.psoft.mercadofacil.service.pedido.PedidoConfirmarPagamentoService;
+import com.ufcg.psoft.mercadofacil.service.pedido.PedidoIndicarProntoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +46,18 @@ public class PedidoV1ControllerTests {
     @Autowired
     SaborRepository saborRepository;
 
+    @Autowired
+    AssociacaoRepository associacaoRepository;
+
+    @Autowired
+    EntregadorRepository entregadorRepository;
+
+    @Autowired
+    PedidoIndicarProntoService pedidoIndicarProntoService;
+
+    @Autowired
+    PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
+
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Pedido pedido;
@@ -54,13 +65,30 @@ public class PedidoV1ControllerTests {
     Estabelecimento estabelecimento;
     Cliente cliente;
 
+    Associacao associacao;
+
+    Entregador entregador;
+
     @BeforeEach
     void setup() {
+
+        entregador = entregadorRepository.save(Entregador.builder()
+                .nome("Jose da Silva")
+                .corDoVeiculo("Branco")
+                .placaDoVeiculo("123456")
+                .tipoDoVeiculo(TipoDoVeiculo.MOTO)
+                .codigoDeAcesso("12345678").build());
 
         estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
                 .nome("Jipao")
                 .codigoDeAcesso("123456")
                 .associacoes(new ArrayList<>())
+                .build());
+
+        associacao = associacaoRepository.save(Associacao.builder()
+                .entregador(entregador)
+                .estabelecimento(estabelecimento)
+                .statusAssociacao(true)
                 .build());
 
         cliente = clienteRepository.save(Cliente.builder()
@@ -94,13 +122,16 @@ public class PedidoV1ControllerTests {
         pedido = pedidoRepository.save(Pedido.builder()
                 .cliente(cliente)
                 .pizzas(pizzas)
+                .estabelecimento(estabelecimento)
                 .endereco("abc")
                 .build());
     }
 
     @AfterEach
     void tearDown() {
+        associacaoRepository.deleteAll();
         pedidoRepository.deleteAll();
+        entregadorRepository.deleteAll();
         clienteRepository.deleteAll();
         saborRepository.deleteAll();
         estabelecimentoRepository.deleteAll();
@@ -177,6 +208,7 @@ public class PedidoV1ControllerTests {
                     .idCliente(cliente2.getId())
                     .pizzas(pizzasAtumPacoca())
                     .meioDePagamento(PIX)
+                    .idEstabelecimento(estabelecimento.getId())
                     .enderecoAlternativo("")
                     .build();
 
@@ -429,6 +461,7 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
                     .pizzas(pizzasAtumPacoca())
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -501,6 +534,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .idCliente(cliente.getId())
+                    .idEstabelecimento(estabelecimento.getId())
                     .enderecoAlternativo("Avenida Augusto dos Anjos 44")
                     .pizzas(pedido.getPizzas())
                     .build();
@@ -526,6 +560,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .idCliente(cliente.getId())
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(duasCalabresasGrandesCreator())
                     .build();
 
@@ -599,6 +634,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(duasCalabresasGrandesCreator())
                     .meioDePagamento(PIX)
                     .build();
@@ -625,6 +661,7 @@ public class PedidoV1ControllerTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .pizzas(duasCalabresasGrandesCreator())
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(CREDITO)
                     .build();
 
@@ -649,6 +686,7 @@ public class PedidoV1ControllerTests {
             PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(duasCalabresasGrandesCreator())
                     .meioDePagamento(DEBITO)
                     .build();
@@ -701,6 +739,7 @@ public class PedidoV1ControllerTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso("234567")
                     .pizzas(duasCalabresasGrandesCreator())
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -786,12 +825,14 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
                     .pizzas(criaPizzasSimples())
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
             pedidoCompostoDTO = PedidoPostPutRequestDTO.builder()
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(criaPizzasCompostas())
                     .meioDePagamento(PIX)
                     .build();
@@ -969,6 +1010,7 @@ public class PedidoV1ControllerTests {
                     .codigoDeAcesso(cliente2.getCodigoDeAcesso())
                     .idCliente(cliente2.getId())
                     .pizzas(pizzaErronea)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -998,6 +1040,7 @@ public class PedidoV1ControllerTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .pizzas(duasCalabresasGrandesCreator())
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -1033,6 +1076,134 @@ public class PedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
             assertEquals(error.getMessage(), "A operacao de mudanca de status nao pode ser realizada.");
+
+        }
+    }
+
+    @Nested
+    public class PedidoPatchAtribuicaoEntregadorTests {
+        PedidoPostPutRequestDTO pedidoDTO;
+        @BeforeEach
+        public void setUpAtribuicao() throws Exception {
+            pedidoDTO = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .codigoDeAcesso(cliente.getCodigoDeAcesso())
+                    .pizzas(duasCalabresasGrandesCreator())
+                    .idEstabelecimento(estabelecimento.getId())
+                    .meioDePagamento(PIX)
+                    .build();
+
+            String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+        }
+        @Test
+        @DisplayName("Quando atribuo um entregador existente a um pedido existente")
+        @Transactional
+        public void test01() throws Exception {
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido pedidoAtualizado = objectMapper.readValue(respostaJson2, Pedido.class);
+
+            assertEquals(pedidoAtualizado.getAcompanhamento(), Acompanhamento.PEDIDO_EM_ROTA);
+            assertNotNull(pedidoAtualizado.getEntregador());
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador inexistente")
+        @Transactional
+        public void test02() throws Exception{
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + (entregador.getId()+99))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "O entregador consultado nao existe!");
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_PRONTO);
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido inexistente a um entregador existente")
+        @Transactional
+        public void test03() throws Exception {
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + (pedido.getId()+99) + "/atribuir-entregador?idEntregador=" + entregador.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "Pedido com id informado nao existe.");
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_PRONTO);
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um entregador existente a um pedido existente mas o pedido não está pronto")
+        @Transactional
+        public void test04() throws Exception {
+
+            String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(pedidoDTO)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "A operacao de mudanca de status nao pode ser realizada.");
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_EM_PREPARO);
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador existente mas não há associação")
+        @Transactional
+        public void test05() throws Exception {
+            Entregador entregador2 = entregadorRepository.save(Entregador.builder()
+                    .nome("Joao")
+                    .corDoVeiculo("Preto")
+                    .placaDoVeiculo("123456")
+                    .tipoDoVeiculo(TipoDoVeiculo.CARRO)
+                    .codigoDeAcesso("12345678").build());
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador2.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+
+            assertEquals(error.getMessage(), "A associacao consultada nao existe!");
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_PRONTO);
+
 
         }
     }

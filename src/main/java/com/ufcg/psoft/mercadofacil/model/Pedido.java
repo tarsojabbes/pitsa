@@ -32,6 +32,16 @@ public class Pedido {
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
+    @JsonProperty("entregador")
+    @ManyToOne()
+    @JoinColumn(name = "id_entregador")
+    private Entregador entregador;
+
+    @JsonProperty("estabelecimento")
+    @ManyToOne()
+    @JoinColumn(name = "id_estabelecimento", nullable = true)
+    private Estabelecimento estabelecimento;
+
     @JsonProperty("precoPedido")
     private Double precoPedido;
 
@@ -121,6 +131,22 @@ public class Pedido {
 
     public MeioDePagamento getMeioDePagamento() {
         return meioDePagamento;
+    }
+
+    public Entregador getEntregador() {
+        return this.entregador;
+    }
+
+    public void setEntregador(Entregador entregador) {
+        this.entregador = entregador;
+    }
+
+    public Estabelecimento getEstabelecimento() {
+        return this.estabelecimento;
+    }
+
+    public void setEstabelecimento(Estabelecimento estabelecimento) {
+        this.estabelecimento = estabelecimento;
     }
 
     public void setMeioDePagamento(MeioDePagamento meioDePagamento) {
