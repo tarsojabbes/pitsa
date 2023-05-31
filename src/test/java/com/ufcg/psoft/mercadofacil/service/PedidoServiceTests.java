@@ -1,9 +1,10 @@
 package com.ufcg.psoft.mercadofacil.service;
 
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
-import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.*;
+import com.ufcg.psoft.mercadofacil.repository.*;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
@@ -42,6 +43,9 @@ public class PedidoServiceTests {
     PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
 
     @Autowired
+    PedidoAtribuirEntregadorService pedidoAtribuirEntregadorService;
+
+    @Autowired
     PedidoIndicarProntoService pedidoIndicarProntoService;
 
     @Autowired
@@ -57,7 +61,13 @@ public class PedidoServiceTests {
     EstabelecimentoRepository estabelecimentoRepository;
 
     @Autowired
+    AssociacaoRepository associacaoRepository;
+
+    @Autowired
     SaborRepository saborRepository;
+
+    @Autowired
+    EntregadorRepository entregadorRepository;
 
     Pedido pedido;
 
@@ -67,12 +77,29 @@ public class PedidoServiceTests {
 
     Estabelecimento estabelecimento;
 
+    Associacao associacao;
+
+    Entregador entregador;
+
     @BeforeEach
     void setup() {
+        entregador = entregadorRepository.save(Entregador.builder()
+                .nome("Jose da Silva")
+                .corDoVeiculo("Branco")
+                .placaDoVeiculo("123456")
+                .tipoDoVeiculo(TipoDoVeiculo.MOTO)
+                .codigoDeAcesso("12345678").build());
+
         estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
                 .nome("Jipao")
                 .codigoDeAcesso("123456")
                 .associacoes(new ArrayList<>())
+                .build());
+
+        associacao = associacaoRepository.save(Associacao.builder()
+                .entregador(entregador)
+                .estabelecimento(estabelecimento)
+                .statusAssociacao(true)
                 .build());
 
         cliente = clienteRepository.save(Cliente.builder()
@@ -86,7 +113,9 @@ public class PedidoServiceTests {
         pedido = pedidoRepository.save(Pedido.builder()
                 .cliente(cliente)
                 .pizzas(pizzas)
+                .estabelecimento(estabelecimento)
                 .build());
+
     }
 
     @AfterEach
@@ -130,6 +159,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .enderecoAlternativo("")
                     .build();
@@ -150,6 +180,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .meioDePagamento(CREDITO)
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(pizzas)
                     .build();
 
@@ -170,6 +201,7 @@ public class PedidoServiceTests {
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
+                    .idEstabelecimento(estabelecimento.getId())
                     .enderecoAlternativo(novaRua)
                     .build();
 
@@ -257,6 +289,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -277,6 +310,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(CREDITO)
                     .build();
 
@@ -297,6 +331,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(DEBITO)
                     .build();
 
@@ -338,6 +373,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
                     .meioDePagamento(DEBITO)
+                    .idEstabelecimento(estabelecimento.getId())
                     .build();
 
             Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
@@ -352,6 +388,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(DEBITO)
                     .build();
 
@@ -397,6 +434,63 @@ public class PedidoServiceTests {
                     .pizzas(pizzas)
                     .build());
             assertThrows(MudancaDeStatusInvalidaException.class, () -> clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido3.getId()));
+        }
+    }
+
+    @Nested
+    public class PedidoAtribuirEntregadorServiceTests {
+        @Test
+        @DisplayName("Quando atribuo um entregador existente a um pedido existente")
+        @Transactional
+        public void test01() {
+
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+
+            Pedido pedidoComEntregadorAssociado = pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
+
+            assertEquals(pedidoComEntregadorAssociado.getAcompanhamento(), Acompanhamento.PEDIDO_EM_ROTA);
+
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador inexistente")
+        @Transactional
+        public void test02() {
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            assertThrows(EntregadorNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId() + 99));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido inexistente a um entregador existente")
+        @Transactional
+        public void test03() {
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            assertThrows(PedidoNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId()+99, entregador.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um entregador existente a um pedido existente mas o pedido não está pronto")
+        @Transactional
+        public void test04() {
+            assertThrows(MudancaDeStatusInvalidaException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador existente mas não há associação")
+        @Transactional
+        public void test05() {
+            Entregador entregador2 = entregadorRepository.save(Entregador.builder()
+                    .nome("Joao")
+                    .corDoVeiculo("Preto")
+                    .placaDoVeiculo("123456")
+                    .tipoDoVeiculo(TipoDoVeiculo.CARRO)
+                    .codigoDeAcesso("12345678").build());
+
+            assertThrows(AssociacaoNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador2.getId()));
         }
     }
 

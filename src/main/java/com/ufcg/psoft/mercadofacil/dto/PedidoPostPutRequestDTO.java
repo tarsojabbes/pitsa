@@ -51,4 +51,8 @@ public class PedidoPostPutRequestDTO {
     @JsonProperty("enderecoAlternativo")
     private String enderecoAlternativo;
 
+    @JsonProperty("idEstabelecimento")
+    @NotNull(message = "O id do estabelecimento nao pode ser nulo.")
+    private Long idEstabelecimento;
+
 }

@@ -2,6 +2,9 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import java.util.List;
 
+import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoExisteException;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,9 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
     ClienteRepository clienteRepository;
 
     @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
     PedidoCalcularPrecoService pedidoCalcularPrecoService;
 
     @Override
@@ -43,6 +49,7 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
         }
 
         Cliente cliente = clienteRepository.findById(pedidoPostPutRequestDTO.getIdCliente()).orElseThrow(ClienteNaoExisteException::new);
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(pedidoPostPutRequestDTO.getIdEstabelecimento()).orElseThrow(EstabelecimentoNaoExisteException::new);
 
         if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)) {
 
@@ -61,12 +68,10 @@ public class PedidoCriarPadraoService implements PedidoCriarService {
                     .endereco(endereco)
                     .pizzas(inicioPedido)
                     .cliente(cliente)
+                    .estabelecimento(estabelecimento)
                     .meioDePagamento(pedidoPostPutRequestDTO.getMeioDePagamento())
                     .endereco(pedidoPostPutRequestDTO.getEnderecoAlternativo())
                     .build();
-
-            System.out.println(pedido.getPrecoPedido());
-            System.out.println("Calculado "+ preco);
 
             // Comparando preços, para evitar fraudes.
             if (preco != pedido.getPrecoPedido()) {

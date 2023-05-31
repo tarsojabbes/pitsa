@@ -30,6 +30,9 @@ public class Estabelecimento {
     private String nome;
 
     @OneToMany(mappedBy = "estabelecimento")
-    private List<Associacao> associacoes = new ArrayList<>();
+    private List<Associacao> associacoes;
+
+    @OneToMany(mappedBy = "estabelecimento")
+    private List<Pedido> pedidos;
 
 }
