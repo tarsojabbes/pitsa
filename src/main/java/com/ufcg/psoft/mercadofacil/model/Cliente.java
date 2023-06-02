@@ -33,5 +33,16 @@ public class Cliente {
     @JsonProperty("pedidos")
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Pedido> pedidos;
+
+
+
+    public void notificarPedidoEmRota(Entregador entregador){
+        System.out.println(this.getNome() + ", seu pedido está em rota de entrega\n" +
+                "--Informações do entregador--:\n" +
+                "Nome: " + entregador.getNome() + "\n" +
+                "Tipo de Veiculo: " + entregador.getTipoDoVeiculo()  + "\n" +
+                "Cor do Veiculo: " + entregador.getCorDoVeiculo() + "\n" +
+                "Placa do Veiculo: " + entregador.getPlacaDoVeiculo());
+    }
 }
 

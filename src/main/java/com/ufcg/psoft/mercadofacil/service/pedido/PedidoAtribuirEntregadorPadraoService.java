@@ -38,6 +38,7 @@ public class PedidoAtribuirEntregadorPadraoService implements PedidoAtribuirEntr
         if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_PRONTO)) {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
             pedido.setEntregador(entregador);
+            pedido.getCliente().notificarPedidoEmRota(entregador);
             return pedidoRepository.save(pedido);
         }
 
