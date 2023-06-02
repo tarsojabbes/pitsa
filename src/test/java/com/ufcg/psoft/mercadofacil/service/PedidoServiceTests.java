@@ -16,6 +16,8 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -435,6 +437,44 @@ public class PedidoServiceTests {
                     .build());
             assertThrows(MudancaDeStatusInvalidaException.class, () -> clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido3.getId()));
         }
+    }
+
+    @Nested
+    public class NotificarMudancaDeStatusTest{
+        @Test
+        @DisplayName("Quando mudo o status de um pedido de pedido pronto para pedido em rota e notifico o cliente")
+        @Transactional
+        public void test01() {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+
+            PrintStream originalSystemOut = System.out;
+
+            try {
+                System.setOut(printStream);
+
+                pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+                pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
+
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Joao, seu pedido está em rota de entrega\n" +
+                        "--Informações do entregador--:\n" +
+                        "Nome: Jose da Silva\n" +
+                        "Tipo de Veiculo: MOTO\n" +
+                        "Cor do Veiculo: Branco\n" +
+                        "Placa do Veiculo: 123456";
+                assertEquals(resultadoFiltrado, notificacaoEsperada);
+
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+        }
+
     }
 
     @Nested
