@@ -413,7 +413,6 @@ public class PedidoServiceTests {
             PrintStream printStream = new PrintStream(outputStream);
             PrintStream originalSystemOut = System.out;
 
-            pedidoRepository.deleteAll();
             Pedido pedido2 = pedidoRepository.save(Pedido.builder()
                     .cliente(cliente)
                     .pizzas(pizzas)
@@ -435,7 +434,7 @@ public class PedidoServiceTests {
 
                 String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
 
-                String notificacaoEsperada = "Jipao, o pedido de número 2 foi entregue.";
+                String notificacaoEsperada = "Jipao, o pedido de número " + pedido2.getId() + " foi entregue.";
                 assertEquals(notificacaoEsperada, resultadoFiltrado);
 
             } finally {
