@@ -71,9 +71,8 @@ public class PedidoV1Controller {
     }
 
     @DeleteMapping("/{id}")
-    public void excluirPedido(@PathVariable @Valid Long id,
-                              @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
-        pedidoExcluirService.excluir(id, codigoDeAcesso);
+    public void excluirPedido(@PathVariable @Valid Long id) {
+        pedidoExcluirService.excluir(id);
     }
 
     @PatchMapping("/{id}/pedido-pronto")
