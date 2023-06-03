@@ -765,7 +765,7 @@ public class PedidoV1ControllerTests {
         @DisplayName("Exclusão por ID de um pedido existente")
         public void testExclusaoPorIDValida() throws Exception {
 
-            driver.perform(delete("/v1/pedidos/" + pedido.getId() + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+            driver.perform(delete("/v1/pedidos/" + pedido.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -779,7 +779,7 @@ public class PedidoV1ControllerTests {
         @DisplayName("Exclusao por ID de um pedido inválido (potencial pedido de outro cliente)")
         public void testExclusaoPorIDInvalida() throws Exception {
 
-            driver.perform(delete("/v1/pedidos/" + (pedido.getId() + 1L) + "?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+            driver.perform(delete("/v1/pedidos/" + (pedido.getId() + 1L))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
