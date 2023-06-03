@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClienteConfirmarEntregaPadraoService implements ClienteConfirmarEntregaService{
+public class ClienteConfirmarEntregaPadraoService implements ClienteConfirmarEntregaService {
 
     @Autowired
     PedidoRepository pedidoRepository;
@@ -20,6 +20,7 @@ public class ClienteConfirmarEntregaPadraoService implements ClienteConfirmarEnt
 
         if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_EM_ROTA)) {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_ENTREGUE);
+            pedido.getEstabelecimento().notificarPedidoEntregue(pedido.getId());
             return pedidoRepository.save(pedido);
         }
 
