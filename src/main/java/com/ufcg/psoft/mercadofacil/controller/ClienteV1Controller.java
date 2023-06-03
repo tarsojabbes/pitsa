@@ -2,11 +2,12 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
+import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteAlterarService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteCriarService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteExcluirService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteListarService;
+import com.ufcg.psoft.mercadofacil.service.cliente.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,9 @@ public class ClienteV1Controller {
 
     @Autowired
     ClienteExcluirService clienteExcluirService;
+
+    @Autowired
+    ClienteDemonstrarInteresseService clienteDemostrarInteresseService;
 
 
     @GetMapping("/{id}")
@@ -70,6 +74,23 @@ public class ClienteV1Controller {
         clienteExcluirService.excluir(id, codigoDeAcesso);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
     }
+
+
+    @PostMapping("/cliente/{clienteId}/sabor/{saborId}/interesse")
+    public ResponseEntity<?> demonstrarInteressePorSabor(@PathVariable Long clienteId,
+                                                         @PathVariable Long saborId,
+                                                         @RequestParam String codigoDeAcesso) {
+        try {
+            clienteDemostrarInteresseService.demonstrarInteressePorSabor(codigoDeAcesso, clienteId, saborId);
+            return ResponseEntity.ok("Interesse registrado com sucesso.");
+        } catch (ClienteNaoExisteException | SaborNaoExisteException | ClienteNaoAutorizadoException |
+                 SaborDisponivelException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+
 
 
 }

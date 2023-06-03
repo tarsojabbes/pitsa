@@ -6,13 +6,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
-import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -53,22 +54,21 @@ public class EstabelecimentoV1ControllerTests {
 
     Estabelecimento estabelecimento;
 
-    @BeforeEach
-    public void setup() {
-        estabelecimento = estabelecimentoRepository.save(
-                Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
-        );
-
-    }
-
-    @AfterEach
-    public void tearDown() {
-        estabelecimentoRepository.deleteAll();
-//        associacaoRepository.deleteAll();
-    }
-
     @Nested
     public class GetEstabelecimentoTests {
+
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+        }
 
         @Test
         @Transactional
@@ -86,7 +86,7 @@ public class EstabelecimentoV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<List<Estabelecimento>>() {
+            List<Estabelecimento> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
             });
 
             assertEquals(2, resultado.size());
@@ -119,7 +119,7 @@ public class EstabelecimentoV1ControllerTests {
         @Transactional
         @DisplayName("Quando busco um estabelecimento inexistente pelo ID")
         public void test03() throws Exception {
-            Long idInexistente = 4L;
+            long idInexistente = 999L;
 
             // Fazendo a requisição GET para o endpoint de um estabelecimento que não existe
             MvcResult result = driver.perform(get("/v1/estabelecimentos/" + idInexistente)
@@ -133,6 +133,19 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class PostEstabelecimentoTests {
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+        }
+
         @Test
         @Transactional
         @DisplayName("Quando crio um estabelecimento com dados válidos")
@@ -210,6 +223,19 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class PutEstabelecimentoTests {
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+        }
+
         @Test
         @Transactional
         @DisplayName("Quando atualizo um estabelecimento com dados válidos")
@@ -303,24 +329,42 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class DeleteEstabelecimentoTests {
+        @Autowired
+        SaborRepository saborRepository;
+
+        @BeforeEach
+        public void setup() {
+            estabelecimento = estabelecimentoRepository.save(
+                    Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
+            );
+        }
+
+        @AfterEach
+        public void tearDown() {
+            estabelecimentoRepository.deleteAll();
+            associacaoRepository.deleteAll();
+        }
+
         @Test
         @Transactional
         @DisplayName("Quando excluo um estabelecimento com ID válido e existente no banco")
         public void test01() throws Exception {
+            saborRepository.deleteAll();
             driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            assertEquals(0, estabelecimentoRepository.findAll().size());
+            assertFalse(estabelecimentoRepository.findAll().contains(estabelecimento));
         }
 
         @Test
         @Transactional
         @DisplayName("Quando excluo um estabelecimento não existente no banco pelo ID")
         public void test02() throws Exception {
-            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + estabelecimento.getId() + 1)
+            saborRepository.deleteAll();
+            String responseJsonString = driver.perform(delete("/v1/estabelecimentos/" + (estabelecimento.getId() + 9999L))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -335,9 +379,6 @@ public class EstabelecimentoV1ControllerTests {
     @Nested
     @DisplayName("Testes relacionados à aceitação ou rejeição de entregadores")
     class aceitarRejeitarEntregadores {
-
-
-
         Entregador entregador;
 
         Associacao associacao;
@@ -358,8 +399,8 @@ public class EstabelecimentoV1ControllerTests {
             );
 
             associacao = associacaoService.associarEntregadorEstabelecimento(entregador.getId(),
-                                                                                estabelecimento.getId(),
-                                                                                entregador.getCodigoDeAcesso());
+                    estabelecimento.getId(),
+                    entregador.getCodigoDeAcesso());
         }
 
         @Test
@@ -391,7 +432,6 @@ public class EstabelecimentoV1ControllerTests {
             // Comparando estabelecimento
             assertEquals(response.getEstabelecimento().getCodigoDeAcesso(), associacao.getEstabelecimento().getCodigoDeAcesso());
             assertEquals(response.getEstabelecimento().getNome(), associacao.getEstabelecimento().getNome());
-
         }
 
         @Test
@@ -407,7 +447,6 @@ public class EstabelecimentoV1ControllerTests {
 
             assertEquals(responseJsonString, "");
             Assertions.assertFalse(associacaoRepository.findById(associacao.getId()).isPresent());
-
         }
 
         @Test
@@ -425,7 +464,6 @@ public class EstabelecimentoV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
-
         }
 
         @Test
@@ -442,8 +480,8 @@ public class EstabelecimentoV1ControllerTests {
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
             assertEquals("O estabelecimento nao possui permissao para alterar dados de outro estabelecimento", error.getMessage());
-
         }
 
     }
+
 }

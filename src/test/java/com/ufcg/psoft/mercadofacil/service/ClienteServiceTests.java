@@ -4,12 +4,15 @@ import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
+import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteAlterarService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteCriarService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteExcluirService;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteListarService;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.service.cliente.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +38,15 @@ public class ClienteServiceTests {
 
     @Autowired
     ClienteRepository clienteRepository;
+
+    @Autowired
+    ClienteDemonstrarInteresseService clienteDemonstrarInteresseService;
+
+    @Autowired
+    SaborRepository saborRepository;
+
+    @Autowired
+    EstabelecimentoRepository estabelecimentoRepository;
 
     Cliente cliente;
 
@@ -180,6 +192,7 @@ public class ClienteServiceTests {
         @Test
         @DisplayName("Quando listo todos os clientes que existem no banco")
         public void test01() {
+
             Cliente cliente1 = clienteRepository.save(Cliente.builder()
                     .nome("Fulaninho")
                     .endereco("Rua do Bobo, 0")
@@ -210,6 +223,86 @@ public class ClienteServiceTests {
         @DisplayName("Quando listo um cliente que não existe pelo ID")
         public void test03() {
             assertThrows(ClienteNaoExisteException.class, () -> clienteListarService.listar(cliente.getId() + 99));
+        }
+    }
+
+    @Nested
+    class DemonstrarInteresseServiceTests{
+        Estabelecimento estabelecimento;
+        Cliente cliente;
+        Sabor sabor;
+
+        @BeforeEach
+        void setup(){
+            cliente = clienteRepository.save(Cliente.builder()
+                    .codigoDeAcesso("12345")
+                    .nome("Sabrina Barbosa")
+                    .endereco("Avenida Ipiranga com Avenida São João")
+                    .build());
+
+            estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
+                    .codigoDeAcesso("123456")
+                    .nome("Estabelecimento Zero")
+                    .build());
+
+            sabor = saborRepository.save(
+                    Sabor.builder()
+                            .nomeSabor("Sabor Zero")
+                            .tipoSabor("Salgado")
+                            .precoMedio(20.00)
+                            .precoGrande(40.00)
+                            .estabelecimento(estabelecimento)
+                            .build());
+        }
+
+        @AfterEach
+        public void tearDown() {
+            saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
+            clienteRepository.deleteAll();
+        }
+
+        @Test
+        public void testDemonstrarInteressePorSabor_CodigoAcessoInvalido_ExceptionLancada() {
+            String codigoDeAcessoInvalido = "senhaInvalida";
+
+            assertThrows(ClienteNaoAutorizadoException.class,
+                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor(codigoDeAcessoInvalido, cliente.getId(), sabor.getId()));
+        }
+
+        @Test
+        public void testDemonstrarInteressePorSabor_Disponível() {
+
+            assertThrows(SaborDisponivelException.class,
+                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", cliente.getId(), sabor.getId()));
+        }
+
+        @Test
+        public void testDemonstrarInteressePorSabor_ClienteNaoExiste() {
+            clienteRepository.deleteAll();
+
+            assertThrows(ClienteNaoExisteException.class,
+                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", 2L, sabor.getId()));
+        }
+
+        @Test
+        public void testDemonstrarInteressePorSabor_SaborNaoExiste() {
+
+            assertThrows(SaborNaoExisteException.class,
+                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", cliente.getId(), 2L));
+        }
+
+        @Test
+        public void testDemonstrarInteressePorSabor_Indisponivel() {
+            sabor.setDisponivel(false);
+            saborRepository.save(sabor);
+
+            clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", cliente.getId(), sabor.getId());
+
+            Sabor saborAtualizado = saborRepository.findById(sabor.getId()).orElseThrow(SaborNaoExisteException::new);
+            List<Long> interessados = saborAtualizado.getInteressados();
+
+            assertEquals(interessados.get(0), cliente.getId());
         }
     }
 

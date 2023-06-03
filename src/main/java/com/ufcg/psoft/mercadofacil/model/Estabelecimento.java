@@ -31,4 +31,5 @@ public class Estabelecimento {
 
     @OneToMany(mappedBy = "estabelecimento")
     private List<Associacao> associacoes = new ArrayList<>();
+
 }
