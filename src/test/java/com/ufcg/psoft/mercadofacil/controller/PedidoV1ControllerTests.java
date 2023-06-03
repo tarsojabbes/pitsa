@@ -3,7 +3,8 @@ package com.ufcg.psoft.mercadofacil.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.*;
+import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
+import com.ufcg.psoft.mercadofacil.exception.PedidoNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.*;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoConfirmarPagamentoService;
@@ -17,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,9 +153,9 @@ public class PedidoV1ControllerTests {
         return novoPedido;
     }
 
-    private List<Pizza> pizzasAtumPacoca(){
-        Sabor atum =  Sabor.builder().nomeSabor("Atum").tipoSabor("Salgada").precoGrande(70.00).precoMedio(60.00).estabelecimento(estabelecimento).build();
-        Sabor pacoca =  Sabor.builder().nomeSabor("Pacoca").tipoSabor("Doce").precoGrande(60.00).precoMedio(50.00).estabelecimento(estabelecimento).build();
+    private List<Pizza> pizzasAtumPacoca() {
+        Sabor atum = Sabor.builder().nomeSabor("Atum").tipoSabor("Salgada").precoGrande(70.00).precoMedio(60.00).estabelecimento(estabelecimento).build();
+        Sabor pacoca = Sabor.builder().nomeSabor("Pacoca").tipoSabor("Doce").precoGrande(60.00).precoMedio(50.00).estabelecimento(estabelecimento).build();
 
         atum = saborRepository.save(atum);
         pacoca = saborRepository.save(pacoca);
@@ -168,10 +171,10 @@ public class PedidoV1ControllerTests {
         return pizzaMaldita;
     }
 
-    private List<Pizza> pizzasUmSabor(){
+    private List<Pizza> pizzasUmSabor() {
 
-        Sabor atum =  Sabor.builder().nomeSabor("Atum").tipoSabor("Salgada").precoGrande(70.00).precoMedio(60.00).estabelecimento(estabelecimento).build();
-        Sabor pacoca =  Sabor.builder().nomeSabor("Pacoca").tipoSabor("Doce").precoGrande(60.00).precoMedio(50.00).estabelecimento(estabelecimento).build();
+        Sabor atum = Sabor.builder().nomeSabor("Atum").tipoSabor("Salgada").precoGrande(70.00).precoMedio(60.00).estabelecimento(estabelecimento).build();
+        Sabor pacoca = Sabor.builder().nomeSabor("Pacoca").tipoSabor("Doce").precoGrande(60.00).precoMedio(50.00).estabelecimento(estabelecimento).build();
         List<Sabor> sabor1 = new ArrayList<>();
         sabor1.add(atum);
         sabor1.add(atum);
@@ -180,8 +183,8 @@ public class PedidoV1ControllerTests {
         sabor2.add(pacoca);
 
         List<Pizza> pizzaMaldita = new ArrayList<>();
-        Pizza p1 = new Pizza(sabor1, true, false,1);
-        Pizza p2 = new Pizza(sabor2, true, true,1);
+        Pizza p1 = new Pizza(sabor1, true, false, 1);
+        Pizza p2 = new Pizza(sabor2, true, true, 1);
         pizzaMaldita.add(p1);
         pizzaMaldita.add(p2);
 
@@ -226,9 +229,9 @@ public class PedidoV1ControllerTests {
             Pedido pedidoSalvo = pedidoRepository.findById(resposta.getId()).get();
 
             assertNotNull(pedidoSalvo);
-            assertEquals(pedidoDTO.getIdCliente(),pedidoSalvo.getCliente().getId());
+            assertEquals(pedidoDTO.getIdCliente(), pedidoSalvo.getCliente().getId());
             assertEquals(pedidoDTO.getPizzas().get(0).getQuantidade(), pedidoSalvo.getPizzas().get(0).getQuantidade());
-            assertEquals(2,pedidoRepository.findAll().size());
+            assertEquals(2, pedidoRepository.findAll().size());
 
         }
 
@@ -810,6 +813,7 @@ public class PedidoV1ControllerTests {
         List<Pizza> pizzasSimples;
 
         List<Pizza> pizzasCompostas;
+
         @BeforeEach
         void setup() {
             cliente2 = clienteRepository.save(Cliente.builder()
@@ -938,10 +942,10 @@ public class PedidoV1ControllerTests {
         @Test
         @Transactional
         @DisplayName("Teste de preço com pizzas de um único sabor.")
-        void testPrecoPedidoPizzaSimples() throws Exception{
+        void testPrecoPedidoPizzaSimples() throws Exception {
             String jsonString = objectMapper.writeValueAsString(pedidoSimplesDTO);
 
-            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+            String respostaJson = driver.perform(post("/v1/pedidos" + "?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
                             .content(jsonString)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -961,10 +965,10 @@ public class PedidoV1ControllerTests {
         @Test
         @Transactional
         @DisplayName("Teste de preço com pizzas de dois sabores.")
-        void testPrecoPedidoPizzaCompostas() throws Exception{
+        void testPrecoPedidoPizzaCompostas() throws Exception {
             String jsonString = objectMapper.writeValueAsString(pedidoCompostoDTO);
 
-            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+            String respostaJson = driver.perform(post("/v1/pedidos" + "?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
                             .content(jsonString)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -1016,7 +1020,7 @@ public class PedidoV1ControllerTests {
 
             String jsonString = objectMapper.writeValueAsString(pedidoErroneoDTO);
 
-            String respostaJson = driver.perform(post("/v1/pedidos"+"?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
+            String respostaJson = driver.perform(post("/v1/pedidos" + "?codigoDeAcesso=" + cliente2.getCodigoDeAcesso())
                             .content(jsonString)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -1054,7 +1058,7 @@ public class PedidoV1ControllerTests {
             Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
 
             String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
@@ -1083,6 +1087,7 @@ public class PedidoV1ControllerTests {
     @Nested
     public class PedidoPatchAtribuicaoEntregadorTests {
         PedidoPostPutRequestDTO pedidoDTO;
+
         @BeforeEach
         public void setUpAtribuicao() throws Exception {
             pedidoDTO = PedidoPostPutRequestDTO.builder()
@@ -1106,10 +1111,16 @@ public class PedidoV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
         }
+
         @Test
         @DisplayName("Quando atribuo um entregador existente a um pedido existente")
         @Transactional
         public void test01() throws Exception {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            PrintStream originalSystemOut = System.out;
+            System.setOut(printStream);
+
             String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -1120,13 +1131,33 @@ public class PedidoV1ControllerTests {
 
             assertEquals(pedidoAtualizado.getAcompanhamento(), Acompanhamento.PEDIDO_EM_ROTA);
             assertNotNull(pedidoAtualizado.getEntregador());
+
+            try {
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = """
+                        Joao, seu pedido está em rota de entrega
+                        --Informações do entregador--:
+                        Nome: Jose da Silva
+                        Tipo de Veiculo: MOTO
+                        Cor do Veiculo: Branco
+                        Placa do Veiculo: 123456""";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+
         }
 
         @Test
         @DisplayName("Quando tento atribuir um pedido existente a um entregador inexistente")
         @Transactional
-        public void test02() throws Exception{
-            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + (entregador.getId()+99))
+        public void test02() throws Exception {
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + (entregador.getId() + 99))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1143,7 +1174,7 @@ public class PedidoV1ControllerTests {
         @DisplayName("Quando tento atribuir um pedido inexistente a um entregador existente")
         @Transactional
         public void test03() throws Exception {
-            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + (pedido.getId()+99) + "/atribuir-entregador?idEntregador=" + entregador.getId())
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + (pedido.getId() + 99) + "/atribuir-entregador?idEntregador=" + entregador.getId())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1162,11 +1193,11 @@ public class PedidoV1ControllerTests {
         public void test04() throws Exception {
 
             String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pedidoDTO)))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andReturn().getResponse().getContentAsString();
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
 
             String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
                             .contentType(MediaType.APPLICATION_JSON))
