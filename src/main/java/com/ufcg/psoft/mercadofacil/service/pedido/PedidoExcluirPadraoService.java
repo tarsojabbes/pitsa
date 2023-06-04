@@ -23,24 +23,9 @@ public class PedidoExcluirPadraoService implements PedidoExcluirService{
     ClienteRepository clienteRepository;
 
     @Override
-    public void excluir(Long id, String codigoDeAcesso) {
-        
-        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
-            throw new IllegalArgumentException();
-        }
-        
+    public void excluir(Long id) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
-        Cliente cliente = clienteRepository.findById(pedido.getCliente().getId()).orElseThrow(ClienteNaoExisteException::new);
-
-        if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_PRONTO)){
-            throw new MudancaDeStatusInvalidaException();
-        }
-
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
-            pedidoRepository.delete(pedido);
-        } else {
-            throw new ClienteNaoAutorizadoException();
-        }
+        pedidoRepository.delete(pedido);
     }
     
 }

@@ -249,31 +249,6 @@ public class PedidoServiceTests {
     }
 
     @Nested
-    public class PedidoExcluirTests {
-
-        @Test
-        @Transactional
-        @DisplayName("Exclui um pedido corretamente a partir da id do cliente")
-        void testExclusaoValidaPedido() {
-            pedidoExcluirService.excluir(pedido.getId(), cliente.getCodigoDeAcesso());
-
-            assertEquals(0, pedidoRepository.findAll().size());
-        }
-
-        @Test
-        @Transactional
-        @DisplayName("Tenta excluir um pedido invalido")
-        void testExclusaoInvalidaPedido() {
-            assertEquals(1, pedidoRepository.findAll().size());
-
-            assertThrows(MercadoFacilException.class, () -> pedidoExcluirService.excluir(pedido.getId() + 2L, cliente.getCodigoDeAcesso()));
-
-            assertEquals(1, pedidoRepository.findAll().size());
-        }
-
-    }
-
-    @Nested
     public class PedidoConfirmarPagamentoTests {
 
         @Test

@@ -2,10 +2,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
-import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
-import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
@@ -41,6 +38,9 @@ public class ClienteV1Controller {
 
     @Autowired
     ClienteDemonstrarInteresseService clienteDemostrarInteresseService;
+
+    @Autowired
+    ClienteCancelarPedidoService clienteCancelarPedidoService;
 
 
     @GetMapping("/{id}")
@@ -96,5 +96,16 @@ public class ClienteV1Controller {
     @PatchMapping("/{id}/confirmar-entrega")
     public ResponseEntity<Pedido> confirmarPedidoEntregue(@PathVariable @Valid Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(clienteConfirmarEntregaService.confirmarPedidoEntregue(id));
+    }
+
+    @DeleteMapping("/cancelar-pedido/{idPedido}")
+    public ResponseEntity<?> cancelarPedido(@PathVariable @Valid Long idPedido,
+                                            @RequestParam(required = true, value = "codigoDeAcesso") String codigoDeAcesso) {
+        try {
+            clienteCancelarPedidoService.cancelarPedido(idPedido, codigoDeAcesso);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
+        } catch (PedidoNaoExisteException | ClienteNaoAutorizadoException | MudancaDeStatusInvalidaException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
