@@ -23,10 +23,11 @@ public class PedidoBuscarPadraoService implements PedidoBuscarService {
     ModelMapper modelMapper;
 
     @Override
-    public Pedido buscaPedido(Long idPedido, String codigoDeAcessoCliente) {
+    public Pedido buscaPedido(Long idCliente, Long idPedido, String codigoDeAcessoCliente) {
         Pedido pedido = pedidoRepository.findById(idPedido).orElseThrow(PedidoNaoExisteException::new);
 
-        if (pedido.getCliente().getCodigoDeAcesso().equals(codigoDeAcessoCliente)) {
+        if (pedido.getCliente().getCodigoDeAcesso().equals(codigoDeAcessoCliente)
+            && pedido.getCliente().getId().equals(idCliente)) {
             return pedido;
         } else {
             throw new PedidoClienteNaoAutorizadoException();

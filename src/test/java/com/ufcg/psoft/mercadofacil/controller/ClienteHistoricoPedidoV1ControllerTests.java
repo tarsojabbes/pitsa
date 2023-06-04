@@ -3,9 +3,6 @@ package com.ufcg.psoft.mercadofacil.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
-import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.dto.PedidoGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
@@ -26,7 +23,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -51,25 +47,29 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    Cliente cliente;
+    Cliente clienteA;
 
     // Partes necessárias à criação do pedido
-    Pedido pedido;
+    Pedido pedidoClienteA;
+
+    Pedido pedidoClienteA2;
+
+    Pedido pedidoClienteA3;
     List<Pizza> pizzas;
     Estabelecimento estabelecimento;
 
     @BeforeEach
     public void setUp() {
-        cliente = clienteRepository.save(Cliente.builder()
+        clienteA = clienteRepository.save(Cliente.builder()
                 .nome("Cliente A")
                 .codigoDeAcesso("123456")
                 .endereco("Rua A, 123")
                 .build());
 
-        this.montarPedido();
+        this.montarPedidoClienteA();
     }
 
-    private void montarPedido() {
+    private void montarPedidoClienteA() {
         // A montagem de pedido requer a criação de diversas outras entidades no bando de dados.
         estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
                 .nome("Jipao")
@@ -96,8 +96,8 @@ public class ClienteHistoricoPedidoV1ControllerTests {
         pizzas.add(pizza1);
 
 
-        pedido = pedidoRepository.save(Pedido.builder()
-                .cliente(cliente)
+        pedidoClienteA = pedidoRepository.save(Pedido.builder()
+                .cliente(clienteA)
                 .pizzas(pizzas)
                 .estabelecimento(estabelecimento)
                 .endereco("abc")
@@ -106,11 +106,17 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
     @AfterEach
     public void tearDown() {
+        pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
+        saborRepository.deleteAll();
     }
 
-    @Nested
-    public class getPedidoClientesTests {
+
+        // Utilidades para testar semelhança entre pedidos
+        public void comparaPedido(Pedido pedidoEsperado, Pedido pedidoResposta) {
+            comparaPizzas(pedidoEsperado.getPizzas().toArray(new Pizza[0]), pedidoResposta.getPizzas().toArray(new Pizza[0]));
+        }
 
         private void comparaPizzas(Pizza[] pizzasEsperadas, Pizza[] pizzasResposta) {
 
@@ -134,29 +140,34 @@ public class ClienteHistoricoPedidoV1ControllerTests {
                 assertEquals(saborEsperado.getPrecoGrande(), saborResposta.getPrecoGrande());
                 assertEquals(saborEsperado.getPrecoMedio(), saborResposta.getPrecoMedio());
                 assertEquals(saborEsperado.getDisponivel(), saborResposta.getDisponivel());
-            }
         }
+    }
+
+
+    @Nested
+    public class getPedidoClientesTests {
+
 
         @Test
         @Transactional
         @DisplayName("Quando um cliente quer visualizar um pedido específico")
         void testVisualizarPedidoCliente() throws Exception {
-            String responseJsonString = driver.perform(get("/v1/clientes/getPedido/" + pedido.getId()
-                            + "?codigoDeAcessoCliente=" + cliente.getCodigoDeAcesso())
+            String responseJsonString = driver.perform(get("/v1/clientes/"+ clienteA.getId() + "/getPedido/" + pedidoClienteA.getId()
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
 
             Pedido pedidoGetResponse = objectMapper.readValue(responseJsonString, Pedido.class);
 
-            comparaPizzas(pedido.getPizzas().toArray(new Pizza[0]), pedidoGetResponse.getPizzas().toArray(new Pizza[0]));
+            comparaPedido(pedidoClienteA, pedidoGetResponse);
         }
 
         @Test
         @Transactional
         @DisplayName("Quando um cliente quer visualizar um pedido específico de outro cliente")
         void testVisualizarPedidoDeOutroCliente() throws Exception {
-            String responseJsonString = driver.perform(get("/v1/clientes/getPedido/" + pedido.getId()
+            String responseJsonString = driver.perform(get("/v1/clientes/"+ clienteA.getId() + "/getPedido/" + pedidoClienteA.getId()
                             + "?codigoDeAcessoCliente=" + "codigoDeOutroCliente")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -167,6 +178,145 @@ public class ClienteHistoricoPedidoV1ControllerTests {
             assertEquals("O cliente nao possui permissao para acessar o pedido de outro cliente",
                             error.getMessage()
             );
+        }
+    }
+
+    @Nested
+    public class getHistoricoPedidoClientesTests {
+
+        @BeforeEach
+        public void setUp() {
+            this.montarPedidoClienteA2();
+            this.montarPedidoClienteA3();
+        }
+
+        private void montarPedidoClienteA2() {
+            // A montagem de pedido requer a criação de diversas outras entidades no bando de dados.
+            estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
+                    .nome("Rival do Jipao")
+                    .codigoDeAcesso("123")
+                    .associacoes(new ArrayList<>())
+                    .build());
+
+            Sabor sabor = saborRepository.save(Sabor.builder()
+                    .nomeSabor("Frango Com Catupiry")
+                    .tipoSabor("salgado")
+                    .estabelecimento(estabelecimento)
+                    .precoGrande(59.90)
+                    .precoMedio(39.90)
+                    .build());
+
+            Pizza pizza1 = Pizza.builder()
+                    .precoPizza(sabor.getPrecoGrande())
+                    .sabor1(sabor)
+                    .sabor2(null)
+                    .quantidade(1)
+                    .build();
+
+            pizzas = new ArrayList<>();
+            pizzas.add(pizza1);
+
+
+            pedidoClienteA2 = pedidoRepository.save(Pedido.builder()
+                    .cliente(clienteA)
+                    .pizzas(pizzas)
+                    .estabelecimento(estabelecimento)
+                    .endereco("abc")
+                    .build());
+        }
+
+        private void montarPedidoClienteA3() {
+            // A montagem de pedido requer a criação de diversas outras entidades no bando de dados.
+            estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
+                    .nome("Tio neutro")
+                    .codigoDeAcesso("321")
+                    .associacoes(new ArrayList<>())
+                    .build());
+
+            Sabor sabor = saborRepository.save(Sabor.builder()
+                    .nomeSabor("Pizza Romeu-e-Julieta")
+                    .tipoSabor("doce")
+                    .estabelecimento(estabelecimento)
+                    .precoGrande(59.90)
+                    .precoMedio(39.90)
+                    .build());
+
+            Pizza pizza1 = Pizza.builder()
+                    .precoPizza(sabor.getPrecoGrande())
+                    .sabor1(sabor)
+                    .sabor2(null)
+                    .quantidade(1)
+                    .build();
+
+            pizzas = new ArrayList<>();
+            pizzas.add(pizza1);
+
+
+            pedidoClienteA3 = pedidoRepository.save(Pedido.builder()
+                    .cliente(clienteA)
+                    .pizzas(pizzas)
+                    .estabelecimento(estabelecimento)
+                    .endereco("abc")
+                    .build());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando um cliente quer visualizar seu histórico de pedidos")
+        void testVisualizarHistoricoPedidos() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/clientes/" +  clienteA.getId() +"/getHistoricoPedidos"
+                                                         + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() {};
+            List<Pedido> pedidos = objectMapper.readValue(responseJsonString, tipoPedidoList);
+
+            assertEquals(pedidos.size(),3);
+
+            // Deve estar nessa ordem (mais pro menos recente).
+            comparaPedido(pedidoClienteA3, pedidos.get(0));
+            comparaPedido(pedidoClienteA2, pedidos.get(1));
+            comparaPedido(pedidoClienteA, pedidos.get(2));
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando os pedidos tem estados diferentes")
+        void testVisualizarHistoricoPedidosEmDiferentesEstados() throws Exception {
+            Pedido pedido3 = pedidoRepository.findById(pedidoClienteA3.getId()).get();
+            pedido3.setAcompanhamento(Acompanhamento.PEDIDO_ENTREGUE);
+            pedidoRepository.save(pedido3);
+
+            Pedido pedido2 = pedidoRepository.findById(pedidoClienteA2.getId()).get();
+            pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            pedidoRepository.save(pedido2);
+
+            Pedido pedido = pedidoRepository.findById(pedidoClienteA.getId()).get();
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            pedidoRepository.save(pedido);
+
+            String responseJsonString = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() {
+            };
+            List<Pedido> pedidos = objectMapper.readValue(responseJsonString, tipoPedidoList);
+
+
+
+            assertEquals(pedidos.size(), 3);
+
+            // A3 é mais recente que A2,  que é mais recente que A.
+            // Mas A3 já foi entregue, logo é mostrado no final.
+            comparaPedido(pedidoClienteA2, pedidos.get(0));
+            comparaPedido(pedidoClienteA, pedidos.get(1));
+            comparaPedido(pedidoClienteA3, pedidos.get(2));
         }
     }
 

@@ -11,6 +11,7 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoBuscarService;
+import com.ufcg.psoft.mercadofacil.service.pedido.PedidoListarHistoricoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,9 @@ public class ClienteV1Controller {
 
     @Autowired
     PedidoBuscarService pedidoBuscarService;
+
+    @Autowired
+    PedidoListarHistoricoService pedidoListarHistoricoService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteGetResponseDTO> buscarCliente(@PathVariable Long id) {
@@ -106,9 +110,16 @@ public class ClienteV1Controller {
     // Should i confirm that the deliver is from the client through the client's id?
     // Or should i use the access code?
     // Or both?
-    @GetMapping("/getPedido/{pedidoId}")
-    public ResponseEntity<Pedido> getPedido(@PathVariable Long pedidoId,
-                                                          @RequestParam String codigoDeAcessoCliente) {
-        return ResponseEntity.status(HttpStatus.OK).body(pedidoBuscarService.buscaPedido(pedidoId, codigoDeAcessoCliente));
+    @GetMapping("{clienteId}/getPedido/{pedidoId}")
+    public ResponseEntity<Pedido> getPedido(@PathVariable Long clienteId,
+                                            @PathVariable Long pedidoId,
+                                            @RequestParam String codigoDeAcessoCliente) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoBuscarService.buscaPedido(clienteId, pedidoId, codigoDeAcessoCliente));
+    }
+
+    @GetMapping("/{clienteId}/getHistoricoPedidos")
+    public ResponseEntity<List<Pedido>> getHistoricoPedido( @PathVariable Long clienteId,
+                                             @RequestParam String codigoDeAcessoCliente) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente));
     }
 }
