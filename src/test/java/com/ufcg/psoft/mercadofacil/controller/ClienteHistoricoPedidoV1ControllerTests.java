@@ -318,6 +318,43 @@ public class ClienteHistoricoPedidoV1ControllerTests {
             comparaPedido(pedidoClienteA, pedidos.get(1));
             comparaPedido(pedidoClienteA3, pedidos.get(2));
         }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando os pedidos tem estados diferentes, e filtramos por estado")
+        void testVisualizarHistoricoPedidosFiltrandoEstados() throws Exception {
+            // Arrange
+            Pedido pedido3 = pedidoRepository.findById(pedidoClienteA3.getId()).get();
+            pedido3.setAcompanhamento(Acompanhamento.PEDIDO_ENTREGUE);
+            pedidoRepository.save(pedido3);
+
+            Pedido pedido2 = pedidoRepository.findById(pedidoClienteA2.getId()).get();
+            pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            pedidoRepository.save(pedido2);
+
+            Pedido pedido = pedidoRepository.findById(pedidoClienteA.getId()).get();
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            pedidoRepository.save(pedido);
+
+            // Act
+
+            String responseJsonStringEntregue = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso() +
+                            "&filtroDeAcompanhamento=" + Acompanhamento.PEDIDO_ENTREGUE)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() {
+            };
+            List<Pedido> pedidosEntregues = objectMapper.readValue(responseJsonStringEntregue, tipoPedidoList);
+
+
+
+            assertEquals(pedidosEntregues.size(), 1);
+
+            comparaPedido(pedidoClienteA3, pedidosEntregues.get(0));
+        }
     }
 
 }

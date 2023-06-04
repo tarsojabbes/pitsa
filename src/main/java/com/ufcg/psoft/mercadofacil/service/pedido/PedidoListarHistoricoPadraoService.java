@@ -29,7 +29,7 @@ public class PedidoListarHistoricoPadraoService implements PedidoListarHistorico
     ClienteRepository clienteRepository;
 
     @Override
-    public List<Pedido> listarHistorico(Long clienteId, String codigoDeAcesso) {
+    public List<Pedido> listarHistorico(Long clienteId, String codigoDeAcesso, Acompanhamento filtroDeAcompanhamento) {
         List<Pedido> pedidos = pedidoRepository.findAll();
 
         // filtrando pedidos que são do cliente.
@@ -45,6 +45,11 @@ public class PedidoListarHistoricoPadraoService implements PedidoListarHistorico
                 .findFirst()
                 .orElseThrow(() -> new PedidoClienteNaoAutorizadoException());
 
+        if (filtroDeAcompanhamento != null) {
+            pedidos = pedidos.stream()
+                    .filter(p -> p.getAcompanhamento().equals(filtroDeAcompanhamento))
+                    .collect(Collectors.toList());
+        }
         // Ordenando os pedidos.
         pedidos.sort((o1, o2) -> {
 

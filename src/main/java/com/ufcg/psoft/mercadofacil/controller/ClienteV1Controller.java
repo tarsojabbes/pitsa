@@ -7,6 +7,7 @@ import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
 import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
@@ -118,8 +119,9 @@ public class ClienteV1Controller {
     }
 
     @GetMapping("/{clienteId}/getHistoricoPedidos")
-    public ResponseEntity<List<Pedido>> getHistoricoPedido( @PathVariable Long clienteId,
-                                             @RequestParam String codigoDeAcessoCliente) {
-        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente));
+    public ResponseEntity<List<Pedido>> getHistoricoPedido(@PathVariable Long clienteId,
+                                                           @RequestParam String codigoDeAcessoCliente,
+                                                           @RequestParam(required = false) Acompanhamento filtroDeAcompanhamento) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente, filtroDeAcompanhamento));
     }
 }
