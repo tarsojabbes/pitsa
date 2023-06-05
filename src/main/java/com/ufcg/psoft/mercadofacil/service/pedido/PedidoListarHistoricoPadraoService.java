@@ -1,9 +1,6 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
-import com.ufcg.psoft.mercadofacil.exception.PedidoClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -43,7 +40,7 @@ public class PedidoListarHistoricoPadraoService implements PedidoListarHistorico
         Pedido pedido = pedidos.stream()
                 .filter(p -> p.getCliente().getCodigoDeAcesso().equals(codigoDeAcesso))
                 .findFirst()
-                .orElseThrow(() -> new PedidoClienteNaoAutorizadoException());
+                .orElseThrow(() -> new CodigoDeAcessoInvalidoException());
 
         if (filtroDeAcompanhamento != null) {
             pedidos = pedidos.stream()

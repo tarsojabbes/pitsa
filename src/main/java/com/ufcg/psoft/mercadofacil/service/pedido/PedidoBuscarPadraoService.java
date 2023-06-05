@@ -1,14 +1,8 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
-import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
-import com.ufcg.psoft.mercadofacil.dto.PedidoGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.exception.*;
-import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
-import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
-import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +23,8 @@ public class PedidoBuscarPadraoService implements PedidoBuscarService {
         if (pedido.getCliente().getCodigoDeAcesso().equals(codigoDeAcessoCliente)
             && pedido.getCliente().getId().equals(idCliente)) {
             return pedido;
+        } else if (pedido.getCliente().getId().equals(idCliente)){
+            throw new CodigoDeAcessoInvalidoException();
         } else {
             throw new PedidoClienteNaoAutorizadoException();
         }

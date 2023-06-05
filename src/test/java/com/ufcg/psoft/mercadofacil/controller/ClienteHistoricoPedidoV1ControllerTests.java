@@ -165,8 +165,8 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
         @Test
         @Transactional
-        @DisplayName("Quando um cliente quer visualizar um pedido específico de outro cliente")
-        void testVisualizarPedidoDeOutroCliente() throws Exception {
+        @DisplayName("Quando um cliente quer visualizar um pedido específico com código inválido")
+        void testVisualizarPedidoCodigoErrado() throws Exception {
             String responseJsonString = driver.perform(get("/v1/clientes/"+ clienteA.getId() + "/getPedido/" + pedidoClienteA.getId()
                             + "?codigoDeAcessoCliente=" + "codigoDeOutroCliente")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -175,8 +175,23 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
             CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
 
+            assertEquals("Codigo de acesso invalido", error.getMessage());
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando um cliente quer visualizar um pedido específico de outro cliente")
+        void testVisualizarPedidoDeOutroCliente() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/clientes/"+ (clienteA.getId() + 3) + "/getPedido/" + pedidoClienteA.getId()
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
             assertEquals("O cliente nao possui permissao para acessar o pedido de outro cliente",
-                            error.getMessage()
+                    error.getMessage()
             );
         }
     }
@@ -336,24 +351,63 @@ public class ClienteHistoricoPedidoV1ControllerTests {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
             pedidoRepository.save(pedido);
 
-            // Act
+            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() { };
 
-            String responseJsonStringEntregue = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+            // Act
+            Acompanhamento filtro1 = Acompanhamento.PEDIDO_ENTREGUE;
+
+            String responseJsonStringPedidoEntregue = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
                             + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso() +
-                            "&filtroDeAcompanhamento=" + Acompanhamento.PEDIDO_ENTREGUE)
+                            "&filtroDeAcompanhamento=" + filtro1)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
 
-            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() {
-            };
-            List<Pedido> pedidosEntregues = objectMapper.readValue(responseJsonStringEntregue, tipoPedidoList);
+            List<Pedido> pedidosEntregues = objectMapper.readValue(responseJsonStringPedidoEntregue, tipoPedidoList);
 
+            Acompanhamento filtro2 = Acompanhamento.PEDIDO_EM_ROTA;
 
+            String responseJsonStringPedidoEmRota = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso() +
+                            "&filtroDeAcompanhamento=" + filtro2)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<Pedido> pedidosEmRota = objectMapper.readValue(responseJsonStringPedidoEmRota, tipoPedidoList);
+
+            Acompanhamento filtro3 = Acompanhamento.PEDIDO_PRONTO;
+
+            String responseJsonStringPedidoPronto = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso() +
+                            "&filtroDeAcompanhamento=" + filtro3)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<Pedido> pedidosProntos = objectMapper.readValue(responseJsonStringPedidoPronto, tipoPedidoList);
+
+            Acompanhamento filtro4 = Acompanhamento.PEDIDO_RECEBIDO;
+
+            String responseJsonStringPedidoRecebido = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + clienteA.getCodigoDeAcesso() +
+                            "&filtroDeAcompanhamento=" + filtro4)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<Pedido> pedidosRecebidos = objectMapper.readValue(responseJsonStringPedidoRecebido, tipoPedidoList);
+
+            // Assert
 
             assertEquals(pedidosEntregues.size(), 1);
+            assertEquals(pedidosEmRota.size(), 1);
+            assertEquals(pedidosProntos.size(), 1);
+            assertEquals(pedidosRecebidos.size(), 0);
 
             comparaPedido(pedidoClienteA3, pedidosEntregues.get(0));
+            comparaPedido(pedidoClienteA2, pedidosEmRota.get(0));
+            comparaPedido(pedidoClienteA, pedidosProntos.get(0));
         }
     }
 
