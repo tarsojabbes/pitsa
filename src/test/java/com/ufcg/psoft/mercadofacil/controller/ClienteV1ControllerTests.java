@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
@@ -20,10 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ufcg.psoft.mercadofacil.model.MeioDePagamento.PIX;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -526,6 +526,7 @@ public class ClienteV1ControllerTests {
 
             return novoPedido;
         }
+
         Pedido pedido;
         List<Pizza> pizzas;
         Estabelecimento estabelecimento;
@@ -569,14 +570,20 @@ public class ClienteV1ControllerTests {
                     .cliente(cliente)
                     .pizzas(pizzas)
                     .endereco("abc")
+                    .estabelecimento(estabelecimento)
                     .build());
         }
 
         @Test
         @DisplayName("Quando confirmo a entrega do pedido com sucesso")
         @Transactional
-        public void test01() throws Exception{
+        public void test01() throws Exception {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            PrintStream originalSystemOut = System.out;
+            System.setOut(printStream);
 
             String respostaJson3 = driver.perform(patch("/v1/clientes/" + pedido.getId() + "/confirmar-entrega")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -588,12 +595,26 @@ public class ClienteV1ControllerTests {
 
             System.out.println(pedidoEntregue.getAcompanhamento());
             assertEquals(Acompanhamento.PEDIDO_ENTREGUE, pedidoEntregue.getAcompanhamento());
+
+            try {
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Jipao, o pedido de número 1 foi entregue.";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+
         }
 
         @Test
         @DisplayName("Quando confirmo a entrega do pedido sem sucesso, ou seja, o status atual do pedido nao era PEDIDO_EM_ROTA")
         @Transactional
-        public void test02() throws Exception{
+        public void test02() throws Exception {
 
             String respostaJson1 = driver.perform(patch("/v1/clientes/" + pedido.getId() + "/confirmar-entrega")
                             .contentType(MediaType.APPLICATION_JSON))

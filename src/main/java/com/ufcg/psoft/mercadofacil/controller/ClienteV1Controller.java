@@ -7,6 +7,7 @@ import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
 import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
@@ -48,6 +49,10 @@ public class ClienteV1Controller {
 
     @Autowired
     ClienteListarHistoricoPedidoService pedidoListarHistoricoService;
+
+    ClienteCancelarPedidoService clienteCancelarPedidoService;
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteGetResponseDTO> buscarCliente(@PathVariable Long id) {
@@ -104,6 +109,7 @@ public class ClienteV1Controller {
         return ResponseEntity.status(HttpStatus.OK).body(clienteConfirmarEntregaService.confirmarPedidoEntregue(id));
     }
 
+
     @GetMapping("{clienteId}/getPedido/{pedidoId}")
     public ResponseEntity<Pedido> getPedido(@PathVariable Long clienteId,
                                             @PathVariable Long pedidoId,
@@ -116,5 +122,15 @@ public class ClienteV1Controller {
                                                            @RequestParam String codigoDeAcessoCliente,
                                                            @RequestParam(required = false) Acompanhamento filtroDeAcompanhamento) {
         return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente, filtroDeAcompanhamento));
+
+    @DeleteMapping("/cancelar-pedido/{idPedido}")
+    public ResponseEntity<?> cancelarPedido(@PathVariable @Valid Long idPedido,
+                                            @RequestParam(required = true, value = "codigoDeAcesso") String codigoDeAcesso) {
+        try {
+            clienteCancelarPedidoService.cancelarPedido(idPedido, codigoDeAcesso);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
+        } catch (PedidoNaoExisteException | ClienteNaoAutorizadoException | MudancaDeStatusInvalidaException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

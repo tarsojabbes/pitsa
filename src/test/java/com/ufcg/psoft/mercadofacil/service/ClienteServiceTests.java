@@ -2,21 +2,15 @@ package com.ufcg.psoft.mercadofacil.service;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
-import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
-import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
-import com.ufcg.psoft.mercadofacil.model.Cliente;
-import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
-import com.ufcg.psoft.mercadofacil.model.Sabor;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.exception.*;
+import com.ufcg.psoft.mercadofacil.model.*;
+import com.ufcg.psoft.mercadofacil.repository.*;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +43,7 @@ public class ClienteServiceTests {
     EstabelecimentoRepository estabelecimentoRepository;
 
     Cliente cliente;
+
 
     @BeforeEach
     public void setUp() {
@@ -257,8 +252,6 @@ public class ClienteServiceTests {
 
         @AfterEach
         public void tearDown() {
-            saborRepository.deleteAll();
-            estabelecimentoRepository.deleteAll();
             clienteRepository.deleteAll();
         }
 
@@ -289,7 +282,7 @@ public class ClienteServiceTests {
         public void testDemonstrarInteressePorSabor_SaborNaoExiste() {
 
             assertThrows(SaborNaoExisteException.class,
-                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", cliente.getId(), 2L));
+                    () -> clienteDemonstrarInteresseService.demonstrarInteressePorSabor("12345", cliente.getId(), 999L));
         }
 
         @Test

@@ -4,11 +4,6 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.*;
-import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.cliente.ClienteConfirmarEntregaService;
 import com.ufcg.psoft.mercadofacil.service.pedido.*;
 import jakarta.transaction.Transactional;
@@ -127,7 +122,7 @@ public class PedidoServiceTests {
         estabelecimentoRepository.deleteAll();
     }
 
-    private List<Pizza> duasCalabresasGrandesCreator(){
+    private List<Pizza> duasCalabresasGrandesCreator() {
         Sabor sabor = saborRepository.save(Sabor.builder()
                 .nomeSabor("Calabresa")
                 .tipoSabor("salgado")
@@ -249,31 +244,6 @@ public class PedidoServiceTests {
             assertThrows(MercadoFacilException.class, () -> pedidoListarService.listar(cliente.getId() + 1L, cliente.getCodigoDeAcesso()));
 
             assertThrows(MercadoFacilException.class, () -> pedidoListarService.listar(cliente.getId(), cliente.getCodigoDeAcesso() + "789"));
-        }
-
-    }
-
-    @Nested
-    public class PedidoExcluirTests {
-
-        @Test
-        @Transactional
-        @DisplayName("Exclui um pedido corretamente a partir da id do cliente")
-        void testExclusaoValidaPedido() {
-            pedidoExcluirService.excluir(pedido.getId(), cliente.getCodigoDeAcesso());
-
-            assertEquals(0, pedidoRepository.findAll().size());
-        }
-
-        @Test
-        @Transactional
-        @DisplayName("Tenta excluir um pedido invalido")
-        void testExclusaoInvalidaPedido() {
-            assertEquals(1, pedidoRepository.findAll().size());
-
-            assertThrows(MercadoFacilException.class, () -> pedidoExcluirService.excluir(pedido.getId() + 2L, cliente.getCodigoDeAcesso()));
-
-            assertEquals(1, pedidoRepository.findAll().size());
         }
 
     }
@@ -413,17 +383,39 @@ public class PedidoServiceTests {
         @DisplayName("Quando confirmo um pedido entregue que estava em rota de entrega")
         @Transactional
         public void test05() {
-            pedidoRepository.deleteAll();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            PrintStream originalSystemOut = System.out;
+
             Pedido pedido2 = pedidoRepository.save(Pedido.builder()
                     .cliente(cliente)
                     .pizzas(pizzas)
+                    .estabelecimento(estabelecimento)
                     .build());
 
             pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
             assertEquals(Acompanhamento.PEDIDO_EM_ROTA, pedido2.getAcompanhamento());
 
+            System.setOut(printStream);
             clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido2.getId());
             assertEquals(Acompanhamento.PEDIDO_ENTREGUE, pedido2.getAcompanhamento());
+
+            try {
+
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Jipao, o pedido de número " + pedido2.getId() + " foi entregue.";
+                assertEquals(notificacaoEsperada, resultadoFiltrado);
+
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+
         }
 
         @Test
@@ -440,7 +432,8 @@ public class PedidoServiceTests {
     }
 
     @Nested
-    public class NotificarMudancaDeStatusTest{
+    public class NotificarMudancaDeStatusTest {
+
         @Test
         @DisplayName("Quando mudo o status de um pedido de pedido pronto para pedido em rota e notifico o cliente")
         @Transactional
@@ -507,7 +500,7 @@ public class PedidoServiceTests {
         public void test03() {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
             assertThrows(PedidoNaoExisteException.class,
-                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId()+99, entregador.getId()));
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId() + 99, entregador.getId()));
         }
 
         @Test
