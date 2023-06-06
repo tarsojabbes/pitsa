@@ -1,6 +1,8 @@
-package com.ufcg.psoft.mercadofacil.service.pedido;
+package com.ufcg.psoft.mercadofacil.service.cliente;
 
-import com.ufcg.psoft.mercadofacil.exception.*;
+import com.ufcg.psoft.mercadofacil.exception.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.mercadofacil.exception.PedidoClienteNaoAutorizadoException;
+import com.ufcg.psoft.mercadofacil.exception.PedidoNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import org.modelmapper.ModelMapper;
@@ -8,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PedidoBuscarPadraoService implements PedidoBuscarService {
+public class ClienteBuscarPedidoPadraoService implements ClienteBuscarPedidoService {
 
     @Autowired
     PedidoRepository pedidoRepository;

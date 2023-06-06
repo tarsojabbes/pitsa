@@ -2,7 +2,6 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.dto.PedidoGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
@@ -11,8 +10,6 @@ import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
-import com.ufcg.psoft.mercadofacil.service.pedido.PedidoBuscarService;
-import com.ufcg.psoft.mercadofacil.service.pedido.PedidoListarHistoricoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,10 +44,10 @@ public class ClienteV1Controller {
     ClienteDemonstrarInteresseService clienteDemostrarInteresseService;
 
     @Autowired
-    PedidoBuscarService pedidoBuscarService;
+    ClienteBuscarPedidoService pedidoBuscarService;
 
     @Autowired
-    PedidoListarHistoricoService pedidoListarHistoricoService;
+    ClienteListarHistoricoPedidoService pedidoListarHistoricoService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteGetResponseDTO> buscarCliente(@PathVariable Long id) {
@@ -107,10 +104,6 @@ public class ClienteV1Controller {
         return ResponseEntity.status(HttpStatus.OK).body(clienteConfirmarEntregaService.confirmarPedidoEntregue(id));
     }
 
-
-    // Should i confirm that the deliver is from the client through the client's id?
-    // Or should i use the access code?
-    // Or both?
     @GetMapping("{clienteId}/getPedido/{pedidoId}")
     public ResponseEntity<Pedido> getPedido(@PathVariable Long clienteId,
                                             @PathVariable Long pedidoId,

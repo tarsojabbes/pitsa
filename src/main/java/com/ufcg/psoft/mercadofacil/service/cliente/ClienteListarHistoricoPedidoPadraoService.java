@@ -1,8 +1,8 @@
-package com.ufcg.psoft.mercadofacil.service.pedido;
+package com.ufcg.psoft.mercadofacil.service.cliente;
 
-import com.ufcg.psoft.mercadofacil.exception.*;
+import com.ufcg.psoft.mercadofacil.exception.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.mercadofacil.exception.PedidoClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
-import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class PedidoListarHistoricoPadraoService implements PedidoListarHistoricoService{
+public class ClienteListarHistoricoPedidoPadraoService implements ClienteListarHistoricoPedidoService {
 
     @Autowired
     ModelMapper modelMapper;
@@ -35,19 +35,24 @@ public class PedidoListarHistoricoPadraoService implements PedidoListarHistorico
                 .collect(Collectors.toList());
 
         // Verificando o codigo de acesso.
-        // Filtra os pedidos com o código de acesso correto
-        // Caso não encontre nenhum, quer dizer que o código é inválido
-        Pedido pedido = pedidos.stream()
-                .filter(p -> p.getCliente().getCodigoDeAcesso().equals(codigoDeAcesso))
-                .findFirst()
-                .orElseThrow(() -> new CodigoDeAcessoInvalidoException());
+        if (pedidos.size() != 0 && !pedidos.get(0).getCliente().getCodigoDeAcesso().equals(codigoDeAcesso)) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
 
+        // Filtrando por estado
         if (filtroDeAcompanhamento != null) {
             pedidos = pedidos.stream()
                     .filter(p -> p.getAcompanhamento().equals(filtroDeAcompanhamento))
                     .collect(Collectors.toList());
         }
-        // Ordenando os pedidos.
+
+        ordenaPedidos(pedidos);
+
+
+        return pedidos;
+    }
+
+    private void ordenaPedidos(List<Pedido> pedidos) {
         pedidos.sort((o1, o2) -> {
 
             if (!o1.getAcompanhamento().equals(Acompanhamento.PEDIDO_ENTREGUE) &&
@@ -61,8 +66,5 @@ public class PedidoListarHistoricoPadraoService implements PedidoListarHistorico
 
             return o2.getHorarioDoPedido().compareTo(o1.getHorarioDoPedido());
         });
-
-
-        return pedidos;
     }
 }

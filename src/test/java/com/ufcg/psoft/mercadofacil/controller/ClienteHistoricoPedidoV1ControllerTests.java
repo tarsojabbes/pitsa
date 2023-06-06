@@ -114,8 +114,14 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
 
         // Utilidades para testar semelhança entre pedidos
-        public void comparaPedido(Pedido pedidoEsperado, Pedido pedidoResposta) {
+        private void comparaPedido(Pedido pedidoEsperado, Pedido pedidoResposta) {
             comparaPizzas(pedidoEsperado.getPizzas().toArray(new Pizza[0]), pedidoResposta.getPizzas().toArray(new Pizza[0]));
+            assertEquals(pedidoEsperado.getEntregador(), pedidoResposta.getEntregador());
+            assertEquals(pedidoEsperado.getEndereco(), pedidoResposta.getEndereco());
+            assertEquals(pedidoEsperado.getHorarioDoPedido(), pedidoResposta.getHorarioDoPedido());
+            assertEquals(pedidoEsperado.getPrecoPedido(), pedidoResposta.getPrecoPedido());
+            assertEquals(pedidoEsperado.getCliente(), pedidoResposta.getCliente());
+            assertEquals(pedidoEsperado.getAcompanhamento(), pedidoResposta.getAcompanhamento());
         }
 
         private void comparaPizzas(Pizza[] pizzasEsperadas, Pizza[] pizzasResposta) {
@@ -177,6 +183,24 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
             assertEquals("Codigo de acesso invalido", error.getMessage());
         }
+
+        @Test
+        @Transactional
+        @DisplayName("Quando um cliente quer visualizar um pedido específico que não existe")
+        void testVisualizarPedidoInexistente() throws Exception {
+            Long pedidoId = 9999L; // Assuming this ID does not exist in the system
+
+            String responseJsonString = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getPedido/" + pedidoId)
+                            .param("codigoDeAcessoCliente", clienteA.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Pedido com id informado nao existe.", error.getMessage());
+        }
+
 
         @Test
         @Transactional
@@ -299,6 +323,38 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
         @Test
         @Transactional
+        @DisplayName("Quando um cliente sem pedidos quer visualizar o histórico")
+        void testVisualizarHistoricoPedidosVazio() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/clientes/" + 99 +"/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + "321")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() {};
+            List<Pedido> pedidos = objectMapper.readValue(responseJsonString, tipoPedidoList);
+
+            assertEquals(pedidos.size(),0);
+        }
+
+        @Transactional
+        @Test
+        @DisplayName("Quando um cliente quer visualizar seu histórico com código inválido")
+        void testVisualizarHistoricoPedidosCodigoInvalido() throws Exception {
+            String responseJsonString = driver.perform(get("/v1/clientes/" +  clienteA.getId() +"/getHistoricoPedidos"
+                            + "?codigoDeAcessoCliente=" + "CodigoInvalido")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Codigo de acesso invalido", error.getMessage());
+        }
+
+        @Test
+        @Transactional
         @DisplayName("Quando os pedidos tem estados diferentes")
         void testVisualizarHistoricoPedidosEmDiferentesEstados() throws Exception {
             Pedido pedido3 = pedidoRepository.findById(pedidoClienteA3.getId()).get();
@@ -354,6 +410,9 @@ public class ClienteHistoricoPedidoV1ControllerTests {
             TypeReference<List<Pedido>> tipoPedidoList = new TypeReference<List<Pedido>>() { };
 
             // Act
+
+            // Pedidos entregues
+
             Acompanhamento filtro1 = Acompanhamento.PEDIDO_ENTREGUE;
 
             String responseJsonStringPedidoEntregue = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
@@ -364,6 +423,8 @@ public class ClienteHistoricoPedidoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             List<Pedido> pedidosEntregues = objectMapper.readValue(responseJsonStringPedidoEntregue, tipoPedidoList);
+
+            // Pedidos em rota
 
             Acompanhamento filtro2 = Acompanhamento.PEDIDO_EM_ROTA;
 
@@ -376,6 +437,8 @@ public class ClienteHistoricoPedidoV1ControllerTests {
 
             List<Pedido> pedidosEmRota = objectMapper.readValue(responseJsonStringPedidoEmRota, tipoPedidoList);
 
+            // Pedidos prontos
+
             Acompanhamento filtro3 = Acompanhamento.PEDIDO_PRONTO;
 
             String responseJsonStringPedidoPronto = driver.perform(get("/v1/clientes/" + clienteA.getId() + "/getHistoricoPedidos"
@@ -386,6 +449,8 @@ public class ClienteHistoricoPedidoV1ControllerTests {
                     .andReturn().getResponse().getContentAsString();
 
             List<Pedido> pedidosProntos = objectMapper.readValue(responseJsonStringPedidoPronto, tipoPedidoList);
+
+            // Pedidos recebidos
 
             Acompanhamento filtro4 = Acompanhamento.PEDIDO_RECEBIDO;
 
