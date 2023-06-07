@@ -2,6 +2,11 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
+import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -40,7 +45,13 @@ public class ClienteV1Controller {
     ClienteDemonstrarInteresseService clienteDemostrarInteresseService;
 
     @Autowired
+    ClienteBuscarPedidoService pedidoBuscarService;
+
+    @Autowired
+    ClienteListarHistoricoPedidoService pedidoListarHistoricoService;
+
     ClienteCancelarPedidoService clienteCancelarPedidoService;
+
 
 
     @GetMapping("/{id}")
@@ -97,6 +108,20 @@ public class ClienteV1Controller {
     public ResponseEntity<Pedido> confirmarPedidoEntregue(@PathVariable @Valid Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(clienteConfirmarEntregaService.confirmarPedidoEntregue(id));
     }
+
+
+    @GetMapping("{clienteId}/getPedido/{pedidoId}")
+    public ResponseEntity<Pedido> getPedido(@PathVariable Long clienteId,
+                                            @PathVariable Long pedidoId,
+                                            @RequestParam String codigoDeAcessoCliente) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoBuscarService.buscaPedido(clienteId, pedidoId, codigoDeAcessoCliente));
+    }
+
+    @GetMapping("/{clienteId}/getHistoricoPedidos")
+    public ResponseEntity<List<Pedido>> getHistoricoPedido(@PathVariable Long clienteId,
+                                                           @RequestParam String codigoDeAcessoCliente,
+                                                           @RequestParam(required = false) Acompanhamento filtroDeAcompanhamento) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente, filtroDeAcompanhamento));
 
     @DeleteMapping("/cancelar-pedido/{idPedido}")
     public ResponseEntity<?> cancelarPedido(@PathVariable @Valid Long idPedido,

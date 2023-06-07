@@ -1,6 +1,8 @@
 package com.ufcg.psoft.mercadofacil.model;
 
 import java.util.List;
+import java.time.LocalDateTime;
+
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,11 +53,17 @@ public class Pedido {
     @JsonProperty("endereco")
     private String endereco;
 
+    @JsonProperty("horarioDoPedido")
+    @Builder.Default
+    private LocalDateTime horarioDoPedido = LocalDateTime.now();
+
     @JsonProperty("acompanhamento")
     @AcompanhamentoValidator(regexp = "PEDIDO_RECEBIDO|PEDIDO_EM_PREPARO|PEDIDO_PRONTO|PEDIDO_EM_ROTA|PEDIDO_ENTREGUE")
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Acompanhamento acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
+
+
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
 
@@ -169,4 +177,7 @@ public class Pedido {
         this.acompanhamento = acompanhamento;
     }
 
+    public LocalDateTime getHorarioDoPedido() {
+        return this.horarioDoPedido;
+    }
 }
