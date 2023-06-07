@@ -2,12 +2,8 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
-import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
-import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
-import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.exception.*;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.service.cliente.*;
@@ -122,6 +118,7 @@ public class ClienteV1Controller {
                                                            @RequestParam String codigoDeAcessoCliente,
                                                            @RequestParam(required = false) Acompanhamento filtroDeAcompanhamento) {
         return ResponseEntity.status(HttpStatus.OK).body(pedidoListarHistoricoService.listarHistorico(clienteId, codigoDeAcessoCliente, filtroDeAcompanhamento));
+    }
 
     @DeleteMapping("/cancelar-pedido/{idPedido}")
     public ResponseEntity<?> cancelarPedido(@PathVariable @Valid Long idPedido,
