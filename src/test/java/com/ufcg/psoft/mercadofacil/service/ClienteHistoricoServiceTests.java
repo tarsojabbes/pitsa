@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@DisplayName("Testes para camada de controlador de Cliente")
+@DisplayName("Testes para camada de services relacionados ao histórico de Cliente")
 public class ClienteHistoricoServiceTests {
 
     @Autowired
