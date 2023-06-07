@@ -46,9 +46,8 @@ public class ClienteV1Controller {
     @Autowired
     ClienteListarHistoricoPedidoService pedidoListarHistoricoService;
 
+    @Autowired
     ClienteCancelarPedidoService clienteCancelarPedidoService;
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteGetResponseDTO> buscarCliente(@PathVariable Long id) {
