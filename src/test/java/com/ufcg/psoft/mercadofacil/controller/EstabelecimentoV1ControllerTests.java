@@ -49,6 +49,8 @@ public class EstabelecimentoV1ControllerTests {
 
     @Autowired
     AssociacaoService associacaoService;
+    @Autowired
+    SaborRepository saborRepository;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -74,6 +76,13 @@ public class EstabelecimentoV1ControllerTests {
         @Transactional
         @DisplayName("Quando busco todos os estabelecimentos salvos")
         public void test01() throws Exception {
+            saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
+            estabelecimentoRepository.save(
+                    Estabelecimento.builder()
+                            .codigoDeAcesso("1234567")
+                            .nome("Estabelecimento 1")
+                            .build());
             estabelecimentoRepository.save(
                     Estabelecimento.builder()
                             .nome("Estabelecimento 2")
@@ -329,8 +338,6 @@ public class EstabelecimentoV1ControllerTests {
 
     @Nested
     public class DeleteEstabelecimentoTests {
-        @Autowired
-        SaborRepository saborRepository;
 
         @BeforeEach
         public void setup() {

@@ -9,16 +9,10 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
-
 import com.ufcg.psoft.mercadofacil.service.sabor.SaborAlterarDisponivelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +20,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,9 +37,6 @@ public class CardapioV1ControllerTests {
 
     @Autowired
     SaborRepository saborRepository;
-
-    @Autowired
-    CardapioV1Controller cardapioV1Controller;
 
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
@@ -75,6 +72,7 @@ public class CardapioV1ControllerTests {
     @BeforeEach
     public void tearDown() {
         saborRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
     }
 
 

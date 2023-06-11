@@ -4,6 +4,7 @@ import com.ufcg.psoft.mercadofacil.dto.EstabelecimentoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoAlterarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoCriarService;
 import com.ufcg.psoft.mercadofacil.service.estabelecimento.EstabelecimentoExcluirService;
@@ -34,6 +35,9 @@ public class EstabelecimentoServiceTests {
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
 
+    @Autowired
+    SaborRepository saborRepository;
+
     @Nested
     public class EstabelecimentoAlterarServiceTests {
 
@@ -49,6 +53,7 @@ public class EstabelecimentoServiceTests {
 
         @AfterEach
         public void tearDown() {
+            saborRepository.deleteAll();
             estabelecimentoRepository.deleteAll();
         }
 
@@ -88,6 +93,7 @@ public class EstabelecimentoServiceTests {
 
         @AfterEach
         public void tearDown() {
+            saborRepository.deleteAll();
             estabelecimentoRepository.deleteAll();
         }
 
@@ -133,6 +139,7 @@ public class EstabelecimentoServiceTests {
 
         @AfterEach
         public void tearDown() {
+            saborRepository.deleteAll();
             estabelecimentoRepository.deleteAll();
         }
 
@@ -182,13 +189,23 @@ public class EstabelecimentoServiceTests {
 
         @AfterEach
         public void tearDown() {
+            saborRepository.deleteAll();
             estabelecimentoRepository.deleteAll();
         }
 
         @Test
         @DisplayName("Quando listo todos os estabelecimentos do banco")
         public void test01() {
-            Estabelecimento estabelecimentoSalvo = estabelecimentoRepository.save(Estabelecimento.builder().nome("Estabelecimento 2").codigoDeAcesso("123456").build());
+            saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
+            estabelecimentoRepository.save(Estabelecimento.builder()
+                    .codigoDeAcesso("1234567")
+                    .nome("Estabelecimento 1")
+                    .build());
+            estabelecimentoRepository.save(Estabelecimento.builder()
+                    .nome("Estabelecimento 2")
+                    .codigoDeAcesso("123456")
+                    .build());
 
             List<Estabelecimento> estabelecimentoList = estabelecimentoListarService.listar(null);
 
