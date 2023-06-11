@@ -9,6 +9,7 @@ import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.Associacao;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
 import jakarta.transaction.Transactional;
@@ -19,8 +20,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.List;
 
+import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.ATIVO;
+import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.DESCANSO;
 import static com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo.CARRO;
 import static com.ufcg.psoft.mercadofacil.model.TipoDoVeiculo.MOTO;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +46,9 @@ public class EntregadorV1ControllerTests {
     EstabelecimentoRepository estabelecimentoRepository;
 
     @Autowired
+    AssociacaoRepository associacaoRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -49,6 +56,8 @@ public class EntregadorV1ControllerTests {
     Entregador entregador;
 
     Estabelecimento estabelecimento;
+
+    Associacao associacao;
 
     @BeforeEach
     public void setUp() {
@@ -63,7 +72,6 @@ public class EntregadorV1ControllerTests {
         estabelecimento = estabelecimentoRepository.save(
                 Estabelecimento.builder().codigoDeAcesso("1234567").nome("Estabelecimento A").build()
         );
-
     }
 
     @AfterEach
@@ -94,7 +102,8 @@ public class EntregadorV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            List<EntregadorGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
+            List<EntregadorGetResponseDTO> resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {
+            });
 
             assertEquals(2, resultado.size());
             assertTrue(resultado.contains(entregador1));
@@ -523,7 +532,7 @@ public class EntregadorV1ControllerTests {
 
         @Test
         @DisplayName("Quando tentamos criar associacao com estabelecimento válida")
-        void criarAssociacaoValida()  throws Exception {
+        void criarAssociacaoValida() throws Exception {
             String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
                             + estabelecimento.getId() + "/" + entregador.getId() + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
@@ -548,7 +557,7 @@ public class EntregadorV1ControllerTests {
 
         @Test
         @DisplayName("Quando tentamos criar associacao com estabelecimento inexistente")
-        void criarAssociacaoComEstabelecimentoInexistente()  throws Exception {
+        void criarAssociacaoComEstabelecimentoInexistente() throws Exception {
             String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
                             + (estabelecimento.getId() + 30) + "/" + entregador.getId() + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
@@ -563,7 +572,7 @@ public class EntregadorV1ControllerTests {
 
         @Test
         @DisplayName("Quando tentamos criar associacao com entregador inexistente")
-        void criarAssociacaoComEntregadorInexistente()  throws Exception {
+        void criarAssociacaoComEntregadorInexistente() throws Exception {
             String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
                             + estabelecimento.getId() + "/" + (entregador.getId() + 30) + "?codigoAcessoEntregador=" + entregador.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
@@ -578,7 +587,7 @@ public class EntregadorV1ControllerTests {
 
         @Test
         @DisplayName("Quando tentamos criar associacao com código de entregador inválido")
-        void criarAssociacaoComCodigoEntregadorInvalido()  throws Exception {
+        void criarAssociacaoComCodigoEntregadorInvalido() throws Exception {
             String responseJsonString = driver.perform(post("/v1/entregadores/solicitar-associacao/"
                             + estabelecimento.getId() + "/" + entregador.getId() + "?codigoAcessoEntregador=codigoInvalido")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -591,5 +600,92 @@ public class EntregadorV1ControllerTests {
             assertEquals(error.getMessage(), "O entregador nao possui permissao para alterar dados de outro entregador");
         }
 
+        @Test
+        @DisplayName("Quando tentamos definir o entregador como disponível")
+        void definirDisponibilidadeAtivo() throws Exception {
+            associacao = associacaoRepository.save(Associacao.builder()
+                    .entregador(entregador)
+                    .estabelecimento(estabelecimento)
+                    .statusAssociacao(true)
+                    .build());
+
+            driver.perform(patch("/v1/entregadores/definir-disponibilidade/" + entregador.getId() + "/" + ATIVO + "?associacaoId=" + associacao.getId() + "&" + "codigoDeAcesso=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNoContent())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertEquals(ATIVO, associacao.getDisponibilidadeEntregador());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos definir o entregador como em descanso")
+        void definirDisponibilidadeDescanso() throws Exception {
+            associacao = associacaoRepository.save(Associacao.builder()
+                    .entregador(entregador)
+                    .estabelecimento(estabelecimento)
+                    .statusAssociacao(true)
+                    .build());
+
+            driver.perform(patch("/v1/entregadores/definir-disponibilidade/" + entregador.getId() + "/" + DESCANSO + "?associacaoId=" + associacao.getId() + "&" + "codigoDeAcesso=" + entregador.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNoContent())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertEquals(DESCANSO, associacao.getDisponibilidadeEntregador());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos definir a disponibilidade do entregador da associacao passando o ID de outro entregador")
+        void definirDisponibilidadeDeOutroEntregador() throws Exception {
+            associacao = associacaoRepository.save(Associacao.builder()
+                    .entregador(entregador)
+                    .estabelecimento(estabelecimento)
+                    .statusAssociacao(true)
+                    .build());
+
+            Entregador entregador2 = entregadorRepository.save(Entregador.builder()
+                    .codigoDeAcesso("123456")
+                    .nome("Steve Jobs")
+                    .corDoVeiculo("preto")
+                    .placaDoVeiculo("ABC1234")
+                    .tipoDoVeiculo(MOTO)
+                    .build());
+
+            String responseJsonString = driver.perform(patch("/v1/entregadores/definir-disponibilidade/" + entregador2.getId() + "/" + DESCANSO + "?associacaoId=" + associacao.getId() + "&" + "codigoDeAcesso=" + entregador2.getCodigoDeAcesso())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("O entregador nao possui permissao para alterar dados de outro entregador", error.getMessage());
+            assertNull(associacao.getDisponibilidadeEntregador());
+        }
+
+        @Test
+        @DisplayName("Quando tentamos definir a disponibilidade do entregador passando codigo de acesso invalido")
+        void definirDisponibilidadeCodigoAcessoInvalido() throws Exception {
+            associacao = associacaoRepository.save(Associacao.builder()
+                    .entregador(entregador)
+                    .estabelecimento(estabelecimento)
+                    .statusAssociacao(true)
+                    .build());
+
+            String responseJsonString = driver.perform(patch("/v1/entregadores/definir-disponibilidade/" + entregador.getId() + "/" + DESCANSO + "?associacaoId=" + associacao.getId() + "&" + "codigoDeAcesso=12345")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(responseJsonString, CustomErrorType.class);
+
+            assertEquals("Codigo de acesso invalido", error.getMessage());
+            assertNull(associacao.getDisponibilidadeEntregador());
+        }
+
     }
+
 }

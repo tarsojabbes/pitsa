@@ -7,8 +7,6 @@ import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.exception.PedidoNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.*;
-import com.ufcg.psoft.mercadofacil.service.pedido.PedidoConfirmarPagamentoService;
-import com.ufcg.psoft.mercadofacil.service.pedido.PedidoIndicarProntoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.ATIVO;
+import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.DESCANSO;
 import static com.ufcg.psoft.mercadofacil.model.MeioDePagamento.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,12 +55,6 @@ public class PedidoV1ControllerTests {
     @Autowired
     EntregadorRepository entregadorRepository;
 
-    @Autowired
-    PedidoIndicarProntoService pedidoIndicarProntoService;
-
-    @Autowired
-    PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
-
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     Pedido pedido;
@@ -92,6 +86,7 @@ public class PedidoV1ControllerTests {
                 .entregador(entregador)
                 .estabelecimento(estabelecimento)
                 .statusAssociacao(true)
+                .disponibilidadeEntregador(ATIVO)
                 .build());
 
         cliente = clienteRepository.save(Cliente.builder()
@@ -1098,14 +1093,14 @@ public class PedidoV1ControllerTests {
                     .meioDePagamento(PIX)
                     .build();
 
-            String respostaJson = driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
+            driver.perform(put("/v1/pedidos/" + pedido.getId() + "/confirmarPagamento?codigoDeAcesso=" + cliente.getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(pedidoDTO)))
                     .andExpect(status().isOk())
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+            driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -1234,9 +1229,44 @@ public class PedidoV1ControllerTests {
             assertEquals(error.getMessage(), "A associacao consultada nao existe!");
             assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
                     Acompanhamento.PEDIDO_PRONTO);
-
-
         }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido a um entregador que está em DESCANSO")
+        @Transactional
+        public void test06() throws Exception {
+            associacao.setDisponibilidadeEntregador(DESCANSO);
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+            assertEquals("O entregador nao esta disponivel!", error.getMessage());
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_PRONTO);
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido a um entregador que nao esta aprovado pelo estabelecimento para fazer entregas")
+        @Transactional
+        public void test07() throws Exception {
+            associacao.setStatusAssociacao(false);
+
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/atribuir-entregador?idEntregador=" + entregador.getId())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            CustomErrorType error = objectMapper.readValue(respostaJson2, CustomErrorType.class);
+            assertEquals("A associacao nao esta aprovada!", error.getMessage());
+            assertEquals(pedidoRepository.findById(pedido.getId()).orElseThrow(PedidoNaoExisteException::new).getAcompanhamento(),
+                    Acompanhamento.PEDIDO_PRONTO);
+        }
+
     }
 
 }

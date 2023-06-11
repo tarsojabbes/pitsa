@@ -1,12 +1,11 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 @Data
 @Builder
@@ -27,4 +26,9 @@ public class Associacao {
     private Entregador entregador;
 
     private boolean statusAssociacao;
+
+    @JsonProperty("disponibilidade_entregador")
+    @Enumerated(EnumType.STRING)
+    private DisponibilidadeEntregador disponibilidadeEntregador;
+
 }
