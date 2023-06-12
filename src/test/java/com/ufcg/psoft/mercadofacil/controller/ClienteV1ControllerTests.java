@@ -66,6 +66,7 @@ public class ClienteV1ControllerTests {
     @AfterEach
     public void tearDown() {
         clienteRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
     }
 
     @Nested
@@ -603,7 +604,7 @@ public class ClienteV1ControllerTests {
 
                 String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
 
-                String notificacaoEsperada = "Jipao, o pedido de número 1 foi entregue.";
+                String notificacaoEsperada = "Jipao, o pedido de número " + pedido.getId() + " foi entregue.";
                 assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
             } finally {
                 System.setOut(originalSystemOut);

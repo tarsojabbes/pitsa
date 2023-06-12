@@ -4,6 +4,7 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.*;
+import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.cliente.ClienteConfirmarEntregaService;
 import com.ufcg.psoft.mercadofacil.service.pedido.*;
 import jakarta.transaction.Transactional;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.ATIVO;
 import static com.ufcg.psoft.mercadofacil.model.MeioDePagamento.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,6 +49,9 @@ public class PedidoServiceTests {
 
     @Autowired
     ClienteConfirmarEntregaService clienteConfirmarEntregaService;
+
+    @Autowired
+    AssociacaoService associacaoService;
 
     @Autowired
     PedidoRepository pedidoRepository;
@@ -446,6 +451,7 @@ public class PedidoServiceTests {
             try {
                 System.setOut(printStream);
 
+                associacaoService.alterarDisponibilidadeEntregador(entregador.getId(), ATIVO, associacao.getId(), entregador.getCodigoDeAcesso());
                 pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
                 pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
 
@@ -477,6 +483,8 @@ public class PedidoServiceTests {
         @Transactional
         public void test01() {
 
+            associacaoService.alterarDisponibilidadeEntregador(entregador.getId(), ATIVO, associacao.getId(), entregador.getCodigoDeAcesso());
+
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
 
             Pedido pedidoComEntregadorAssociado = pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
@@ -507,6 +515,8 @@ public class PedidoServiceTests {
         @DisplayName("Quando tento atribuir um entregador existente a um pedido existente mas o pedido não está pronto")
         @Transactional
         public void test04() {
+            associacaoService.alterarDisponibilidadeEntregador(entregador.getId(), ATIVO, associacao.getId(), entregador.getCodigoDeAcesso());
+
             assertThrows(MudancaDeStatusInvalidaException.class,
                     () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId()));
         }

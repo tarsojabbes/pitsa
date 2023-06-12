@@ -1,11 +1,7 @@
 package com.ufcg.psoft.mercadofacil.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.*;
-import com.ufcg.psoft.mercadofacil.service.cliente.ClienteCancelarPedidoService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,8 +48,6 @@ public class ClienteV1ControllerCancelamentoPedidoTests {
 
     List<Pizza> pizzas;
 
-    ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
     @Autowired
     EntregadorRepository entregadorRepository;
 
@@ -62,9 +56,6 @@ public class ClienteV1ControllerCancelamentoPedidoTests {
 
     @Autowired
     PedidoRepository pedidoRepository;
-
-    @Autowired
-    ClienteCancelarPedidoService clienteCancelarPedidoService;
 
     @BeforeEach
     void setUpCancelamento() {
@@ -106,6 +97,8 @@ public class ClienteV1ControllerCancelamentoPedidoTests {
         associacaoRepository.deleteAll();
         pedidoRepository.deleteAll();
         clienteRepository.deleteAll();
+        entregadorRepository.deleteAll();
+        estabelecimentoRepository.deleteAll();
     }
 
     private List<Pizza> duasCalabresasGrandesCreator(){
