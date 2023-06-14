@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,6 +29,14 @@ public class Estabelecimento {
     private String nome;
 
     @OneToMany(mappedBy = "estabelecimento")
-    private List<Associacao> associacoes = new ArrayList<>();
+    private List<Associacao> associacoes;
+
+    @OneToMany(mappedBy = "estabelecimento")
+    private List<Pedido> pedidos;
+
+    public void notificarPedidoEntregue(Long id) {
+        System.out.println(this.getNome() + ", o pedido de número " + id
+                + " foi entregue.\n");
+    }
 
 }

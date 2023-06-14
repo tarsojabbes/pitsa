@@ -1,13 +1,17 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import java.util.List;
+import java.time.LocalDateTime;
+
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -30,6 +34,16 @@ public class Pedido {
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
+    @JsonProperty("entregador")
+    @ManyToOne()
+    @JoinColumn(name = "id_entregador")
+    private Entregador entregador;
+
+    @JsonProperty("estabelecimento")
+    @ManyToOne()
+    @JoinColumn(name = "id_estabelecimento", nullable = true)
+    private Estabelecimento estabelecimento;
+
     @JsonProperty("precoPedido")
     private Double precoPedido;
 
@@ -38,6 +52,18 @@ public class Pedido {
 
     @JsonProperty("endereco")
     private String endereco;
+
+    @JsonProperty("horarioDoPedido")
+    @Builder.Default
+    private LocalDateTime horarioDoPedido = LocalDateTime.now();
+
+    @JsonProperty("acompanhamento")
+    @AcompanhamentoValidator(regexp = "PEDIDO_RECEBIDO|PEDIDO_EM_PREPARO|PEDIDO_PRONTO|PEDIDO_EM_ROTA|PEDIDO_ENTREGUE")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Acompanhamento acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
+
+
 
     public Pedido(Cliente cliente, List<Pizza> pizzas, String endereco) {
 
@@ -50,6 +76,7 @@ public class Pedido {
             this.endereco = endereco;
         }
         this.meioDePagamento = null;
+        this.acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
     }
 
     public void setPrecoPedido(Double preco) {
@@ -114,6 +141,22 @@ public class Pedido {
         return meioDePagamento;
     }
 
+    public Entregador getEntregador() {
+        return this.entregador;
+    }
+
+    public void setEntregador(Entregador entregador) {
+        this.entregador = entregador;
+    }
+
+    public Estabelecimento getEstabelecimento() {
+        return this.estabelecimento;
+    }
+
+    public void setEstabelecimento(Estabelecimento estabelecimento) {
+        this.estabelecimento = estabelecimento;
+    }
+
     public void setMeioDePagamento(MeioDePagamento meioDePagamento) {
         this.meioDePagamento = meioDePagamento;
     }
@@ -126,4 +169,15 @@ public class Pedido {
         }
     }
 
+    public Acompanhamento getAcompanhamento(){
+        return this.acompanhamento;
+    }
+
+    public void setAcompanhamento(Acompanhamento acompanhamento) {
+        this.acompanhamento = acompanhamento;
+    }
+
+    public LocalDateTime getHorarioDoPedido() {
+        return this.horarioDoPedido;
+    }
 }

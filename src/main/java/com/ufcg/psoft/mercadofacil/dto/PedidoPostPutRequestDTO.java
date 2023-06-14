@@ -2,9 +2,7 @@ package com.ufcg.psoft.mercadofacil.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ufcg.psoft.mercadofacil.model.MeioDePagamento;
-import com.ufcg.psoft.mercadofacil.model.MeioDePagamentoValidator;
-import com.ufcg.psoft.mercadofacil.model.Pizza;
+import com.ufcg.psoft.mercadofacil.model.*;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
@@ -39,6 +37,12 @@ public class PedidoPostPutRequestDTO {
     @Enumerated(EnumType.STRING)
     private MeioDePagamento meioDePagamento;
 
+    @JsonProperty("acompanhamento")
+    @AcompanhamentoValidator(regexp = "PEDIDO_RECEBIDO|PEDIDO_EM_PREPARO|PEDIDO_PRONTO|PEDIDO_EM_ROTA|PEDIDO_ENTREGUE")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Acompanhamento acompanhamento = Acompanhamento.PEDIDO_RECEBIDO;
+
     @JsonProperty("idCliente")
     @NotNull(message = "A id do cliente nao deve ser nula.")
     @Positive(message = "A id do cliente deve ser maior que zero.")
@@ -46,5 +50,9 @@ public class PedidoPostPutRequestDTO {
 
     @JsonProperty("enderecoAlternativo")
     private String enderecoAlternativo;
+
+    @JsonProperty("idEstabelecimento")
+    @NotNull(message = "O id do estabelecimento nao pode ser nulo.")
+    private Long idEstabelecimento;
 
 }

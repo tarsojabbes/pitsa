@@ -6,11 +6,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
-import com.ufcg.psoft.mercadofacil.model.Cliente;
-import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
-import com.ufcg.psoft.mercadofacil.model.Sabor;
+import com.ufcg.psoft.mercadofacil.model.*;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -20,6 +19,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +46,9 @@ public class ClienteV1ControllerTests {
 
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
+    PedidoRepository pedidoRepository;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -502,6 +507,124 @@ public class ClienteV1ControllerTests {
                             .param("codigoDeAcesso", "12345"))
                     .andExpect(status().isOk())
                     .andExpect(content().string("Interesse registrado com sucesso."));
+        }
+
+    }
+
+    @Nested
+    public class ConfirmarEntregaDePedido {
+
+        private List<Pizza> duasCalabresasGrandesCreator() {
+
+            Sabor sabor = saborRepository.save(Sabor.builder().nomeSabor("Calabresa").tipoSabor("Salgada").precoGrande(60.00).precoMedio(50.00).estabelecimento(estabelecimento).build());
+            List<Sabor> sabores = new ArrayList<>();
+            sabores.add(sabor);
+
+            Pizza duasCalabresasGrandes = new Pizza(sabores, false, true, 2);
+            List<Pizza> novoPedido = new ArrayList<Pizza>();
+            novoPedido.add(duasCalabresasGrandes);
+
+            return novoPedido;
+        }
+
+        Pedido pedido;
+        List<Pizza> pizzas;
+        Estabelecimento estabelecimento;
+        Cliente cliente;
+
+        @BeforeEach
+        void setup() {
+
+            estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
+                    .nome("Jipao")
+                    .codigoDeAcesso("123456")
+                    .associacoes(new ArrayList<>())
+                    .build());
+
+            cliente = clienteRepository.save(Cliente.builder()
+                    .nome("Joao")
+                    .endereco("Rua 1")
+                    .codigoDeAcesso("123456")
+                    .pedidos(new ArrayList<>())
+                    .build());
+
+            Sabor sabor = saborRepository.save(Sabor.builder()
+                    .nomeSabor("Frango")
+                    .tipoSabor("salgado")
+                    .estabelecimento(estabelecimento)
+                    .precoGrande(59.90)
+                    .precoMedio(39.90)
+                    .build());
+
+            Pizza pizza1 = Pizza.builder()
+                    .precoPizza(sabor.getPrecoGrande())
+                    .sabor1(sabor)
+                    .sabor2(null)
+                    .quantidade(1)
+                    .build();
+
+            pizzas = new ArrayList<>();
+            pizzas.add(pizza1);
+
+            pedido = pedidoRepository.save(Pedido.builder()
+                    .cliente(cliente)
+                    .pizzas(pizzas)
+                    .endereco("abc")
+                    .estabelecimento(estabelecimento)
+                    .build());
+        }
+
+        @Test
+        @DisplayName("Quando confirmo a entrega do pedido com sucesso")
+        @Transactional
+        public void test01() throws Exception {
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            PrintStream originalSystemOut = System.out;
+            System.setOut(printStream);
+
+            String respostaJson3 = driver.perform(patch("/v1/clientes/" + pedido.getId() + "/confirmar-entrega")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+            Pedido pedidoEntregue = objectMapper.readValue(respostaJson3, Pedido.class);
+
+            System.out.println(pedidoEntregue.getAcompanhamento());
+            assertEquals(Acompanhamento.PEDIDO_ENTREGUE, pedidoEntregue.getAcompanhamento());
+
+            try {
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Jipao, o pedido de número 1 foi entregue.";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+
+        }
+
+        @Test
+        @DisplayName("Quando confirmo a entrega do pedido sem sucesso, ou seja, o status atual do pedido nao era PEDIDO_EM_ROTA")
+        @Transactional
+        public void test02() throws Exception {
+
+            String respostaJson1 = driver.perform(patch("/v1/clientes/" + pedido.getId() + "/confirmar-entrega")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print())
+                    .andReturn().getResponse().getContentAsString();
+
+
+            CustomErrorType error = objectMapper.readValue(respostaJson1, CustomErrorType.class);
+            assertEquals(error.getMessage(), "A operacao de mudanca de status nao pode ser realizada.");
         }
 
     }

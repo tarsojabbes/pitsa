@@ -1,10 +1,12 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
@@ -21,20 +23,9 @@ public class PedidoExcluirPadraoService implements PedidoExcluirService{
     ClienteRepository clienteRepository;
 
     @Override
-    public void excluir(Long id, String codigoDeAcesso) {
-        
-        if (id == null || id <= 0L || codigoDeAcesso == null || codigoDeAcesso.isEmpty() || codigoDeAcesso.isBlank()){
-            throw new IllegalArgumentException();
-        }
-        
+    public void excluir(Long id) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
-        Cliente cliente = clienteRepository.findById(pedido.getCliente().getId()).orElseThrow(ClienteNaoExisteException::new);
-
-        if (cliente.getCodigoDeAcesso().equals(codigoDeAcesso)){
-            pedidoRepository.delete(pedido);
-        } else {
-            throw new ClienteNaoAutorizadoException();
-        }
+        pedidoRepository.delete(pedido);
     }
     
 }

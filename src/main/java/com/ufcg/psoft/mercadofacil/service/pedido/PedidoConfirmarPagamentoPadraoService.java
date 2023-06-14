@@ -4,6 +4,7 @@ import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
@@ -40,6 +41,7 @@ public class PedidoConfirmarPagamentoPadraoService implements PedidoConfirmarPag
             throw new ClienteNaoAutorizadoException();
         } else {
             modelMapper.map(pedidoPostPutRequestDTO, pedido);
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_PREPARO);
             return pedidoRepository.save(pedido);
         }
 

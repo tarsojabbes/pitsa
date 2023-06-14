@@ -1,5 +1,9 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
 import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
@@ -8,9 +12,6 @@ import com.ufcg.psoft.mercadofacil.model.Cliente;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class PedidoAlterarPadraoService implements PedidoAlterarService {
@@ -32,9 +33,7 @@ public class PedidoAlterarPadraoService implements PedidoAlterarService {
 
         if (codigoDeAcesso.equals(cliente.getCodigoDeAcesso())) {
             modelMapper.map(pedidoPostPutRequestDTO, pedido);
-
             return pedidoRepository.save(pedido);
-
         } else {
             throw new ClienteNaoAutorizadoException();
         }

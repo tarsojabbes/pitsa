@@ -1,18 +1,18 @@
 package com.ufcg.psoft.mercadofacil.service;
 
 import com.ufcg.psoft.mercadofacil.dto.PedidoPostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.MercadoFacilException;
+import com.ufcg.psoft.mercadofacil.exception.*;
 import com.ufcg.psoft.mercadofacil.model.*;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.repository.*;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteConfirmarEntregaService;
 import com.ufcg.psoft.mercadofacil.service.pedido.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +40,15 @@ public class PedidoServiceTests {
     PedidoConfirmarPagamentoService pedidoConfirmarPagamentoService;
 
     @Autowired
+    PedidoAtribuirEntregadorService pedidoAtribuirEntregadorService;
+
+    @Autowired
+    PedidoIndicarProntoService pedidoIndicarProntoService;
+
+    @Autowired
+    ClienteConfirmarEntregaService clienteConfirmarEntregaService;
+
+    @Autowired
     PedidoRepository pedidoRepository;
 
     @Autowired
@@ -49,7 +58,13 @@ public class PedidoServiceTests {
     EstabelecimentoRepository estabelecimentoRepository;
 
     @Autowired
+    AssociacaoRepository associacaoRepository;
+
+    @Autowired
     SaborRepository saborRepository;
+
+    @Autowired
+    EntregadorRepository entregadorRepository;
 
     Pedido pedido;
 
@@ -59,12 +74,29 @@ public class PedidoServiceTests {
 
     Estabelecimento estabelecimento;
 
+    Associacao associacao;
+
+    Entregador entregador;
+
     @BeforeEach
     void setup() {
+        entregador = entregadorRepository.save(Entregador.builder()
+                .nome("Jose da Silva")
+                .corDoVeiculo("Branco")
+                .placaDoVeiculo("123456")
+                .tipoDoVeiculo(TipoDoVeiculo.MOTO)
+                .codigoDeAcesso("12345678").build());
+
         estabelecimento = estabelecimentoRepository.save(Estabelecimento.builder()
                 .nome("Jipao")
                 .codigoDeAcesso("123456")
                 .associacoes(new ArrayList<>())
+                .build());
+
+        associacao = associacaoRepository.save(Associacao.builder()
+                .entregador(entregador)
+                .estabelecimento(estabelecimento)
+                .statusAssociacao(true)
                 .build());
 
         cliente = clienteRepository.save(Cliente.builder()
@@ -78,7 +110,9 @@ public class PedidoServiceTests {
         pedido = pedidoRepository.save(Pedido.builder()
                 .cliente(cliente)
                 .pizzas(pizzas)
+                .estabelecimento(estabelecimento)
                 .build());
+
     }
 
     @AfterEach
@@ -88,7 +122,7 @@ public class PedidoServiceTests {
         estabelecimentoRepository.deleteAll();
     }
 
-    private List<Pizza> duasCalabresasGrandesCreator(){
+    private List<Pizza> duasCalabresasGrandesCreator() {
         Sabor sabor = saborRepository.save(Sabor.builder()
                 .nomeSabor("Calabresa")
                 .tipoSabor("salgado")
@@ -122,6 +156,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .enderecoAlternativo("")
                     .build();
@@ -142,6 +177,7 @@ public class PedidoServiceTests {
                     .idCliente(cliente.getId())
                     .codigoDeAcesso(cliente.getCodigoDeAcesso())
                     .meioDePagamento(CREDITO)
+                    .idEstabelecimento(estabelecimento.getId())
                     .pizzas(pizzas)
                     .build();
 
@@ -162,6 +198,7 @@ public class PedidoServiceTests {
             String novaRua = "Rua 2";
             PedidoPostPutRequestDTO pedidoModificado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
+                    .idEstabelecimento(estabelecimento.getId())
                     .enderecoAlternativo(novaRua)
                     .build();
 
@@ -212,31 +249,6 @@ public class PedidoServiceTests {
     }
 
     @Nested
-    public class PedidoExcluirTests {
-
-        @Test
-        @Transactional
-        @DisplayName("Exclui um pedido corretamente a partir da id do cliente")
-        void testExclusaoValidaPedido() {
-            pedidoExcluirService.excluir(pedido.getId(), cliente.getCodigoDeAcesso());
-
-            assertEquals(0, pedidoRepository.findAll().size());
-        }
-
-        @Test
-        @Transactional
-        @DisplayName("Tenta excluir um pedido invalido")
-        void testExclusaoInvalidaPedido() {
-            assertEquals(1, pedidoRepository.findAll().size());
-
-            assertThrows(MercadoFacilException.class, () -> pedidoExcluirService.excluir(pedido.getId() + 2L, cliente.getCodigoDeAcesso()));
-
-            assertEquals(1, pedidoRepository.findAll().size());
-        }
-
-    }
-
-    @Nested
     public class PedidoConfirmarPagamentoTests {
 
         @Test
@@ -249,6 +261,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(PIX)
                     .build();
 
@@ -269,6 +282,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(CREDITO)
                     .build();
 
@@ -289,6 +303,7 @@ public class PedidoServiceTests {
             PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
                     .idCliente(cliente.getId())
                     .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
                     .meioDePagamento(DEBITO)
                     .build();
 
@@ -311,6 +326,205 @@ public class PedidoServiceTests {
             assertThrows(MercadoFacilException.class, () -> pedidoConfirmarPagamentoService.confirmar(pedido.getId() + 2L, cliente.getCodigoDeAcesso(), pedidoConfirmado));
         }
 
+    }
+
+    @Nested
+    public class PedidoAlterarAcompanhamentoTests {
+        @Test
+        @DisplayName("Quando crio um pedido e checo se o acompanhamento é PEDIDO_RECEBIDO")
+        @Transactional
+        public void test01() {
+            assertEquals(Acompanhamento.PEDIDO_RECEBIDO, pedido.getAcompanhamento());
+        }
+
+        @Test
+        @DisplayName("Quando confirmo o pagamento de um pedido e checo se o acompanhamento é PEDIDO_EM_PREPARO")
+        @Transactional
+        public void test02() {
+            PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .pizzas(pizzas)
+                    .meioDePagamento(DEBITO)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .build();
+
+            Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+
+            assertEquals(Acompanhamento.PEDIDO_EM_PREPARO, pedido2.getAcompanhamento());
+        }
+
+        @Test
+        @DisplayName("Quando estabelecimento indica que o pedido está pronto")
+        @Transactional
+        public void test03() {
+            PedidoPostPutRequestDTO pedidoConfirmado = PedidoPostPutRequestDTO.builder()
+                    .idCliente(cliente.getId())
+                    .pizzas(pizzas)
+                    .idEstabelecimento(estabelecimento.getId())
+                    .meioDePagamento(DEBITO)
+                    .build();
+
+            Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
+
+            Pedido pedidoPronto = pedidoIndicarProntoService.indicarPedidoPronto(pedido2.getId());
+
+            assertEquals(Acompanhamento.PEDIDO_PRONTO, pedidoPronto.getAcompanhamento());
+
+        }
+
+        @Test
+        @DisplayName("Quando tento atualizar status para PEDIDO_PRONTO mas pagamento não foi confirmado")
+        @Transactional
+        public void test04() {
+            assertThrows(MudancaDeStatusInvalidaException.class, () -> pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando confirmo um pedido entregue que estava em rota de entrega")
+        @Transactional
+        public void test05() {
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            PrintStream originalSystemOut = System.out;
+
+            Pedido pedido2 = pedidoRepository.save(Pedido.builder()
+                    .cliente(cliente)
+                    .pizzas(pizzas)
+                    .estabelecimento(estabelecimento)
+                    .build());
+
+            pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            assertEquals(Acompanhamento.PEDIDO_EM_ROTA, pedido2.getAcompanhamento());
+
+            System.setOut(printStream);
+            clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido2.getId());
+            assertEquals(Acompanhamento.PEDIDO_ENTREGUE, pedido2.getAcompanhamento());
+
+            try {
+
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Jipao, o pedido de número " + pedido2.getId() + " foi entregue.";
+                assertEquals(notificacaoEsperada, resultadoFiltrado);
+
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+
+        }
+
+        @Test
+        @DisplayName("Quando tento confirmar que um pedido foi entregue, mas ele não estava em rota de entrega")
+        @Transactional
+        public void test06() {
+            pedidoRepository.deleteAll();
+            Pedido pedido3 = pedidoRepository.save(Pedido.builder()
+                    .cliente(cliente)
+                    .pizzas(pizzas)
+                    .build());
+            assertThrows(MudancaDeStatusInvalidaException.class, () -> clienteConfirmarEntregaService.confirmarPedidoEntregue(pedido3.getId()));
+        }
+    }
+
+    @Nested
+    public class NotificarMudancaDeStatusTest {
+
+        @Test
+        @DisplayName("Quando mudo o status de um pedido de pedido pronto para pedido em rota e notifico o cliente")
+        @Transactional
+        public void test01() {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+
+            PrintStream originalSystemOut = System.out;
+
+            try {
+                System.setOut(printStream);
+
+                pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+                pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
+
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = "Joao, seu pedido está em rota de entrega\n" +
+                        "--Informações do entregador--:\n" +
+                        "Nome: Jose da Silva\n" +
+                        "Tipo de Veiculo: MOTO\n" +
+                        "Cor do Veiculo: Branco\n" +
+                        "Placa do Veiculo: 123456";
+                assertEquals(resultadoFiltrado, notificacaoEsperada);
+
+            } finally {
+                System.setOut(originalSystemOut);
+            }
+        }
+
+    }
+
+    @Nested
+    public class PedidoAtribuirEntregadorServiceTests {
+        @Test
+        @DisplayName("Quando atribuo um entregador existente a um pedido existente")
+        @Transactional
+        public void test01() {
+
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+
+            Pedido pedidoComEntregadorAssociado = pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId());
+
+            assertEquals(pedidoComEntregadorAssociado.getAcompanhamento(), Acompanhamento.PEDIDO_EM_ROTA);
+
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador inexistente")
+        @Transactional
+        public void test02() {
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            assertThrows(EntregadorNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId() + 99));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido inexistente a um entregador existente")
+        @Transactional
+        public void test03() {
+            pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
+            assertThrows(PedidoNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId() + 99, entregador.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um entregador existente a um pedido existente mas o pedido não está pronto")
+        @Transactional
+        public void test04() {
+            assertThrows(MudancaDeStatusInvalidaException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador.getId()));
+        }
+
+        @Test
+        @DisplayName("Quando tento atribuir um pedido existente a um entregador existente mas não há associação")
+        @Transactional
+        public void test05() {
+            Entregador entregador2 = entregadorRepository.save(Entregador.builder()
+                    .nome("Joao")
+                    .corDoVeiculo("Preto")
+                    .placaDoVeiculo("123456")
+                    .tipoDoVeiculo(TipoDoVeiculo.CARRO)
+                    .codigoDeAcesso("12345678").build());
+
+            assertThrows(AssociacaoNaoExisteException.class,
+                    () -> pedidoAtribuirEntregadorService.atribuirEntregador(pedido.getId(), entregador2.getId()));
+        }
     }
 
 }
