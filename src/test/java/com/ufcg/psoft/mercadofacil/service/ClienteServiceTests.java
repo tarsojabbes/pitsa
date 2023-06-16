@@ -1,19 +1,34 @@
 package com.ufcg.psoft.mercadofacil.service;
 
-import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
-import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.mercadofacil.exception.*;
-import com.ufcg.psoft.mercadofacil.model.*;
-import com.ufcg.psoft.mercadofacil.repository.*;
-import com.ufcg.psoft.mercadofacil.service.cliente.*;
-import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
+import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoAutorizadoException;
+import com.ufcg.psoft.mercadofacil.exception.ClienteNaoExisteException;
+import com.ufcg.psoft.mercadofacil.exception.SaborDisponivelException;
+import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
+import com.ufcg.psoft.mercadofacil.model.Cliente;
+import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
+import com.ufcg.psoft.mercadofacil.model.Sabor;
+import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
+import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteAlterarService;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteCriarService;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteDemonstrarInteresseService;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteExcluirService;
+import com.ufcg.psoft.mercadofacil.service.cliente.ClienteListarService;
 
 @SpringBootTest
 public class ClienteServiceTests {

@@ -1,14 +1,15 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.ufcg.psoft.mercadofacil.exception.MudancaDeStatusInvalidaException;
 import com.ufcg.psoft.mercadofacil.exception.PedidoInvalidoException;
 import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Pedido;
 import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class PedidoIndicarProntoPadraoService implements PedidoIndicarProntoService {
@@ -27,11 +28,12 @@ public class PedidoIndicarProntoPadraoService implements PedidoIndicarProntoServ
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);
             Pedido pedidoAtualizado = pedidoRepository.save(pedido);
             this.associarEntregador(pedidoAtualizado);
+            pedido.getCliente().notificarPedidoPronto();
             return pedidoAtualizado;
         }
         throw new MudancaDeStatusInvalidaException();
     }
-
+    
     private void associarEntregador(Pedido pedido){
         Estabelecimento estabelecimento = pedido.getEstabelecimento();
         if(estabelecimento.getEntregadoresDisponiveis().isEmpty()){

@@ -1,13 +1,21 @@
 package com.ufcg.psoft.mercadofacil.model;
 
+import java.time.LocalTime;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -41,6 +49,23 @@ public class Cliente {
                 "Tipo de Veiculo: " + entregador.getTipoDoVeiculo() + "\n" +
                 "Cor do Veiculo: " + entregador.getCorDoVeiculo() + "\n" +
                 "Placa do Veiculo: " + entregador.getPlacaDoVeiculo());
+    }
+    
+    public void notificarPedidoPronto(){
+
+        LocalTime horario = LocalTime.now();
+        String saudacao;
+
+        if (horario.getHour() >= 6 && horario.getHour() < 12){
+            saudacao = "Bom dia, ";
+        } else if (horario.getHour() >= 12 && horario.getHour() < 18){
+            saudacao = "Boa tarde, ";
+        } else {
+            saudacao = "Boa noite, ";
+        }
+
+        System.out.println(saudacao + this.nome + "! Seu pedido está pronto.");
+
     }
 
 }
