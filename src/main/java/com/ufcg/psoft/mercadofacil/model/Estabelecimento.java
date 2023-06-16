@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,6 +34,12 @@ public class Estabelecimento {
 
     @OneToMany(mappedBy = "estabelecimento")
     private List<Pedido> pedidos;
+
+    @JsonProperty("entregadoresDisponiveis")
+    private List<Long> entregadoresDisponiveis = new ArrayList<Long>();
+
+    @JsonProperty("pedidosEmEspera")
+    private List<Long> pedidosEmEspera = new ArrayList<Long>();
 
     public void notificarPedidoEntregue(Long id) {
         System.out.println(this.getNome() + ", o pedido de número " + id

@@ -8,8 +8,11 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.service.pedido.PedidoAtribuirEntregadorPadraoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.DESCANSO;
 
@@ -24,6 +27,9 @@ public class AssociacaoPadraoService implements AssociacaoService {
 
     @Autowired
     private EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
+    private PedidoAtribuirEntregadorPadraoService pedidoAtribuirEntregadorPadraoService;
 
     @Override
     public Associacao associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador) {
@@ -93,6 +99,18 @@ public class AssociacaoPadraoService implements AssociacaoService {
             throw new CodigoDeAcessoInvalidoException();
         }
         associacao.setDisponibilidadeEntregador(disponibilidade);
+
+        if (disponibilidade.equals(DisponibilidadeEntregador.ATIVO)){
+            List<Long> pedidosEmEspera = associacao.getEstabelecimento().getPedidosEmEspera();
+            if (!pedidosEmEspera.isEmpty()){
+                pedidoAtribuirEntregadorPadraoService.atribuirEntregador(pedidosEmEspera.get(0), entregadorId);
+                pedidosEmEspera.remove(0);
+            } else {
+                associacao.getEstabelecimento().getEntregadoresDisponiveis().add(entregadorId);
+            }
+        } else{
+            associacao.getEstabelecimento().getEntregadoresDisponiveis().remove(entregadorId);
+        }
     }
 
 }
