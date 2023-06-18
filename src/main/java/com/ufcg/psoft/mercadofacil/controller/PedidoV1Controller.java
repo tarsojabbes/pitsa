@@ -76,8 +76,9 @@ public class PedidoV1Controller {
     }
 
     @PatchMapping("/{id}/pedido-pronto")
-    public ResponseEntity<Pedido> indicarPedidoPronto(@PathVariable @Valid Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(pedidoIndicarProntoService.indicarPedidoPronto(id));
+    public ResponseEntity<Pedido> indicarPedidoPronto(@PathVariable @Valid Long id,
+                                                      @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
+        return ResponseEntity.status(HttpStatus.OK).body(pedidoIndicarProntoService.indicarPedidoPronto(id, codigoDeAcesso));
     }
 
     @PatchMapping("/{id}/atribuir-entregador")

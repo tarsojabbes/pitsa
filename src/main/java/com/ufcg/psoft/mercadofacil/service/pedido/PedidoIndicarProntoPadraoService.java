@@ -1,6 +1,7 @@
 package com.ufcg.psoft.mercadofacil.service.pedido;
 
 
+import com.ufcg.psoft.mercadofacil.exception.EstabelecimentoNaoAutorizadoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,12 @@ public class PedidoIndicarProntoPadraoService implements PedidoIndicarProntoServ
     PedidoAtribuirEntregadorPadraoService pedidoAtribuirEntregadorPadraoService;
 
     @Override
-    public Pedido indicarPedidoPronto(Long id) {
+    public Pedido indicarPedidoPronto(Long id, String codigoDeAcesso) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(PedidoInvalidoException::new);
+
+        if (!pedido.getEstabelecimento().getCodigoDeAcesso().equals(codigoDeAcesso)) {
+            throw new EstabelecimentoNaoAutorizadoException();
+        }
 
         if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_EM_PREPARO)) {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_PRONTO);

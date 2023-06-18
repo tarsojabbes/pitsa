@@ -42,9 +42,11 @@ public class Estabelecimento {
     private List<Pedido> pedidos;
 
     @JsonProperty("entregadoresDisponiveis")
+    @Builder.Default
     private List<Long> entregadoresDisponiveis = new ArrayList<>();
 
     @JsonProperty("pedidosEmEspera")
+    @Builder.Default
     private List<Long> pedidosEmEspera = new ArrayList<>();
 
     public void notificarPedidoEntregue(Long id) {

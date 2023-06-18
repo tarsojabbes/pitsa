@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.service.pedido;
 
 import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.*;
 
+import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 
 @Service
+@Builder
 public class PedidoAtribuirEntregadorPadraoService implements PedidoAtribuirEntregadorService {
 
     @Autowired

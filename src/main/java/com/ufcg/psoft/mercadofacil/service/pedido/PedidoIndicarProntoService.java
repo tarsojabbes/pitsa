@@ -4,5 +4,5 @@ import com.ufcg.psoft.mercadofacil.model.Pedido;
 
 @FunctionalInterface
 public interface PedidoIndicarProntoService {
-    Pedido indicarPedidoPronto(Long id);
+    Pedido indicarPedidoPronto(Long id, String codigoDeAcesso);
 }

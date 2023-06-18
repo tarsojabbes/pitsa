@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.repository.AssociacaoRepository;
 import com.ufcg.psoft.mercadofacil.repository.EntregadorRepository;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.service.pedido.PedidoAtribuirEntregadorPadraoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,21 @@ public class AssociacaoPadraoService implements AssociacaoService {
     private EntregadorRepository entregadorRepository;
 
     @Autowired
-    private EstabelecimentoRepository estabelecimentoRepository;
+    private PedidoRepository pedidoRepository;
 
     @Autowired
+    private EstabelecimentoRepository estabelecimentoRepository;
+
+
     private PedidoAtribuirEntregadorPadraoService pedidoAtribuirEntregadorPadraoService;
 
     @Override
     public Associacao associarEntregadorEstabelecimento(Long entregadorId, Long estabelecimentoId, String codigoAcessoEntregador) {
+        pedidoAtribuirEntregadorPadraoService = PedidoAtribuirEntregadorPadraoService.builder()
+                .pedidoRepository(pedidoRepository)
+                .entregadorRepository(entregadorRepository)
+                .associacaoService(this)
+                    .build();
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(estabelecimentoId).orElseThrow(EstabelecimentoNaoExisteException::new);
         Entregador entregador = entregadorRepository.findById(entregadorId).orElseThrow(EntregadorNaoExisteException::new);
         if (entregador.getCodigoDeAcesso().equals(codigoAcessoEntregador)) {
@@ -89,6 +98,11 @@ public class AssociacaoPadraoService implements AssociacaoService {
 
     @Override
     public void alterarDisponibilidadeEntregador(Long entregadorId, DisponibilidadeEntregador disponibilidade, Long associacaoId, String codigoAcessoEntregador) {
+        pedidoAtribuirEntregadorPadraoService = PedidoAtribuirEntregadorPadraoService.builder()
+                .pedidoRepository(pedidoRepository)
+                .entregadorRepository(entregadorRepository)
+                .associacaoService(this)
+                .build();
 
         Associacao associacao = associacaoRepository.findById(associacaoId).orElseThrow(AssociacaoNaoExisteException::new);
         Entregador entregadorAssociacao = associacao.getEntregador();

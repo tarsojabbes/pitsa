@@ -76,6 +76,7 @@ public class EntregadorV1ControllerTests {
 
     @AfterEach
     public void tearDown() {
+        associacaoRepository.deleteAll();
         entregadorRepository.deleteAll();
         estabelecimentoRepository.deleteAll();
     }
@@ -687,5 +688,7 @@ public class EntregadorV1ControllerTests {
         }
 
     }
+
+
 
 }

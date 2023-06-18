@@ -371,7 +371,7 @@ public class PedidoServiceTests {
 
             Pedido pedido2 = pedidoConfirmarPagamentoService.confirmar(pedido.getId(), cliente.getCodigoDeAcesso(), pedidoConfirmado);
 
-            Pedido pedidoPronto = pedidoIndicarProntoService.indicarPedidoPronto(pedido2.getId());
+            Pedido pedidoPronto = pedidoIndicarProntoService.indicarPedidoPronto(pedido2.getId(), pedido2.getEstabelecimento().getCodigoDeAcesso());
 
             assertEquals(Acompanhamento.PEDIDO_PRONTO, pedidoPronto.getAcompanhamento());
 
@@ -381,7 +381,7 @@ public class PedidoServiceTests {
         @DisplayName("Quando tento atualizar status para PEDIDO_PRONTO mas pagamento não foi confirmado")
         @Transactional
         public void test04() {
-            assertThrows(MudancaDeStatusInvalidaException.class, () -> pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId()));
+            assertThrows(MudancaDeStatusInvalidaException.class, () -> pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId(), pedido.getEstabelecimento().getCodigoDeAcesso()));
         }
 
         @Test
@@ -400,6 +400,7 @@ public class PedidoServiceTests {
                     .build());
 
             pedido2.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            pedido2.setEntregador(entregador);
             assertEquals(Acompanhamento.PEDIDO_EM_ROTA, pedido2.getAcompanhamento());
 
             System.setOut(printStream);

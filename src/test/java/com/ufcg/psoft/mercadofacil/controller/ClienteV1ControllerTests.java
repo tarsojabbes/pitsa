@@ -7,10 +7,7 @@ import com.ufcg.psoft.mercadofacil.dto.ClienteGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.ClientePostPutRequestDTO;
 import com.ufcg.psoft.mercadofacil.exception.CustomErrorType;
 import com.ufcg.psoft.mercadofacil.model.*;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
-import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
-import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
+import com.ufcg.psoft.mercadofacil.repository.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +46,9 @@ public class ClienteV1ControllerTests {
 
     @Autowired
     PedidoRepository pedidoRepository;
+
+    @Autowired
+    EntregadorRepository entregadorRepository;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -579,7 +579,11 @@ public class ClienteV1ControllerTests {
         @DisplayName("Quando confirmo a entrega do pedido com sucesso")
         @Transactional
         public void test01() throws Exception {
+            // Colocando pedido Em Rota.
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_ROTA);
+            Entregador entregador = entregadorRepository.save(Entregador.builder()
+                    .build());
+            pedido.setEntregador(entregador);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
@@ -629,5 +633,7 @@ public class ClienteV1ControllerTests {
         }
 
     }
+
+
 
 }
