@@ -24,6 +24,7 @@ import static com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador.DESCAN
 import static com.ufcg.psoft.mercadofacil.model.MeioDePagamento.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -155,12 +156,30 @@ public class PedidoAutomacaoAtribuicaoEntregadorServiceTests {
     @Transactional
     @DisplayName("Teste de atribuição automática quando não há entregador disponível")
     void atribuicaoAutomaticaSemEntregadorDisponivelTest() throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(outputStream);
+        PrintStream originalSystemOut = System.out;
+
         pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_PREPARO);
         pedidoRepository.save(pedido);
 
+        System.setOut(printStream);
         Pedido pedidoPronto = pedidoIndicarProntoService.indicarPedidoPronto(pedido.getId(),
                                                                             estabelecimento.getCodigoDeAcesso());
 
+        try {
+                String resultadoPrint = outputStream.toString();
+                                                                
+                String regex = "Hibernate: .*";
+                                                                
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+                                                                
+                String notificacaoEsperada = "Joao, o seu pedido está pronto, mas infelizmente não há entregadores disponíveis. Pedimos perdão pelo inconveniente, seu pedido será entregue assim que tivermos um entregador disponível!";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+        } finally {
+                System.setOut(originalSystemOut);
+        }
+        
         assertEquals(pedidoPronto.getAcompanhamento(), Acompanhamento.PEDIDO_PRONTO);
     }
 

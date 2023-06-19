@@ -152,20 +152,21 @@ public class PedidoAutomacaoAtribuicaoEntregadorControllerTests {
                .andDo(print())
                .andReturn().getResponse().getContentAsString();
 
-       Pedido pedidoPronto = objectMapper.readValue(respostaJson, Pedido.class);
+        Pedido pedidoPronto = objectMapper.readValue(respostaJson, Pedido.class);
+        System.setOut(printStream);
 
-       try {
-        String resultadoPrint = outputStream.toString();
+        try {
+                String resultadoPrint = outputStream.toString();
 
-        String regex = "Hibernate: .*";
+                String regex = "Hibernate: .*";
 
-        String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
 
-        String notificacaoEsperada = pedido.getCliente().getNome() + ", o seu pedido está pronto, mas infelizmente não há entregadores disponíveis. Pedimos perdão pelo inconveniente, seu pedido será entregue assim que tivermos um entregador disponível!";
-        assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
-    } finally {
-        System.setOut(originalSystemOut);
-    }
+                String notificacaoEsperada = pedido.getCliente().getNome() + ", o seu pedido está pronto, mas infelizmente não há entregadores disponíveis. Pedimos perdão pelo inconveniente, seu pedido será entregue assim que tivermos um entregador disponível!";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+        } finally {
+                System.setOut(originalSystemOut);
+        }
 
        assertEquals(pedidoPronto.getAcompanhamento(), Acompanhamento.PEDIDO_PRONTO);
    }
