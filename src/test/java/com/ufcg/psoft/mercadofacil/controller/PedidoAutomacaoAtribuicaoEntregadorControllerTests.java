@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,6 +139,10 @@ public class PedidoAutomacaoAtribuicaoEntregadorControllerTests {
    @Transactional
    @DisplayName("Teste de atribuição automática quando não há entregador disponível")
    void atribuicaoAutomaticaSemEntregadorDisponivelTest() throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(outputStream);
+        PrintStream originalSystemOut = System.out;
+        System.setOut(printStream);
         pedido.setAcompanhamento(Acompanhamento.PEDIDO_EM_PREPARO);
         pedidoRepository.save(pedido);
 
@@ -146,7 +152,21 @@ public class PedidoAutomacaoAtribuicaoEntregadorControllerTests {
                .andDo(print())
                .andReturn().getResponse().getContentAsString();
 
-       Pedido pedidoPronto = objectMapper.readValue(respostaJson, Pedido.class);
+        Pedido pedidoPronto = objectMapper.readValue(respostaJson, Pedido.class);
+        System.setOut(printStream);
+
+        try {
+                String resultadoPrint = outputStream.toString();
+
+                String regex = "Hibernate: .*";
+
+                String resultadoFiltrado = resultadoPrint.replaceAll(regex, "").trim();
+
+                String notificacaoEsperada = pedido.getCliente().getNome() + ", o seu pedido está pronto, mas infelizmente não há entregadores disponíveis. Pedimos perdão pelo inconveniente, seu pedido será entregue assim que tivermos um entregador disponível!";
+                assertTrue(resultadoFiltrado.contains(notificacaoEsperada));
+        } finally {
+                System.setOut(originalSystemOut);
+        }
 
        assertEquals(pedidoPronto.getAcompanhamento(), Acompanhamento.PEDIDO_PRONTO);
    }

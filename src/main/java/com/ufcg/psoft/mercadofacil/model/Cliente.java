@@ -68,4 +68,9 @@ public class Cliente {
 
     }
 
+    public void notificarIndisponibilidadeEntregador() {
+        System.out.println(this.nome + ", o seu pedido está pronto, mas infelizmente não há entregadores disponíveis. " +
+                            "Pedimos perdão pelo inconveniente, seu pedido será entregue assim que tivermos um entregador disponível!");
+    }
+
 }
