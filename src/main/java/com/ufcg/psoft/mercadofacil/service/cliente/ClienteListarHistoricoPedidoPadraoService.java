@@ -1,17 +1,17 @@
 package com.ufcg.psoft.mercadofacil.service.cliente;
 
-import com.ufcg.psoft.mercadofacil.exception.CodigoDeAcessoInvalidoException;
-import com.ufcg.psoft.mercadofacil.exception.PedidoClienteNaoAutorizadoException;
-import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
-import com.ufcg.psoft.mercadofacil.model.Pedido;
-import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
-import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.ufcg.psoft.mercadofacil.exception.CodigoDeAcessoInvalidoException;
+import com.ufcg.psoft.mercadofacil.model.Acompanhamento;
+import com.ufcg.psoft.mercadofacil.model.Pedido;
+import com.ufcg.psoft.mercadofacil.repository.ClienteRepository;
+import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 
 @Service
 public class ClienteListarHistoricoPedidoPadraoService implements ClienteListarHistoricoPedidoService {
@@ -35,7 +35,7 @@ public class ClienteListarHistoricoPedidoPadraoService implements ClienteListarH
                 .collect(Collectors.toList());
 
         // Verificando o codigo de acesso.
-        if (pedidos.size() != 0 && !pedidos.get(0).getCliente().getCodigoDeAcesso().equals(codigoDeAcesso)) {
+        if (!pedidos.isEmpty() && !pedidos.get(0).getCliente().getCodigoDeAcesso().equals(codigoDeAcesso)) {
             throw new CodigoDeAcessoInvalidoException();
         }
 

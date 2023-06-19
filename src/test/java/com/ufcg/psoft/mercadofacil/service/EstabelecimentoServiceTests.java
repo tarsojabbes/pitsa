@@ -139,8 +139,8 @@ public class EstabelecimentoServiceTests {
 
         @AfterEach
         public void tearDown() {
-            saborRepository.deleteAll();
             estabelecimentoRepository.deleteAll();
+            saborRepository.deleteAll();
         }
 
         @Test

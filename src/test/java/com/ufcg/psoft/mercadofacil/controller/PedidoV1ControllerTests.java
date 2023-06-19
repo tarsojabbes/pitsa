@@ -1052,7 +1052,7 @@ public class PedidoV1ControllerTests {
 
             Pedido resposta = objectMapper.readValue(respostaJson, Pedido.class);
 
-            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto?codigoDeAcesso=" + pedido.getEstabelecimento().getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
@@ -1067,7 +1067,7 @@ public class PedidoV1ControllerTests {
         @Transactional
         @DisplayName("Quando tento atualizar pedido para PEDIDO_PRONTO mas o pagamento não foi confirmado")
         public void test02() throws Exception {
-            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+            String respostaJson2 = driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto?codigoDeAcesso=" + pedido.getEstabelecimento().getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
                     .andDo(print())
@@ -1100,7 +1100,7 @@ public class PedidoV1ControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto")
+            driver.perform(patch("/v1/pedidos/" + pedido.getId() + "/pedido-pronto?codigoDeAcesso=" + pedido.getEstabelecimento().getCodigoDeAcesso())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andDo(print())
