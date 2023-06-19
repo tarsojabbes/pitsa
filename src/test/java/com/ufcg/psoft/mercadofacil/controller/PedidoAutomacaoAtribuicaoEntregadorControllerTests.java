@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes para sistema de automação de atribuição de pedidos a entregadores")
-public class PedidoAtribuicaoEntregadorAutomaticaTests {
+public class PedidoAutomacaoAtribuicaoEntregadorControllerTests {
     @Autowired
     MockMvc driver;
 
