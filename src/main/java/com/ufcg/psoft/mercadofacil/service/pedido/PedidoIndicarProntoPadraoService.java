@@ -43,6 +43,7 @@ public class PedidoIndicarProntoPadraoService implements PedidoIndicarProntoServ
         Estabelecimento estabelecimento = pedido.getEstabelecimento();
         if(estabelecimento.getEntregadoresDisponiveis().isEmpty()){
             estabelecimento.getPedidosEmEspera().add(pedido.getId());
+            pedido.getCliente().notificarIndisponibilidadeEntregador();
         } else{
             Long idEntregador = estabelecimento.getEntregadoresDisponiveis().get(0);
             estabelecimento.getEntregadoresDisponiveis().remove(0);
