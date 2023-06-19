@@ -56,10 +56,6 @@ public class SaborServiceTests {
 
     @BeforeEach
     public void setup() {
-        pedidoRepository.deleteAll();
-        estabelecimentoRepository.deleteAll();
-        saborRepository.deleteAll();
-
         estabelecimento = estabelecimentoRepository.save(
                 Estabelecimento.builder()
                         .nome("Jipao")
@@ -286,10 +282,6 @@ public class SaborServiceTests {
 
         @BeforeEach
         public void setUp() {
-            pedidoRepository.deleteAll();
-            estabelecimentoRepository.deleteAll();
-            saborRepository.deleteAll();
-
             estabelecimento = estabelecimentoRepository.save(
                     Estabelecimento.builder()
                             .codigoDeAcesso("123456")
@@ -359,9 +351,6 @@ public class SaborServiceTests {
 
         @BeforeEach
         public void setUp() {
-            estabelecimentoRepository.deleteAll();
-            saborRepository.deleteAll();
-
             estabelecimento = estabelecimentoRepository.save(
                     Estabelecimento.builder()
                             .codigoDeAcesso("123456")
@@ -388,8 +377,8 @@ public class SaborServiceTests {
 
         @AfterEach
         public void tearDown() {
-            estabelecimentoRepository.deleteAll();
             saborRepository.deleteAll();
+            estabelecimentoRepository.deleteAll();
         }
 
         @Test
