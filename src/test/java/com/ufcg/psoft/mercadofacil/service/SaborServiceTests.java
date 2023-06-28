@@ -8,6 +8,7 @@ import com.ufcg.psoft.mercadofacil.exception.SaborNaoExisteException;
 import com.ufcg.psoft.mercadofacil.model.Estabelecimento;
 import com.ufcg.psoft.mercadofacil.model.Sabor;
 import com.ufcg.psoft.mercadofacil.repository.EstabelecimentoRepository;
+import com.ufcg.psoft.mercadofacil.repository.PedidoRepository;
 import com.ufcg.psoft.mercadofacil.repository.SaborRepository;
 import com.ufcg.psoft.mercadofacil.service.sabor.*;
 import org.junit.jupiter.api.*;
@@ -45,6 +46,9 @@ public class SaborServiceTests {
 
     @Autowired
     EstabelecimentoRepository estabelecimentoRepository;
+
+    @Autowired
+    PedidoRepository pedidoRepository;
 
     Sabor sabor;
 

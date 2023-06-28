@@ -2,6 +2,7 @@ package com.ufcg.psoft.mercadofacil.controller;
 
 import com.ufcg.psoft.mercadofacil.dto.EntregadorGetResponseDTO;
 import com.ufcg.psoft.mercadofacil.dto.EntregadorPostPutRequestDTO;
+import com.ufcg.psoft.mercadofacil.model.DisponibilidadeEntregador;
 import com.ufcg.psoft.mercadofacil.model.Entregador;
 import com.ufcg.psoft.mercadofacil.service.associacao.AssociacaoService;
 import com.ufcg.psoft.mercadofacil.service.entregador.EntregadorAlterarService;
@@ -88,8 +89,8 @@ public class EntregadorV1Controller {
 
     @PostMapping("/solicitar-associacao/{idEstabelecimento}/{entregadorId}")
     public ResponseEntity<?> solicitarAssociacao(@RequestParam String codigoAcessoEntregador,
-                                                    @PathVariable Long idEstabelecimento,
-                                                    @PathVariable Long entregadorId) {
+                                                 @PathVariable Long idEstabelecimento,
+                                                 @PathVariable Long entregadorId) {
         // Lógica para solicitar associação a um estabelecimento
 
         return ResponseEntity
@@ -97,6 +98,15 @@ public class EntregadorV1Controller {
                 .body(associacaoService.associarEntregadorEstabelecimento(entregadorId, idEstabelecimento, codigoAcessoEntregador));
     }
 
-
+    @PatchMapping("/definir-disponibilidade/{entregadorId}/{disponibilidade}")
+    public ResponseEntity<?> definirDisponibilidade(@PathVariable Long entregadorId,
+                                                    @PathVariable DisponibilidadeEntregador disponibilidade,
+                                                    @RequestParam Long associacaoId,
+                                                    @RequestParam(value = "codigoDeAcesso") String codigoDeAcesso) {
+        associacaoService.alterarDisponibilidadeEntregador(entregadorId, disponibilidade, associacaoId, codigoDeAcesso);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("");
+    }
 
 }

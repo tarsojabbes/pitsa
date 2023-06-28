@@ -20,6 +20,7 @@ public class ClienteConfirmarEntregaPadraoService implements ClienteConfirmarEnt
 
         if (pedido.getAcompanhamento().equals(Acompanhamento.PEDIDO_EM_ROTA)) {
             pedido.setAcompanhamento(Acompanhamento.PEDIDO_ENTREGUE);
+            pedido.getEstabelecimento().getEntregadoresDisponiveis().add(pedido.getEntregador().getId());
             pedido.getEstabelecimento().notificarPedidoEntregue(pedido.getId());
             return pedidoRepository.save(pedido);
         }
