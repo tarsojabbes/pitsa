@@ -1,0 +1,20 @@
+version: 2.1
+executors:
+  java-executor:
+    docker:
+      - image: circleci/openjdk:17-jre
+
+jobs:
+  build:
+    executor: java-executor
+    steps:
+      - checkout
+      - run:
+          name: Build and Test
+          command: ./gradlew clean build
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
